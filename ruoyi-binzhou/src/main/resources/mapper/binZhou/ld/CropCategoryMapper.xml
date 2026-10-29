@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.ld.mapper.CropCategoryMapper">
+    
+    <resultMap type="CropCategory" id="CropCategoryResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="description"    column="description"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectCropCategoryVo">
+        select id, name, description, create_time from ld_crop_category
+    </sql>
+
+    <select id="selectCropCategoryList" parameterType="CropCategory" resultMap="CropCategoryResult">
+        <include refid="selectCropCategoryVo"/>
+        <where>  
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+        </where>
+    </select>
+    
+    <select id="selectCropCategoryById" parameterType="Long" resultMap="CropCategoryResult">
+        <include refid="selectCropCategoryVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertCropCategory" parameterType="CropCategory" useGeneratedKeys="true" keyProperty="id">
+        insert into ld_crop_category
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">name,</if>
+            <if test="description != null">description,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="description != null">#{description},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateCropCategory" parameterType="CropCategory">
+        update ld_crop_category
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteCropCategoryById" parameterType="Long">
+        delete from ld_crop_category where id = #{id}
+    </delete>
+
+    <delete id="deleteCropCategoryByIds" parameterType="String">
+        delete from ld_crop_category where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

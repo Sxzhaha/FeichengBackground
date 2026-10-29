@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.xwq.mapper.AiPhenologyMapper">
+
+    <resultMap type="AiPhenology" id="AiPhenologyResult">
+        <result property="phenologyId" column="phenology_id" />
+        <result property="recordId" column="record_id" />
+        <result property="imageId" column="image_id" />
+
+        <result property="parkId" column="park_id" />
+        <result property="areaId" column="area_id" />
+        <result property="locationId" column="location_id" />
+        <result property="deviceId" column="device_id" />
+        <result property="parkName" column="park_name" />
+        <result property="areaName" column="area_name" />
+        <result property="locationName" column="location_name" />
+        <result property="deviceName" column="device_name" />
+
+        <result property="phenologyName" column="phenology_name" />
+        <result property="phenologyCode" column="phenology_code" />
+        <result property="phenologyCrop" column="phenology_crop" />
+        <result property="phenologyConfidence" column="phenology_confidence" />
+        <result property="phenologyResult" column="phenology_result" />
+        <result property="phenologyDesc" column="phenology_desc" />
+        <result property="phenologyAdvice" column="phenology_advice" />
+        <result property="phenologyNextName" column="phenology_next_name" />
+        <result property="phenologyResultImgUrl" column="phenology_result_img_url" />
+        <result property="phenologyA" column="phenology_a" />
+        <result property="phenologyB" column="phenology_b" />
+        <result property="phenologyC" column="phenology_c" />
+        <result property="phenologyD" column="phenology_d" />
+        <result property="phenologyE" column="phenology_e" />
+        <result property="phenologyF" column="phenology_f" />
+        <result property="phenologyG" column="phenology_g" />
+        <result property="phenologyH" column="phenology_h" />
+        <result property="phenologyI" column="phenology_i" />
+        <result property="phenologyJ" column="phenology_j" />
+        <result property="createBy" column="create_by" />
+        <result property="createTime" column="create_time" />
+        <result property="updateBy" column="update_by" />
+        <result property="updateTime" column="update_time" />
+        <result property="remark" column="remark" />
+    </resultMap>
+
+    <!--
+        物候结果优先使用图片表中的范围字段。
+        历史物候图片只有 device_id 时，沿设备层级反查：
+        iot_device.location_id -> location.area_id -> area.park_id。
+        xwq_ai_record 作为图片关联字段缺失时的设备/园区/地块兜底。
+    -->
+    <sql id="selectAiPhenologyVo">
+        select
+            ph.phenology_id,
+            ph.record_id,
+            ph.image_id,
+            ph.phenology_name,
+            ph.phenology_code,
+            ph.phenology_crop,
+            ph.phenology_confidence,
+            ph.phenology_result,
+            ph.phenology_desc,
+            ph.phenology_advice,
+            ph.phenology_next_name,
+            ph.phenology_result_img_url,
+            ph.phenology_a,
+            ph.phenology_b,
+            ph.phenology_c,
+            ph.phenology_d,
+            ph.phenology_e,
+            ph.phenology_f,
+            ph.phenology_g,
+            ph.phenology_h,
+            ph.phenology_i,
+            ph.phenology_j,
+            ph.create_by,
+            ph.create_time,
+            ph.update_by,
+            ph.update_time,
+            ph.remark,
+
+            coalesce(img.park_id, rec.park_id, ar.park_id) as park_id,
+            coalesce(img.plot_id, rec.plot_id, loc.area_id) as area_id,
+            cast(
+                    coalesce(
+                            cast(nullif(img.image_b, '') as unsigned),
+                            dev.location_id
+                    ) as char
+            ) as location_id,
+            coalesce(img.device_id, rec.device_id) as device_id,
+
+            pk.park_name as park_name,
+            ar.area_name as area_name,
+            loc.location_name as location_name,
+            dev.device_name as device_name
+        from xwq_ai_phenology ph
+                 left join xwq_ai_image img
+                           on img.image_id = ph.image_id
+                 left join xwq_ai_record rec
+                           on rec.record_id = ph.record_id
+                 left join iot_device dev
+                           on dev.device_id = coalesce(img.device_id, rec.device_id)
+                 left join location loc
+                           on loc.location_id = coalesce(
+                                   cast(nullif(img.image_b, '') as unsigned),
+                                   dev.location_id
+                                                )
+                 left join area ar
+                           on ar.area_id = coalesce(
+                                   img.plot_id,
+                                   rec.plot_id,
+                                   loc.area_id
+                                           )
+                 left join park pk
+                           on pk.park_id = coalesce(
+                                   img.park_id,
+                                   rec.park_id,
+                                   ar.park_id
+                                           )
+    </sql>
+
+    <select id="selectAiPhenologyList" parameterType="AiPhenology" resultMap="AiPhenologyResult">
+        <include refid="selectAiPhenologyVo" />
+        <where>
+            <if test="recordId != null">
+                and ph.record_id = #{recordId}
+            </if>
+            <if test="imageId != null">
+                and ph.image_id = #{imageId}
+            </if>
+            <if test="phenologyName != null and phenologyName != ''">
+                and ph.phenology_name = #{phenologyName}
+            </if>
+            <if test="phenologyCode != null and phenologyCode != ''">
+                and ph.phenology_code = #{phenologyCode}
+            </if>
+            <if test="phenologyCrop != null and phenologyCrop != ''">
+                and ph.phenology_crop like concat('%', #{phenologyCrop}, '%')
+            </if>
+            <if test="phenologyConfidence != null">
+                and ph.phenology_confidence = #{phenologyConfidence}
+            </if>
+            <if test="phenologyResult != null and phenologyResult != ''">
+                and ph.phenology_result = #{phenologyResult}
+            </if>
+            <if test="phenologyDesc != null and phenologyDesc != ''">
+                and ph.phenology_desc = #{phenologyDesc}
+            </if>
+            <if test="phenologyAdvice != null and phenologyAdvice != ''">
+                and ph.phenology_advice = #{phenologyAdvice}
+            </if>
+            <if test="phenologyNextName != null and phenologyNextName != ''">
+                and ph.phenology_next_name like concat('%', #{phenologyNextName}, '%')
+            </if>
+            <if test="phenologyResultImgUrl != null and phenologyResultImgUrl != ''">
+                and ph.phenology_result_img_url = #{phenologyResultImgUrl}
+            </if>
+            <if test="phenologyA != null and phenologyA != ''">
+                and ph.phenology_a = #{phenologyA}
+            </if>
+            <if test="phenologyB != null and phenologyB != ''">
+                and ph.phenology_b = #{phenologyB}
+            </if>
+            <if test="phenologyC != null and phenologyC != ''">
+                and ph.phenology_c = #{phenologyC}
+            </if>
+            <if test="phenologyD != null and phenologyD != ''">
+                and ph.phenology_d = #{phenologyD}
+            </if>
+            <if test="phenologyE != null and phenologyE != ''">
+                and ph.phenology_e = #{phenologyE}
+            </if>
+            <if test="phenologyF != null and phenologyF != ''">
+                and ph.phenology_f = #{phenologyF}
+            </if>
+            <if test="phenologyG != null and phenologyG != ''">
+                and ph.phenology_g = #{phenologyG}
+            </if>
+            <if test="phenologyH != null and phenologyH != ''">
+                and ph.phenology_h = #{phenologyH}
+            </if>
+            <if test="phenologyI != null and phenologyI != ''">
+                and ph.phenology_i = #{phenologyI}
+            </if>
+            <if test="phenologyJ != null and phenologyJ != ''">
+                and ph.phenology_j = #{phenologyJ}
+            </if>
+
+            <if test="parkId != null">
+                and coalesce(img.park_id, rec.park_id, ar.park_id) = #{parkId}
+            </if>
+            <if test="areaId != null">
+                and coalesce(img.plot_id, rec.plot_id, loc.area_id) = #{areaId}
+            </if>
+            <if test="locationId != null and locationId != ''">
+                and coalesce(
+                cast(nullif(img.image_b, '') as unsigned),
+                dev.location_id
+                ) = cast(#{locationId} as unsigned)
+            </if>
+            <if test="deviceId != null">
+                and coalesce(img.device_id, rec.device_id) = #{deviceId}
+            </if>
+
+            <if test="params != null and params.beginTime != null and params.beginTime != ''">
+                and ph.create_time &gt;= #{params.beginTime}
+            </if>
+            <if test="params != null and params.endTime != null and params.endTime != ''">
+                and ph.create_time &lt;= #{params.endTime}
+            </if>
+        </where>
+        order by ph.create_time asc, ph.phenology_id asc
+    </select>
+
+    <select id="selectAiPhenologyByPhenologyId" parameterType="Long" resultMap="AiPhenologyResult">
+        <include refid="selectAiPhenologyVo" />
+        where ph.phenology_id = #{phenologyId}
+    </select>
+
+    <insert id="insertAiPhenology" parameterType="AiPhenology" useGeneratedKeys="true" keyProperty="phenologyId">
+        insert into xwq_ai_phenology
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="recordId != null">record_id,</if>
+            <if test="imageId != null">image_id,</if>
+            <if test="phenologyName != null and phenologyName != ''">phenology_name,</if>
+            <if test="phenologyCode != null">phenology_code,</if>
+            <if test="phenologyCrop != null">phenology_crop,</if>
+            <if test="phenologyConfidence != null">phenology_confidence,</if>
+            <if test="phenologyResult != null">phenology_result,</if>
+            <if test="phenologyDesc != null">phenology_desc,</if>
+            <if test="phenologyAdvice != null">phenology_advice,</if>
+            <if test="phenologyNextName != null">phenology_next_name,</if>
+            <if test="phenologyResultImgUrl != null">phenology_result_img_url,</if>
+            <if test="phenologyA != null">phenology_a,</if>
+            <if test="phenologyB != null">phenology_b,</if>
+            <if test="phenologyC != null">phenology_c,</if>
+            <if test="phenologyD != null">phenology_d,</if>
+            <if test="phenologyE != null">phenology_e,</if>
+            <if test="phenologyF != null">phenology_f,</if>
+            <if test="phenologyG != null">phenology_g,</if>
+            <if test="phenologyH != null">phenology_h,</if>
+            <if test="phenologyI != null">phenology_i,</if>
+            <if test="phenologyJ != null">phenology_j,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="recordId != null">#{recordId},</if>
+            <if test="imageId != null">#{imageId},</if>
+            <if test="phenologyName != null and phenologyName != ''">#{phenologyName},</if>
+            <if test="phenologyCode != null">#{phenologyCode},</if>
+            <if test="phenologyCrop != null">#{phenologyCrop},</if>
+            <if test="phenologyConfidence != null">#{phenologyConfidence},</if>
+            <if test="phenologyResult != null">#{phenologyResult},</if>
+            <if test="phenologyDesc != null">#{phenologyDesc},</if>
+            <if test="phenologyAdvice != null">#{phenologyAdvice},</if>
+            <if test="phenologyNextName != null">#{phenologyNextName},</if>
+            <if test="phenologyResultImgUrl != null">#{phenologyResultImgUrl},</if>
+            <if test="phenologyA != null">#{phenologyA},</if>
+            <if test="phenologyB != null">#{phenologyB},</if>
+            <if test="phenologyC != null">#{phenologyC},</if>
+            <if test="phenologyD != null">#{phenologyD},</if>
+            <if test="phenologyE != null">#{phenologyE},</if>
+            <if test="phenologyF != null">#{phenologyF},</if>
+            <if test="phenologyG != null">#{phenologyG},</if>
+            <if test="phenologyH != null">#{phenologyH},</if>
+            <if test="phenologyI != null">#{phenologyI},</if>
+            <if test="phenologyJ != null">#{phenologyJ},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateAiPhenology" parameterType="AiPhenology">
+        update xwq_ai_phenology
+        <trim prefix="set" suffixOverrides=",">
+            <if test="recordId != null">record_id = #{recordId},</if>
+            <if test="imageId != null">image_id = #{imageId},</if>
+            <if test="phenologyName != null and phenologyName != ''">phenology_name = #{phenologyName},</if>
+            <if test="phenologyCode != null">phenology_code = #{phenologyCode},</if>
+            <if test="phenologyCrop != null">phenology_crop = #{phenologyCrop},</if>
+            <if test="phenologyConfidence != null">phenology_confidence = #{phenologyConfidence},</if>
+            <if test="phenologyResult != null">phenology_result = #{phenologyResult},</if>
+            <if test="phenologyDesc != null">phenology_desc = #{phenologyDesc},</if>
+            <if test="phenologyAdvice != null">phenology_advice = #{phenologyAdvice},</if>
+            <if test="phenologyNextName != null">phenology_next_name = #{phenologyNextName},</if>
+            <if test="phenologyResultImgUrl != null">phenology_result_img_url = #{phenologyResultImgUrl},</if>
+            <if test="phenologyA != null">phenology_a = #{phenologyA},</if>
+            <if test="phenologyB != null">phenology_b = #{phenologyB},</if>
+            <if test="phenologyC != null">phenology_c = #{phenologyC},</if>
+            <if test="phenologyD != null">phenology_d = #{phenologyD},</if>
+            <if test="phenologyE != null">phenology_e = #{phenologyE},</if>
+            <if test="phenologyF != null">phenology_f = #{phenologyF},</if>
+            <if test="phenologyG != null">phenology_g = #{phenologyG},</if>
+            <if test="phenologyH != null">phenology_h = #{phenologyH},</if>
+            <if test="phenologyI != null">phenology_i = #{phenologyI},</if>
+            <if test="phenologyJ != null">phenology_j = #{phenologyJ},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where phenology_id = #{phenologyId}
+    </update>
+
+    <delete id="deleteAiPhenologyByPhenologyId" parameterType="Long">
+        delete from xwq_ai_phenology where phenology_id = #{phenologyId}
+    </delete>
+
+    <delete id="deleteAiPhenologyByPhenologyIds" parameterType="String">
+        delete from xwq_ai_phenology
+        where phenology_id in
+        <foreach item="phenologyId" collection="array" open="(" separator="," close=")">
+            #{phenologyId}
+        </foreach>
+    </delete>
+</mapper>

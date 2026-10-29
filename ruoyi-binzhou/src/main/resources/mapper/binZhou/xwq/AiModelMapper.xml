@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.xwq.mapper.AiModelMapper">
+    
+    <resultMap type="AiModel" id="AiModelResult">
+        <result property="modelId"    column="model_id"    />
+        <result property="modelName"    column="model_name"    />
+        <result property="modelCode"    column="model_code"    />
+        <result property="modelType"    column="model_type"    />
+        <result property="modelCrop"    column="model_crop"    />
+        <result property="modelUrl"    column="model_url"    />
+        <result property="modelDesc"    column="model_desc"    />
+        <result property="modelStatus"    column="model_status"    />
+        <result property="modelA"    column="model_a"    />
+        <result property="modelB"    column="model_b"    />
+        <result property="modelC"    column="model_c"    />
+        <result property="modelD"    column="model_d"    />
+        <result property="modelE"    column="model_e"    />
+        <result property="modelF"    column="model_f"    />
+        <result property="modelG"    column="model_g"    />
+        <result property="modelH"    column="model_h"    />
+        <result property="modelI"    column="model_i"    />
+        <result property="modelJ"    column="model_j"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"  column="create_time"  />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"  column="update_time"  />
+        <result property="remark"      column="remark"       />
+    </resultMap>
+
+    <sql id="selectAiModelVo">
+        select model_id, model_name, model_code, model_type, model_crop, model_url, model_desc, model_status, model_a, model_b, model_c, model_d, model_e, model_f, model_g, model_h, model_i, model_j, create_by, create_time, update_by, update_time, remark from xwq_ai_model
+    </sql>
+
+    <select id="selectAiModelList" parameterType="AiModel" resultMap="AiModelResult">
+        <include refid="selectAiModelVo"/>
+        <where>  
+            <if test="modelName != null  and modelName != ''"> and model_name like concat('%', #{modelName}, '%')</if>
+            <if test="modelCode != null  and modelCode != ''"> and model_code = #{modelCode}</if>
+            <if test="modelType != null  and modelType != ''"> and model_type = #{modelType}</if>
+            <if test="modelCrop != null  and modelCrop != ''"> and model_crop = #{modelCrop}</if>
+            <if test="modelUrl != null  and modelUrl != ''"> and model_url = #{modelUrl}</if>
+            <if test="modelDesc != null  and modelDesc != ''"> and model_desc = #{modelDesc}</if>
+            <if test="modelStatus != null "> and model_status = #{modelStatus}</if>
+            <if test="modelA != null  and modelA != ''"> and model_a = #{modelA}</if>
+            <if test="modelB != null  and modelB != ''"> and model_b = #{modelB}</if>
+            <if test="modelC != null  and modelC != ''"> and model_c = #{modelC}</if>
+            <if test="modelD != null  and modelD != ''"> and model_d = #{modelD}</if>
+            <if test="modelE != null  and modelE != ''"> and model_e = #{modelE}</if>
+            <if test="modelF != null  and modelF != ''"> and model_f = #{modelF}</if>
+            <if test="modelG != null  and modelG != ''"> and model_g = #{modelG}</if>
+            <if test="modelH != null  and modelH != ''"> and model_h = #{modelH}</if>
+            <if test="modelI != null  and modelI != ''"> and model_i = #{modelI}</if>
+            <if test="modelJ != null  and modelJ != ''"> and model_j = #{modelJ}</if>
+        </where>
+    </select>
+    
+    <select id="selectAiModelByModelId" parameterType="Long" resultMap="AiModelResult">
+        <include refid="selectAiModelVo"/>
+        where model_id = #{modelId}
+    </select>
+
+    <insert id="insertAiModel" parameterType="AiModel" useGeneratedKeys="true" keyProperty="modelId">
+        insert into xwq_ai_model
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="modelName != null and modelName != ''">model_name,</if>
+            <if test="modelCode != null and modelCode != ''">model_code,</if>
+            <if test="modelType != null and modelType != ''">model_type,</if>
+            <if test="modelCrop != null">model_crop,</if>
+            <if test="modelUrl != null and modelUrl != ''">model_url,</if>
+            <if test="modelDesc != null">model_desc,</if>
+            <if test="modelStatus != null">model_status,</if>
+            <if test="modelA != null">model_a,</if>
+            <if test="modelB != null">model_b,</if>
+            <if test="modelC != null">model_c,</if>
+            <if test="modelD != null">model_d,</if>
+            <if test="modelE != null">model_e,</if>
+            <if test="modelF != null">model_f,</if>
+            <if test="modelG != null">model_g,</if>
+            <if test="modelH != null">model_h,</if>
+            <if test="modelI != null">model_i,</if>
+            <if test="modelJ != null">model_j,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="modelName != null and modelName != ''">#{modelName},</if>
+            <if test="modelCode != null and modelCode != ''">#{modelCode},</if>
+            <if test="modelType != null and modelType != ''">#{modelType},</if>
+            <if test="modelCrop != null">#{modelCrop},</if>
+            <if test="modelUrl != null and modelUrl != ''">#{modelUrl},</if>
+            <if test="modelDesc != null">#{modelDesc},</if>
+            <if test="modelStatus != null">#{modelStatus},</if>
+            <if test="modelA != null">#{modelA},</if>
+            <if test="modelB != null">#{modelB},</if>
+            <if test="modelC != null">#{modelC},</if>
+            <if test="modelD != null">#{modelD},</if>
+            <if test="modelE != null">#{modelE},</if>
+            <if test="modelF != null">#{modelF},</if>
+            <if test="modelG != null">#{modelG},</if>
+            <if test="modelH != null">#{modelH},</if>
+            <if test="modelI != null">#{modelI},</if>
+            <if test="modelJ != null">#{modelJ},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAiModel" parameterType="AiModel">
+        update xwq_ai_model
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="modelName != null and modelName != ''">model_name = #{modelName},</if>
+            <if test="modelCode != null and modelCode != ''">model_code = #{modelCode},</if>
+            <if test="modelType != null and modelType != ''">model_type = #{modelType},</if>
+            <if test="modelCrop != null">model_crop = #{modelCrop},</if>
+            <if test="modelUrl != null and modelUrl != ''">model_url = #{modelUrl},</if>
+            <if test="modelDesc != null">model_desc = #{modelDesc},</if>
+            <if test="modelStatus != null">model_status = #{modelStatus},</if>
+            <if test="modelA != null">model_a = #{modelA},</if>
+            <if test="modelB != null">model_b = #{modelB},</if>
+            <if test="modelC != null">model_c = #{modelC},</if>
+            <if test="modelD != null">model_d = #{modelD},</if>
+            <if test="modelE != null">model_e = #{modelE},</if>
+            <if test="modelF != null">model_f = #{modelF},</if>
+            <if test="modelG != null">model_g = #{modelG},</if>
+            <if test="modelH != null">model_h = #{modelH},</if>
+            <if test="modelI != null">model_i = #{modelI},</if>
+            <if test="modelJ != null">model_j = #{modelJ},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where model_id = #{modelId}
+    </update>
+
+    <delete id="deleteAiModelByModelId" parameterType="Long">
+        delete from xwq_ai_model where model_id = #{modelId}
+    </delete>
+
+    <delete id="deleteAiModelByModelIds" parameterType="String">
+        delete from xwq_ai_model where model_id in 
+        <foreach item="modelId" collection="array" open="(" separator="," close=")">
+            #{modelId}
+        </foreach>
+    </delete>
+
+    <select id="selectDefaultModelByType" resultMap="AiModelResult">
+        <include refid="selectAiModelVo"/>
+        where model_type = #{modelType}
+        and model_status = 1
+        order by
+        case when model_a = '1' then 0 else 1 end,
+        model_id asc
+        limit 1
+    </select>
+</mapper>

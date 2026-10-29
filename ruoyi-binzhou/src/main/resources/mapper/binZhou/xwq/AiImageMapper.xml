@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.xwq.mapper.AiImageMapper">
+    
+    <resultMap type="AiImage" id="AiImageResult">
+        <result property="imageId"    column="image_id"    />
+        <result property="imageName"    column="image_name"    />
+        <result property="imageUrl"    column="image_url"    />
+        <result property="imageResultUrl"    column="image_result_url"    />
+        <result property="imageMaskUrl"    column="image_mask_url"    />
+        <result property="imageAiType"    column="image_ai_type"    />
+        <result property="imageSource"    column="image_source"    />
+        <result property="imageSourceId"    column="image_source_id"    />
+        <result property="imageWidth"    column="image_width"    />
+        <result property="imageHeight"    column="image_height"    />
+        <result property="imageSize"    column="image_size"    />
+        <result property="imageFormat"    column="image_format"    />
+        <result property="parkId"    column="park_id"    />
+        <result property="plotId"    column="plot_id"    />
+        <result property="deviceId"    column="device_id"    />
+        <result property="longitude"    column="longitude"    />
+        <result property="latitude"    column="latitude"    />
+        <result property="imageStatus"    column="image_status"    />
+        <result property="imageA"    column="image_a"    />
+        <result property="imageB"    column="image_b"    />
+        <result property="imageC"    column="image_c"    />
+        <result property="imageD"    column="image_d"    />
+        <result property="imageE"    column="image_e"    />
+        <result property="imageF"    column="image_f"    />
+        <result property="imageG"    column="image_g"    />
+        <result property="imageH"    column="image_h"    />
+        <result property="imageI"    column="image_i"    />
+        <result property="imageJ"    column="image_j"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"  column="create_time"  />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"  column="update_time"  />
+        <result property="remark"      column="remark"       />
+    </resultMap>
+
+    <sql id="selectAiImageVo">
+        select image_id, image_name, image_url, image_result_url, image_mask_url, image_ai_type, image_source, image_source_id, image_width, image_height, image_size, image_format, park_id, plot_id, device_id, longitude, latitude, image_status, image_a, image_b, image_c, image_d, image_e, image_f, image_g, image_h, image_i, image_j, create_by, create_time, update_by, update_time, remark from xwq_ai_image
+    </sql>
+
+    <select id="selectAiImageList" parameterType="AiImage" resultMap="AiImageResult">
+        <include refid="selectAiImageVo"/>
+        <where>  
+            <if test="imageName != null  and imageName != ''"> and image_name like concat('%', #{imageName}, '%')</if>
+            <if test="imageUrl != null  and imageUrl != ''"> and image_url = #{imageUrl}</if>
+            <if test="imageResultUrl != null  and imageResultUrl != ''"> and image_result_url = #{imageResultUrl}</if>
+            <if test="imageMaskUrl != null  and imageMaskUrl != ''"> and image_mask_url = #{imageMaskUrl}</if>
+            <if test="imageAiType != null  and imageAiType != ''"> and image_ai_type = #{imageAiType}</if>
+            <if test="imageSource != null  and imageSource != ''"> and image_source = #{imageSource}</if>
+            <if test="imageSourceId != null "> and image_source_id = #{imageSourceId}</if>
+            <if test="imageWidth != null "> and image_width = #{imageWidth}</if>
+            <if test="imageHeight != null "> and image_height = #{imageHeight}</if>
+            <if test="imageSize != null "> and image_size = #{imageSize}</if>
+            <if test="imageFormat != null  and imageFormat != ''"> and image_format = #{imageFormat}</if>
+            <if test="parkId != null "> and park_id = #{parkId}</if>
+            <if test="plotId != null "> and plot_id = #{plotId}</if>
+            <if test="deviceId != null "> and device_id = #{deviceId}</if>
+            <if test="longitude != null "> and longitude = #{longitude}</if>
+            <if test="latitude != null "> and latitude = #{latitude}</if>
+            <if test="imageStatus != null "> and image_status = #{imageStatus}</if>
+            <if test="imageA != null  and imageA != ''"> and image_a = #{imageA}</if>
+            <if test="imageB != null  and imageB != ''"> and image_b = #{imageB}</if>
+            <if test="imageC != null  and imageC != ''"> and image_c = #{imageC}</if>
+            <if test="imageD != null  and imageD != ''"> and image_d = #{imageD}</if>
+            <if test="imageE != null  and imageE != ''"> and image_e = #{imageE}</if>
+            <if test="imageF != null  and imageF != ''"> and image_f = #{imageF}</if>
+            <if test="imageG != null  and imageG != ''"> and image_g = #{imageG}</if>
+            <if test="imageH != null  and imageH != ''"> and image_h = #{imageH}</if>
+            <if test="imageI != null  and imageI != ''"> and image_i = #{imageI}</if>
+            <if test="imageJ != null  and imageJ != ''"> and image_j = #{imageJ}</if>
+        </where>
+    </select>
+    
+    <select id="selectAiImageByImageId" parameterType="Long" resultMap="AiImageResult">
+        <include refid="selectAiImageVo"/>
+        where image_id = #{imageId}
+    </select>
+
+    <insert id="insertAiImage" parameterType="AiImage" useGeneratedKeys="true" keyProperty="imageId">
+        insert into xwq_ai_image
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="imageName != null and imageName != ''">image_name,</if>
+            <if test="imageUrl != null and imageUrl != ''">image_url,</if>
+            <if test="imageResultUrl != null">image_result_url,</if>
+            <if test="imageMaskUrl != null">image_mask_url,</if>
+            <if test="imageAiType != null and imageAiType != ''">image_ai_type,</if>
+            <if test="imageSource != null and imageSource != ''">image_source,</if>
+            <if test="imageSourceId != null">image_source_id,</if>
+            <if test="imageWidth != null">image_width,</if>
+            <if test="imageHeight != null">image_height,</if>
+            <if test="imageSize != null">image_size,</if>
+            <if test="imageFormat != null">image_format,</if>
+            <if test="parkId != null">park_id,</if>
+            <if test="plotId != null">plot_id,</if>
+            <if test="deviceId != null">device_id,</if>
+            <if test="longitude != null">longitude,</if>
+            <if test="latitude != null">latitude,</if>
+            <if test="imageStatus != null">image_status,</if>
+            <if test="imageA != null">image_a,</if>
+            <if test="imageB != null">image_b,</if>
+            <if test="imageC != null">image_c,</if>
+            <if test="imageD != null">image_d,</if>
+            <if test="imageE != null">image_e,</if>
+            <if test="imageF != null">image_f,</if>
+            <if test="imageG != null">image_g,</if>
+            <if test="imageH != null">image_h,</if>
+            <if test="imageI != null">image_i,</if>
+            <if test="imageJ != null">image_j,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="imageName != null and imageName != ''">#{imageName},</if>
+            <if test="imageUrl != null and imageUrl != ''">#{imageUrl},</if>
+            <if test="imageResultUrl != null">#{imageResultUrl},</if>
+            <if test="imageMaskUrl != null">#{imageMaskUrl},</if>
+            <if test="imageAiType != null and imageAiType != ''">#{imageAiType},</if>
+            <if test="imageSource != null and imageSource != ''">#{imageSource},</if>
+            <if test="imageSourceId != null">#{imageSourceId},</if>
+            <if test="imageWidth != null">#{imageWidth},</if>
+            <if test="imageHeight != null">#{imageHeight},</if>
+            <if test="imageSize != null">#{imageSize},</if>
+            <if test="imageFormat != null">#{imageFormat},</if>
+            <if test="parkId != null">#{parkId},</if>
+            <if test="plotId != null">#{plotId},</if>
+            <if test="deviceId != null">#{deviceId},</if>
+            <if test="longitude != null">#{longitude},</if>
+            <if test="latitude != null">#{latitude},</if>
+            <if test="imageStatus != null">#{imageStatus},</if>
+            <if test="imageA != null">#{imageA},</if>
+            <if test="imageB != null">#{imageB},</if>
+            <if test="imageC != null">#{imageC},</if>
+            <if test="imageD != null">#{imageD},</if>
+            <if test="imageE != null">#{imageE},</if>
+            <if test="imageF != null">#{imageF},</if>
+            <if test="imageG != null">#{imageG},</if>
+            <if test="imageH != null">#{imageH},</if>
+            <if test="imageI != null">#{imageI},</if>
+            <if test="imageJ != null">#{imageJ},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAiImage" parameterType="AiImage">
+        update xwq_ai_image
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="imageName != null and imageName != ''">image_name = #{imageName},</if>
+            <if test="imageUrl != null and imageUrl != ''">image_url = #{imageUrl},</if>
+            <if test="imageResultUrl != null">image_result_url = #{imageResultUrl},</if>
+            <if test="imageMaskUrl != null">image_mask_url = #{imageMaskUrl},</if>
+            <if test="imageAiType != null and imageAiType != ''">image_ai_type = #{imageAiType},</if>
+            <if test="imageSource != null and imageSource != ''">image_source = #{imageSource},</if>
+            <if test="imageSourceId != null">image_source_id = #{imageSourceId},</if>
+            <if test="imageWidth != null">image_width = #{imageWidth},</if>
+            <if test="imageHeight != null">image_height = #{imageHeight},</if>
+            <if test="imageSize != null">image_size = #{imageSize},</if>
+            <if test="imageFormat != null">image_format = #{imageFormat},</if>
+            <if test="parkId != null">park_id = #{parkId},</if>
+            <if test="plotId != null">plot_id = #{plotId},</if>
+            <if test="deviceId != null">device_id = #{deviceId},</if>
+            <if test="longitude != null">longitude = #{longitude},</if>
+            <if test="latitude != null">latitude = #{latitude},</if>
+            <if test="imageStatus != null">image_status = #{imageStatus},</if>
+            <if test="imageA != null">image_a = #{imageA},</if>
+            <if test="imageB != null">image_b = #{imageB},</if>
+            <if test="imageC != null">image_c = #{imageC},</if>
+            <if test="imageD != null">image_d = #{imageD},</if>
+            <if test="imageE != null">image_e = #{imageE},</if>
+            <if test="imageF != null">image_f = #{imageF},</if>
+            <if test="imageG != null">image_g = #{imageG},</if>
+            <if test="imageH != null">image_h = #{imageH},</if>
+            <if test="imageI != null">image_i = #{imageI},</if>
+            <if test="imageJ != null">image_j = #{imageJ},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where image_id = #{imageId}
+    </update>
+
+    <delete id="deleteAiImageByImageId" parameterType="Long">
+        delete from xwq_ai_image where image_id = #{imageId}
+    </delete>
+
+    <delete id="deleteAiImageByImageIds" parameterType="String">
+        delete from xwq_ai_image where image_id in 
+        <foreach item="imageId" collection="array" open="(" separator="," close=")">
+            #{imageId}
+        </foreach>
+    </delete>
+
+
+    <!-- 查询待自动识别图片 -->
+    <select id="selectPendingAutoRecognizeImages" resultMap="AiImageResult">
+        <include refid="selectAiImageVo"/>
+        where image_status = 0
+        and image_ai_type is not null
+        and image_ai_type != ''
+        order by image_id asc
+        limit #{limit}
+    </select>
+
+    <!-- 抢占图片，避免重复识别 -->
+    <update id="claimImageForRecognize">
+        update xwq_ai_image
+        set image_status = 1
+        where image_id = #{imageId}
+          and image_status = 0
+    </update>
+
+    <!-- 更新图片识别状态 -->
+    <update id="updateImageStatusById">
+        update xwq_ai_image
+        set image_status = #{imageStatus}
+        where image_id = #{imageId}
+    </update>
+
+
+    <!-- 将 image_record 中的摄像头抓拍图片同步到 xwq_ai_image，作为病虫害待识别图片 -->
+    <insert id="insertDiseaseImageFromImageRecord">
+        insert into xwq_ai_image
+        (
+            image_name,
+            image_url,
+            image_ai_type,
+            image_source,
+            image_source_id,
+            image_size,
+            image_format,
+            park_id,
+            plot_id,
+            device_id,
+            image_status,
+            image_a,
+            image_b
+        )
+        select
+            concat('camera_', r.id, '_', substring_index(r.url, '/', -1)) as image_name,
+            r.url as image_url,
+            'disease' as image_ai_type,
+            '摄像头' as image_source,
+            r.id as image_source_id,
+            r.file_size as image_size,
+            lower(substring_index(r.url, '.', -1)) as image_format,
+            a.park_id as park_id,
+            a.area_id as plot_id,
+            r.device_id as device_id,
+            0 as image_status,
+            #{cropType} as image_a,
+            cast(l.location_id as char) as image_b
+        from image_record r
+        left join iot_device d on r.device_id = d.device_id
+        left join location l on d.location_id = l.location_id
+        left join area a on l.area_id = a.area_id
+        where r.id = #{recordId}
+          and not exists (
+            select 1
+            from xwq_ai_image i
+            where i.image_source = '摄像头'
+              and i.image_source_id = r.id
+              and i.image_ai_type = 'disease'
+        )
+    </insert>
+</mapper>

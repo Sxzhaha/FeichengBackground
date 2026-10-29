@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.sxz.mapper.DiseaseImageMapper">
+    <select id="selectDiseaseImageList" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseImageVO">
+        SELECT d.disease_id AS diseaseId,
+               d.record_id AS recordId,
+               i.image_id AS imageId,
+               i.image_name AS imageName,
+               i.image_url AS imageUrl,
+               COALESCE(d.disease_result_img_url, i.image_result_url, i.image_url) AS resultImageUrl,
+               d.disease_name AS diseaseName,
+               ROUND(COALESCE(d.disease_confidence, 0) * 100, 2) AS confidence,
+               d.warning_level AS warningLevel,
+               d.disease_result AS diseaseResult,
+               d.disease_desc AS diseaseDesc,
+               d.disease_advice AS diseaseAdvice,
+               COALESCE(r.model_name, '未知模型') AS modelName,
+               COALESCE(p.park_name, '未关联园区') AS parkName,
+               COALESCE(dev.device_name, '未关联设备') AS deviceName,
+               COALESCE(d.disease_crop, r.crop_type, i.image_a, '未知作物') AS cropType,
+               r.record_mode AS recordMode,
+               task.task_id AS taskId,
+               task_item.run_id AS runId,
+               task.task_name AS taskName,
+               i.create_time AS uploadTime,
+               source.capture_time AS captureTime,
+               r.create_time AS recognitionTime
+        FROM xwq_ai_disease d
+        INNER JOIN xwq_ai_image i ON i.image_id = d.image_id
+        INNER JOIN xwq_ai_record r ON r.record_id = d.record_id
+        LEFT JOIN park p ON p.park_id = COALESCE(r.park_id, i.park_id)
+        LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+        LEFT JOIN sxz_disease_auto_task_item task_item
+               ON task_item.disease_id = d.disease_id AND task_item.item_status = 'SUCCESS'
+        LEFT JOIN sxz_disease_auto_task task ON task.task_id = task_item.task_id
+        LEFT JOIN image_record source ON source.id = task_item.source_image_id
+        <where>
+            r.record_type = '病虫害'
+            <if test="recordMode != null and recordMode != ''">
+                AND r.record_mode = #{recordMode}
+            </if>
+            <if test="imageName != null and imageName != ''">
+                AND i.image_name LIKE CONCAT('%', #{imageName}, '%')
+            </if>
+            <if test="diseaseName != null and diseaseName != ''">
+                AND d.disease_name LIKE CONCAT('%', #{diseaseName}, '%')
+            </if>
+            <if test="parkId != null">
+                AND COALESCE(r.park_id, i.park_id) = #{parkId}
+            </if>
+            <if test="taskName != null and taskName != ''">
+                AND task.task_name LIKE CONCAT('%', #{taskName}, '%')
+            </if>
+            <if test="deviceName != null and deviceName != ''">
+                AND dev.device_name LIKE CONCAT('%', #{deviceName}, '%')
+            </if>
+            <if test="beginTime != null and beginTime != ''">
+                AND r.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND r.create_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY r.create_time IS NULL, r.create_time DESC, d.disease_id DESC
+    </select>
+</mapper>

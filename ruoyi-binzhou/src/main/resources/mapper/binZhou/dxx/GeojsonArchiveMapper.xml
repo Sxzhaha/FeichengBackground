@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.dxx.mapper.GeojsonArchiveMapper">
+    
+    <resultMap type="GeojsonArchive" id="GeojsonArchiveResult">
+        <result property="archiveId"    column="archive_id"    />
+        <result property="datasetId"    column="dataset_id"    />
+        <result property="archiveName"    column="archive_name"    />
+        <result property="versionNo"    column="version_no"    />
+        <result property="originalName"    column="original_name"    />
+        <result property="filePath"    column="file_path"    />
+        <result property="fileSize"    column="file_size"    />
+        <result property="fileHash"    column="file_hash"    />
+        <result property="featureCount"    column="feature_count"    />
+        <result property="geometryType"    column="geometry_type"    />
+        <result property="coordinateSys"    column="coordinate_sys"    />
+        <result property="minLng"    column="min_lng"    />
+        <result property="minLat"    column="min_lat"    />
+        <result property="maxLng"    column="max_lng"    />
+        <result property="maxLat"    column="max_lat"    />
+        <result property="previewColor"    column="preview_color"    />
+        <result property="fillColor"    column="fill_color"    />
+        <result property="fillOpacity"    column="fill_opacity"    />
+        <result property="styleJson"    column="style_json"    />
+        <result property="isDefault"    column="is_default"    />
+        <result property="status"    column="status"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="delFlag"    column="del_flag"    />
+    </resultMap>
+
+    <sql id="selectGeojsonArchiveVo">
+        select archive_id, dataset_id, archive_name, version_no, original_name, file_path, file_size, file_hash, feature_count, geometry_type, coordinate_sys, min_lng, min_lat, max_lng, max_lat, preview_color, fill_color, fill_opacity, style_json, is_default, status, create_by, create_time, update_by, update_time, remark, del_flag from dxx_geojson_archive
+    </sql>
+
+    <select id="selectGeojsonArchiveList" parameterType="GeojsonArchive" resultMap="GeojsonArchiveResult">
+        <include refid="selectGeojsonArchiveVo"/>
+        <where>  
+            <if test="datasetId != null "> and dataset_id = #{datasetId}</if>
+            <if test="archiveName != null  and archiveName != ''"> and archive_name like concat('%', #{archiveName}, '%')</if>
+            <if test="versionNo != null  and versionNo != ''"> and version_no = #{versionNo}</if>
+            <if test="originalName != null  and originalName != ''"> and original_name like concat('%', #{originalName}, '%')</if>
+            <if test="filePath != null  and filePath != ''"> and file_path = #{filePath}</if>
+            <if test="fileSize != null "> and file_size = #{fileSize}</if>
+            <if test="fileHash != null  and fileHash != ''"> and file_hash = #{fileHash}</if>
+            <if test="featureCount != null "> and feature_count = #{featureCount}</if>
+            <if test="geometryType != null  and geometryType != ''"> and geometry_type = #{geometryType}</if>
+            <if test="coordinateSys != null  and coordinateSys != ''"> and coordinate_sys = #{coordinateSys}</if>
+            <if test="minLng != null "> and min_lng = #{minLng}</if>
+            <if test="minLat != null "> and min_lat = #{minLat}</if>
+            <if test="maxLng != null "> and max_lng = #{maxLng}</if>
+            <if test="maxLat != null "> and max_lat = #{maxLat}</if>
+            <if test="previewColor != null  and previewColor != ''"> and preview_color = #{previewColor}</if>
+            <if test="fillColor != null  and fillColor != ''"> and fill_color = #{fillColor}</if>
+            <if test="fillOpacity != null "> and fill_opacity = #{fillOpacity}</if>
+            <if test="styleJson != null  and styleJson != ''"> and style_json = #{styleJson}</if>
+            <if test="isDefault != null  and isDefault != ''"> and is_default = #{isDefault}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+        </where>
+    </select>
+    
+    <select id="selectGeojsonArchiveByArchiveId" parameterType="Long" resultMap="GeojsonArchiveResult">
+        <include refid="selectGeojsonArchiveVo"/>
+        where archive_id = #{archiveId}
+    </select>
+
+    <insert id="insertGeojsonArchive" parameterType="GeojsonArchive" useGeneratedKeys="true" keyProperty="archiveId">
+        insert into dxx_geojson_archive
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="datasetId != null">dataset_id,</if>
+            <if test="archiveName != null and archiveName != ''">archive_name,</if>
+            <if test="versionNo != null">version_no,</if>
+            <if test="originalName != null and originalName != ''">original_name,</if>
+            <if test="filePath != null and filePath != ''">file_path,</if>
+            <if test="fileSize != null">file_size,</if>
+            <if test="fileHash != null">file_hash,</if>
+            <if test="featureCount != null">feature_count,</if>
+            <if test="geometryType != null">geometry_type,</if>
+            <if test="coordinateSys != null">coordinate_sys,</if>
+            <if test="minLng != null">min_lng,</if>
+            <if test="minLat != null">min_lat,</if>
+            <if test="maxLng != null">max_lng,</if>
+            <if test="maxLat != null">max_lat,</if>
+            <if test="previewColor != null">preview_color,</if>
+            <if test="fillColor != null">fill_color,</if>
+            <if test="fillOpacity != null">fill_opacity,</if>
+            <if test="styleJson != null">style_json,</if>
+            <if test="isDefault != null">is_default,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+            <if test="delFlag != null">del_flag,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="datasetId != null">#{datasetId},</if>
+            <if test="archiveName != null and archiveName != ''">#{archiveName},</if>
+            <if test="versionNo != null">#{versionNo},</if>
+            <if test="originalName != null and originalName != ''">#{originalName},</if>
+            <if test="filePath != null and filePath != ''">#{filePath},</if>
+            <if test="fileSize != null">#{fileSize},</if>
+            <if test="fileHash != null">#{fileHash},</if>
+            <if test="featureCount != null">#{featureCount},</if>
+            <if test="geometryType != null">#{geometryType},</if>
+            <if test="coordinateSys != null">#{coordinateSys},</if>
+            <if test="minLng != null">#{minLng},</if>
+            <if test="minLat != null">#{minLat},</if>
+            <if test="maxLng != null">#{maxLng},</if>
+            <if test="maxLat != null">#{maxLat},</if>
+            <if test="previewColor != null">#{previewColor},</if>
+            <if test="fillColor != null">#{fillColor},</if>
+            <if test="fillOpacity != null">#{fillOpacity},</if>
+            <if test="styleJson != null">#{styleJson},</if>
+            <if test="isDefault != null">#{isDefault},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+         </trim>
+    </insert>
+
+    <update id="updateGeojsonArchive" parameterType="GeojsonArchive">
+        update dxx_geojson_archive
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="datasetId != null">dataset_id = #{datasetId},</if>
+            <if test="archiveName != null and archiveName != ''">archive_name = #{archiveName},</if>
+            <if test="versionNo != null">version_no = #{versionNo},</if>
+            <if test="originalName != null and originalName != ''">original_name = #{originalName},</if>
+            <if test="filePath != null and filePath != ''">file_path = #{filePath},</if>
+            <if test="fileSize != null">file_size = #{fileSize},</if>
+            <if test="fileHash != null">file_hash = #{fileHash},</if>
+            <if test="featureCount != null">feature_count = #{featureCount},</if>
+            <if test="geometryType != null">geometry_type = #{geometryType},</if>
+            <if test="coordinateSys != null">coordinate_sys = #{coordinateSys},</if>
+            <if test="minLng != null">min_lng = #{minLng},</if>
+            <if test="minLat != null">min_lat = #{minLat},</if>
+            <if test="maxLng != null">max_lng = #{maxLng},</if>
+            <if test="maxLat != null">max_lat = #{maxLat},</if>
+            <if test="previewColor != null">preview_color = #{previewColor},</if>
+            <if test="fillColor != null">fill_color = #{fillColor},</if>
+            <if test="fillOpacity != null">fill_opacity = #{fillOpacity},</if>
+            <if test="styleJson != null">style_json = #{styleJson},</if>
+            <if test="isDefault != null">is_default = #{isDefault},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+        </trim>
+        where archive_id = #{archiveId}
+    </update>
+
+    <update id="clearOtherDefaultArchive" parameterType="GeojsonArchive">
+        update dxx_geojson_archive
+        set is_default = '0'
+        where dataset_id = #{datasetId}
+          and archive_id != #{archiveId}
+          and del_flag = '0'
+          and is_default = '1'
+    </update>
+
+    <delete id="deleteGeojsonArchiveByArchiveId" parameterType="Long">
+        delete from dxx_geojson_archive where archive_id = #{archiveId}
+    </delete>
+
+    <delete id="deleteGeojsonArchiveByArchiveIds" parameterType="String">
+        delete from dxx_geojson_archive where archive_id in 
+        <foreach item="archiveId" collection="array" open="(" separator="," close=")">
+            #{archiveId}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.ld.mapper.CropVarietyMapper">
+    
+    <resultMap type="CropVariety" id="CropVarietyResult">
+        <result property="id"    column="id"    />
+        <result property="categoryId"    column="category_id"    />
+        <result property="varietyName"    column="variety_name"    />
+        <result property="approvalNumber"    column="approval_number"    />
+        <result property="approvalYear"    column="approval_year"    />
+        <result property="isGmo"    column="is_gmo"    />
+        <result property="approvalInstitution"    column="approval_institution"    />
+        <result property="breedingUnit"    column="breeding_unit"    />
+        <result property="varietySource"    column="variety_source"    />
+        <result property="suitableArea"    column="suitable_area"    />
+        <result property="characteristics"    column="characteristics"    />
+        <result property="cultivationMeasures"    column="cultivation_measures"    />
+        <result property="status"    column="status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectCropVarietyVo">
+        select id, category_id, variety_name, approval_number, approval_year, is_gmo, approval_institution, breeding_unit, variety_source, suitable_area, characteristics, cultivation_measures, status, create_time, update_time from ld_crop_variety
+    </sql>
+
+    <select id="selectCropVarietyList" parameterType="CropVariety" resultMap="CropVarietyResult">
+        <include refid="selectCropVarietyVo"/>
+        <where>  
+            <if test="categoryId != null "> and category_id = #{categoryId}</if>
+            <if test="varietyName != null  and varietyName != ''"> and variety_name like concat('%', #{varietyName}, '%')</if>
+            <if test="approvalNumber != null  and approvalNumber != ''"> and approval_number like concat('%', #{approvalNumber}, '%')</if>
+            <if test="approvalYear != null  and approvalYear != ''"> and approval_year like concat('%', #{approvalYear}, '%')</if>
+            <if test="isGmo != null "> and is_gmo = #{isGmo}</if>
+            <if test="approvalInstitution != null  and approvalInstitution != ''"> and approval_institution like concat('%', #{approvalInstitution}, '%')</if>
+            <if test="characteristics != null  and characteristics != ''"> and characteristics like concat('%', #{characteristics}, '%')</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+    </select>
+    
+    <select id="selectCropVarietyById" parameterType="Long" resultMap="CropVarietyResult">
+        <include refid="selectCropVarietyVo"/>
+        where id = #{id}
+    </select>
+
+    <!-- 🔥 添加：根据品种名称查询品种信息 -->
+    <select id="selectCropVarietyByName" parameterType="String" resultMap="CropVarietyResult">
+        <include refid="selectCropVarietyVo"/>
+        where variety_name = #{varietyName} and status = 1
+        limit 1
+    </select>
+
+    <!-- 🔥 添加：搜索品种信息 -->
+    <select id="searchCropVariety" parameterType="String" resultMap="CropVarietyResult">
+        <include refid="selectCropVarietyVo"/>
+        where status = 1
+        and (
+        variety_name like concat('%', #{keyword}, '%')
+        or characteristics like concat('%', #{keyword}, '%')
+        or suitable_area like concat('%', #{keyword}, '%')
+        or breeding_unit like concat('%', #{keyword}, '%')
+        )
+        order by
+        case when variety_name = #{keyword} then 1 else 2 end,
+        case when variety_name like concat(#{keyword}, '%') then 1 else 2 end,
+        create_time desc
+        limit 50
+    </select>
+
+    <insert id="insertCropVariety" parameterType="CropVariety" useGeneratedKeys="true" keyProperty="id">
+        insert into ld_crop_variety
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="categoryId != null">category_id,</if>
+            <if test="varietyName != null and varietyName != ''">variety_name,</if>
+            <if test="approvalNumber != null">approval_number,</if>
+            <if test="approvalYear != null">approval_year,</if>
+            <if test="isGmo != null">is_gmo,</if>
+            <if test="approvalInstitution != null">approval_institution,</if>
+            <if test="breedingUnit != null">breeding_unit,</if>
+            <if test="varietySource != null">variety_source,</if>
+            <if test="suitableArea != null">suitable_area,</if>
+            <if test="characteristics != null">characteristics,</if>
+            <if test="cultivationMeasures != null">cultivation_measures,</if>
+            <if test="status != null">status,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="categoryId != null">#{categoryId},</if>
+            <if test="varietyName != null and varietyName != ''">#{varietyName},</if>
+            <if test="approvalNumber != null">#{approvalNumber},</if>
+            <if test="approvalYear != null">#{approvalYear},</if>
+            <if test="isGmo != null">#{isGmo},</if>
+            <if test="approvalInstitution != null">#{approvalInstitution},</if>
+            <if test="breedingUnit != null">#{breedingUnit},</if>
+            <if test="varietySource != null">#{varietySource},</if>
+            <if test="suitableArea != null">#{suitableArea},</if>
+            <if test="characteristics != null">#{characteristics},</if>
+            <if test="cultivationMeasures != null">#{cultivationMeasures},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateCropVariety" parameterType="CropVariety">
+        update ld_crop_variety
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="varietyName != null and varietyName != ''">variety_name = #{varietyName},</if>
+            <if test="approvalNumber != null">approval_number = #{approvalNumber},</if>
+            <if test="approvalYear != null">approval_year = #{approvalYear},</if>
+            <if test="isGmo != null">is_gmo = #{isGmo},</if>
+            <if test="approvalInstitution != null">approval_institution = #{approvalInstitution},</if>
+            <if test="breedingUnit != null">breeding_unit = #{breedingUnit},</if>
+            <if test="varietySource != null">variety_source = #{varietySource},</if>
+            <if test="suitableArea != null">suitable_area = #{suitableArea},</if>
+            <if test="characteristics != null">characteristics = #{characteristics},</if>
+            <if test="cultivationMeasures != null">cultivation_measures = #{cultivationMeasures},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteCropVarietyById" parameterType="Long">
+        delete from ld_crop_variety where id = #{id}
+    </delete>
+
+    <delete id="deleteCropVarietyByIds" parameterType="String">
+        delete from ld_crop_variety where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

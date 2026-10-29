@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.IotProductMapper">
+    
+    <resultMap type="IotProduct" id="IotProductResult">
+        <result property="productId"    column="product_id"    />
+        <result property="productName"    column="product_name"    />
+        <result property="productKey"    column="product_key"    />
+        <result property="type"    column="type"    />
+    </resultMap>
+
+    <sql id="selectIotProductVo">
+        select product_id, product_name, product_key, `type` from iot_product
+    </sql>
+
+    <select id="selectIotProductList" parameterType="IotProduct" resultMap="IotProductResult">
+        <include refid="selectIotProductVo"/>
+        <where>  
+            <if test="productName != null  and productName != ''"> and product_name like concat('%', #{productName}, '%')</if>
+            <if test="productKey != null  and productKey != ''"> and product_key = #{productKey}</if>
+            <if test="type != null"> and `type` = #{type}</if>
+        </where>
+    </select>
+    
+    <select id="selectIotProductByProductId" parameterType="Long" resultMap="IotProductResult">
+        <include refid="selectIotProductVo"/>
+        where product_id = #{productId}
+    </select>
+
+    <insert id="insertIotProduct" parameterType="IotProduct" useGeneratedKeys="true" keyProperty="productId">
+        insert into iot_product
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="productName != null">product_name,</if>
+            <if test="productKey != null">product_key,</if>
+            <if test="type != null">`type`,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="productName != null">#{productName},</if>
+            <if test="productKey != null">#{productKey},</if>
+            <if test="type != null">#{type},</if>
+         </trim>
+    </insert>
+
+    <update id="updateIotProduct" parameterType="IotProduct">
+        update iot_product
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="productName != null">product_name = #{productName},</if>
+            <if test="productKey != null">product_key = #{productKey},</if>
+            <if test="type != null">`type` = #{type},</if>
+        </trim>
+        where product_id = #{productId}
+    </update>
+
+    <delete id="deleteIotProductByProductId" parameterType="Long">
+        delete from iot_product where product_id = #{productId}
+    </delete>
+
+    <delete id="deleteIotProductByProductIds" parameterType="String">
+        delete from iot_product where product_id in 
+        <foreach item="productId" collection="array" open="(" separator="," close=")">
+            #{productId}
+        </foreach>
+    </delete>
+</mapper>

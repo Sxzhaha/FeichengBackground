@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.IotDeviceMapper">
+
+	<resultMap type="IotDevice" id="IotDeviceResult">
+		<result property="deviceId"    column="device_id"    />
+		<result property="deviceName"  column="device_name"  />
+		<result property="deviceSn"    column="device_sn"    />
+		<result property="protocolType" column="protocol_type" />
+		<result property="status"      column="status"       />
+		<result property="lastOnlineTime" column="last_online_time" />
+		<result property="productId"   column="product_id"   />
+		<result property="productType"   column="product_type"   />
+		<result property="locationId"   column="location_id"   />
+		<result property="locationName"   column="location_name"   />
+		<result property="areaId"   column="area_id"   />
+		<result property="areaName"   column="area_name"   />
+		<result property="parkId"  column="park_id"   />
+		<result property="parkName"  column="park_name"   />
+		<result property="userId"  column="user_id"   />
+		<result property="creatorId"  column="creator_id"   />
+		<result property="createBy"    column="create_by"    />
+		<result property="createTime"  column="create_time"  />
+		<result property="updateBy"    column="update_by"    />
+		<result property="updateTime"  column="update_time"  />
+		<result property="remark"      column="remark"       />
+	</resultMap>
+
+	<sql id="selectIotDeviceVo">
+		select device_id, device_name, device_sn, protocol_type, id.status, id.creator_id,last_online_time, id.product_id, prod.`type` as product_type, id.create_by, id.create_time, id.update_by, id.update_time, id.remark,id.location_id,l.location_name,a.area_id,a.area_name,p.park_id,p.park_name,p.user_id from iot_device id
+		left join location l on id.location_id = l.location_id
+		left join area a on l.area_id = a.area_id
+		left join park p on a.park_id = p.park_id
+		left join iot_product prod on id.product_id = prod.product_id
+		left join sys_user u on p.user_id = u.user_id
+	</sql>
+
+	<select id="selectIotDeviceList" parameterType="IotDevice" resultMap="IotDeviceResult">
+		<include refid="selectIotDeviceVo"/>
+		<where>
+			<if test="deviceName != null  and deviceName != ''"> and device_name like concat('%', #{deviceName}, '%')</if>
+			<if test="deviceSn != null  and deviceSn != ''"> and device_sn = #{deviceSn}</if>
+			<if test="protocolType != null  and protocolType != ''"> and protocol_type = #{protocolType}</if>
+			<if test="status != null  and status != ''"> and id.status = #{status}</if>
+			<if test="productId != null "> and id.product_id = #{productId}</if>
+			<if test="productType != null "> and prod.`type` = #{productType}</if>
+			<if test="locationId != null "> and id.location_id = #{locationId}</if>
+			<if test="areaId != null "> and a.area_id = #{areaId}</if>
+			<if test="parkId != null "> and p.park_id = #{parkId}</if>
+			<if test="userId != null "> and p.user_id = #{userId}</if>
+			<if test="creatorId != null "> and id.creator_d = #{creatorId}</if>
+		</where>
+	</select>
+
+	<select id="selectIotDeviceByDeviceId" parameterType="Long" resultMap="IotDeviceResult">
+		<include refid="selectIotDeviceVo"/>
+		where device_id = #{deviceId}
+	</select>
+
+	<select id="selectIotDeviceBySn" parameterType="String" resultMap="IotDeviceResult">
+		<include refid="selectIotDeviceVo"/>
+		where device_sn = #{deviceSn}
+		limit 1
+	</select>
+
+	<insert id="insertIotDevice" parameterType="IotDevice" useGeneratedKeys="true" keyProperty="deviceId">
+		insert into iot_device
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="deviceName != null">device_name,</if>
+			<if test="deviceSn != null and deviceSn != ''">device_sn,</if>
+			<if test="protocolType != null">protocol_type,</if>
+			<if test="status != null">status,</if>
+			<if test="lastOnlineTime != null">last_online_time,</if>
+			<if test="productId != null">product_id,</if>
+			<if test="createBy != null">create_by,</if>
+			<if test="createTime != null">create_time,</if>
+			<if test="updateBy != null">update_by,</if>
+			<if test="updateTime != null">update_time,</if>
+			<if test="remark != null">remark,</if>
+			<if test="locationId != null">location_id,</if>
+		    <if test="creatorId != null">creator_id,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="deviceName != null">#{deviceName},</if>
+			<if test="deviceSn != null and deviceSn != ''">#{deviceSn},</if>
+			<if test="protocolType != null">#{protocolType},</if>
+			<if test="status != null">#{status},</if>
+			<if test="lastOnlineTime != null">#{lastOnlineTime},</if>
+			<if test="productId != null">#{productId},</if>
+			<if test="createBy != null">#{createBy},</if>
+			<if test="createTime != null">#{createTime},</if>
+			<if test="updateBy != null">#{updateBy},</if>
+			<if test="updateTime != null">#{updateTime},</if>
+			<if test="remark != null">#{remark},</if>
+			<if test="locationId != null">#{locationId},</if>
+			<if test="creatorId != null">#{creatorId},</if>
+		</trim>
+	</insert>
+
+	<update id="updateIotDevice" parameterType="IotDevice">
+		update iot_device
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="deviceName != null">device_name = #{deviceName},</if>
+			<if test="deviceSn != null and deviceSn != ''">device_sn = #{deviceSn},</if>
+			<if test="protocolType != null">protocol_type = #{protocolType},</if>
+			<if test="status != null">status = #{status},</if>
+			<if test="lastOnlineTime != null">last_online_time = #{lastOnlineTime},</if>
+			<if test="productId != null">product_id = #{productId},</if>
+			<if test="updateBy != null">update_by = #{updateBy},</if>
+			<if test="updateTime != null">update_time = #{updateTime},</if>
+			<if test="remark != null">remark = #{remark},</if>
+			<if test="locationId != null">location_id = #{locationId},</if>
+			<if test="creatorId != null">creator_id = #{creatorId},</if>
+		</trim>
+		where device_id = #{deviceId}
+	</update>
+
+	<update id="updateIotDeviceStatusByDeviceId">
+		update iot_device
+		set status = #{status},
+			update_time = sysdate()
+		where device_id = #{deviceId}
+	</update>
+
+	<delete id="deleteIotDeviceByDeviceId" parameterType="Long">
+		delete from iot_device where device_id = #{deviceId}
+	</delete>
+
+	<delete id="deleteIotDeviceByDeviceIds" parameterType="String">
+		delete from iot_device where device_id in
+		<foreach item="deviceId" collection="array" open="(" separator="," close=")">
+			#{deviceId}
+		</foreach>
+	</delete>
+	<update id="updateDeviceStatusTimeout" parameterType="int">
+		UPDATE iot_device
+		SET status = '0'
+		WHERE status = '1' AND product_id != 4
+		  AND last_online_time &lt; DATE_SUB(NOW(), INTERVAL #{timeoutSeconds} SECOND)
+	</update>
+	<select id="selectIotDeviceBySnCode" parameterType="String" resultMap="IotDeviceResult">
+		<include refid="selectIotDeviceVo"/>
+		where device_sn = #{snCode}
+		limit 1
+	</select>
+	<update id="updateIotDeviceStatusBySn">
+		UPDATE iot_device
+		SET status = #{status}, update_time = sysdate()
+		WHERE device_sn = #{snCode}
+	</update>
+</mapper>

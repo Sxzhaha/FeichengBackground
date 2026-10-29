@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.ld.mapper.PeachbaikeMapper">
+    
+    <resultMap type="Peachbaike" id="PeachbaikeResult">
+        <result property="varietyName"    column="variety_name"    />
+        <result property="description"    column="description"    />
+        <result property="plant"    column="plant"    />
+        <result property="mature"    column="mature"    />
+        <result property="picture"    column="picture"    />
+        <result property="character"    column="character"    />
+        <result property="id"    column="id"    />
+    </resultMap>
+
+    <sql id="selectPeachbaikeVo">
+        select variety_name, description, plant, mature, picture, `character`, id from peachbaike
+    </sql>
+
+    <select id="selectPeachbaikeList" parameterType="Peachbaike" resultMap="PeachbaikeResult">
+        <include refid="selectPeachbaikeVo"/>
+        <where>  
+            <if test="varietyName != null  and varietyName != ''"> and variety_name like concat('%', #{varietyName}, '%')</if>
+            <if test="description != null  and description != ''"> and description = #{description}</if>
+            <if test="plant != null  and plant != ''"> and plant = #{plant}</if>
+            <if test="mature != null  and mature != ''"> and mature = #{mature}</if>
+            <if test="picture != null  and picture != ''"> and picture = #{picture}</if>
+            <if test="character != null  and character != ''"> and character = #{character}</if>
+        </where>
+    </select>
+    
+    <select id="selectPeachbaikeById" parameterType="Long" resultMap="PeachbaikeResult">
+        <include refid="selectPeachbaikeVo"/>
+        where id = #{id}
+    </select>
+    <select id="selectSimplePeachbaikeList" resultType="com.ruoyi.binZhou.ld.domain.PeachbaikeSimpleVO">
+        select id, variety_name AS varietyName, picture
+        from peachbaike
+        order by id desc
+    </select>
+
+    <insert id="insertPeachbaike" parameterType="Peachbaike" useGeneratedKeys="true" keyProperty="id">
+        insert into peachbaike
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="varietyName != null">variety_name,</if>
+            <if test="description != null">description,</if>
+            <if test="plant != null">plant,</if>
+            <if test="mature != null">mature,</if>
+            <if test="picture != null">picture,</if>
+            <if test="character != null">character,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="varietyName != null">#{varietyName},</if>
+            <if test="description != null">#{description},</if>
+            <if test="plant != null">#{plant},</if>
+            <if test="mature != null">#{mature},</if>
+            <if test="picture != null">#{picture},</if>
+            <if test="character != null">#{character},</if>
+         </trim>
+    </insert>
+
+    <update id="updatePeachbaike" parameterType="Peachbaike">
+        update peachbaike
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="varietyName != null">variety_name = #{varietyName},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="plant != null">plant = #{plant},</if>
+            <if test="mature != null">mature = #{mature},</if>
+            <if test="picture != null">picture = #{picture},</if>
+            <if test="character != null">character = #{character},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePeachbaikeById" parameterType="Long">
+        delete from peachbaike where id = #{id}
+    </delete>
+
+    <delete id="deletePeachbaikeByIds" parameterType="String">
+        delete from peachbaike where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

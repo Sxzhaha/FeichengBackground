@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.LocationMapper">
+    
+    <resultMap type="Location" id="LocationResult">
+        <result property="locationId"     column="location_id"     />
+        <result property="areaId"         column="area_id"         />
+        <result property="locationName"   column="location_name"   />
+        <result property="locationCode"   column="location_code"   />
+        <result property="coordinate"     column="coordinate"     />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateTime"     column="update_time"     />
+    </resultMap>
+    
+    <sql id="selectLocationVo">
+        select location_id, area_id, location_name, location_code, coordinate, create_time, update_time 
+		from location
+    </sql>
+    
+    <select id="selectLocationById" parameterType="Long" resultMap="LocationResult">
+        <include refid="selectLocationVo"/>
+        where location_id = #{locationId}
+    </select>
+
+    <select id="selectLocationByLocationCode" parameterType="String" resultMap="LocationResult">
+        <include refid="selectLocationVo"/>
+        where location_code = #{locationCode}
+    </select>
+    
+    <select id="selectLocationList" parameterType="Location" resultMap="LocationResult">
+        <include refid="selectLocationVo"/>
+        <where>
+			<if test="areaId != null">
+				AND area_id = #{areaId}
+			</if>
+			<if test="locationName != null and locationName != ''">
+				AND location_name like concat('%', #{locationName}, '%')
+			</if>
+			<if test="locationCode != null and locationCode != ''">
+				AND location_code like concat('%', #{locationCode}, '%')
+			</if>
+		</where>
+    </select>
+
+    <select id="selectLocationListByAreaId" parameterType="Long" resultMap="LocationResult">
+        <include refid="selectLocationVo"/>
+        where area_id = #{areaId}
+    </select>
+    
+    <insert id="insertLocation" parameterType="Location" useGeneratedKeys="true" keyProperty="locationId">
+        insert into location (
+			<if test="areaId != null">area_id, </if>
+			<if test="locationName != null and locationName != '' ">location_name, </if>
+			<if test="locationCode != null and locationCode != '' ">location_code, </if>
+			<if test="coordinate != null and coordinate != '' ">coordinate, </if>
+			create_time
+ 		)values(
+			<if test="areaId != null">#{areaId}, </if>
+			<if test="locationName != null and locationName != ''">#{locationName}, </if>
+			<if test="locationCode != null and locationCode != ''">#{locationCode}, </if>
+			<if test="coordinate != null and coordinate != ''">#{coordinate}, </if>
+			sysdate()
+		)
+    </insert>
+ 	 
+    <update id="updateLocation" parameterType="Location">
+        update location 
+        <set>
+            <if test="areaId != null">area_id = #{areaId}, </if>
+            <if test="locationName != null and locationName != ''">location_name = #{locationName}, </if>
+            <if test="locationCode != null and locationCode != ''">location_code = #{locationCode}, </if>
+            <if test="coordinate != null and coordinate != ''">coordinate = #{coordinate}, </if>
+ 			update_time = sysdate()
+        </set>
+        where location_id = #{locationId}
+    </update>
+	
+    <delete id="deleteLocationById" parameterType="Long">
+        delete from location where location_id = #{locationId}
+    </delete>
+    
+    <delete id="deleteLocationByIds" parameterType="Long">
+        delete from location where location_id in 
+        <foreach item="locationId" collection="array" open="(" separator="," close=")">
+            #{locationId}
+        </foreach>
+    </delete>
+
+    <select id="checkLocationCodeUnique" parameterType="String" resultMap="LocationResult">
+        <include refid="selectLocationVo"/>
+        where location_code = #{locationCode} limit 1
+    </select>
+
+    <select id="checkLocationExistByAreaId" parameterType="Long" resultType="int">
+        select count(1) from location where area_id = #{areaId}
+    </select>
+    
+</mapper>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.IotManualControlEventMapper">
+
+    <resultMap type="IotManualControlEvent" id="IotManualControlEventResult">
+        <result property="eventId" column="event_id" />
+        <result property="deviceId" column="device_id" />
+        <result property="deviceSn" column="device_sn" />
+        <result property="targetIdentifiers" column="target_identifiers" />
+        <result property="topic" column="topic" />
+        <result property="payload" column="payload" />
+        <result property="res" column="res" />
+        <result property="responsePayload" column="response_payload" />
+        <result property="responseDesc" column="response_desc" />
+        <result property="status" column="status" />
+        <result property="sendTime" column="send_time" />
+        <result property="responseTime" column="response_time" />
+        <result property="createBy" column="create_by" />
+        <result property="createTime" column="create_time" />
+        <result property="updateBy" column="update_by" />
+        <result property="updateTime" column="update_time" />
+        <result property="remark" column="remark" />
+        <result property="deviceName" column="device_name" />
+    </resultMap>
+
+    <sql id="selectIotManualControlEventVo">
+        select e.event_id, e.device_id, e.device_sn, null as target_identifiers,
+               e.topic, e.payload, e.res, e.response_payload, e.response_desc,
+               e.status, e.send_time, e.response_time,
+               e.create_by, e.create_time, e.update_by, e.update_time, e.remark,
+               d.device_name
+        from iot_manual_control_event e
+        left join iot_device d on e.device_id = d.device_id
+    </sql>
+
+    <select id="selectIotManualControlEventList" parameterType="IotManualControlEvent" resultMap="IotManualControlEventResult">
+        <include refid="selectIotManualControlEventVo"/>
+        <where>
+            <if test="deviceId != null"> and e.device_id = #{deviceId}</if>
+            <if test="deviceSn != null and deviceSn != ''"> and e.device_sn like concat('%', #{deviceSn}, '%')</if>
+            <if test="targetIdentifiers != null and targetIdentifiers != ''"> and e.payload like concat('%', #{targetIdentifiers}, '%')</if>
+            <if test="topic != null and topic != ''"> and e.topic like concat('%', #{topic}, '%')</if>
+            <if test="res != null and res != ''"> and e.res = #{res}</if>
+            <if test="status != null"> and e.status = #{status}</if>
+            <if test="params.beginSendTime != null and params.beginSendTime != ''">
+                and date_format(e.send_time,'%Y%m%d') &gt;= date_format(#{params.beginSendTime},'%Y%m%d')
+            </if>
+            <if test="params.endSendTime != null and params.endSendTime != ''">
+                and date_format(e.send_time,'%Y%m%d') &lt;= date_format(#{params.endSendTime},'%Y%m%d')
+            </if>
+        </where>
+        order by e.event_id desc
+    </select>
+
+    <select id="selectIotManualControlEventByEventId" parameterType="Long" resultMap="IotManualControlEventResult">
+        <include refid="selectIotManualControlEventVo"/>
+        where e.event_id = #{eventId}
+    </select>
+
+    <insert id="insertIotManualControlEvent" parameterType="IotManualControlEvent" useGeneratedKeys="true" keyProperty="eventId">
+        insert into iot_manual_control_event
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="deviceId != null">device_id,</if>
+            <if test="deviceSn != null">device_sn,</if>
+            <if test="topic != null">topic,</if>
+            <if test="payload != null">payload,</if>
+            <if test="res != null">res,</if>
+            <if test="responsePayload != null">response_payload,</if>
+            <if test="responseDesc != null">response_desc,</if>
+            <if test="status != null">status,</if>
+            <if test="sendTime != null">send_time,</if>
+            <if test="responseTime != null">response_time,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="deviceId != null">#{deviceId},</if>
+            <if test="deviceSn != null">#{deviceSn},</if>
+            <if test="topic != null">#{topic},</if>
+            <if test="payload != null">#{payload},</if>
+            <if test="res != null">#{res},</if>
+            <if test="responsePayload != null">#{responsePayload},</if>
+            <if test="responseDesc != null">#{responseDesc},</if>
+            <if test="status != null">#{status},</if>
+            <if test="sendTime != null">#{sendTime},</if>
+            <if test="responseTime != null">#{responseTime},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateIotManualControlEvent" parameterType="IotManualControlEvent">
+        update iot_manual_control_event
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="deviceId != null">device_id = #{deviceId},</if>
+            <if test="deviceSn != null">device_sn = #{deviceSn},</if>
+            <if test="topic != null">topic = #{topic},</if>
+            <if test="payload != null">payload = #{payload},</if>
+            <if test="res != null">res = #{res},</if>
+            <if test="responsePayload != null">response_payload = #{responsePayload},</if>
+            <if test="responseDesc != null">response_desc = #{responseDesc},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="sendTime != null">send_time = #{sendTime},</if>
+            <if test="responseTime != null">response_time = #{responseTime},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where event_id = #{eventId}
+    </update>
+
+    <update id="updateIotManualControlEventResponseByRes">
+        update iot_manual_control_event
+        set status = 2,
+            response_payload = #{responsePayload},
+            response_desc = #{responseDesc},
+            response_time = sysdate(),
+            update_time = sysdate()
+        where device_sn = #{deviceSn}
+          and status = 1
+          and res = #{res}
+          and send_time = (
+              select max_send_time
+              from (
+                  select max(send_time) as max_send_time
+                  from iot_manual_control_event
+                  where device_sn = #{deviceSn}
+                    and status = 1
+                    and res = #{res}
+              ) t
+          )
+    </update>
+
+    <delete id="deleteIotManualControlEventByEventId" parameterType="Long">
+        delete from iot_manual_control_event where event_id = #{eventId}
+    </delete>
+
+    <delete id="deleteIotManualControlEventByEventIds" parameterType="String">
+        delete from iot_manual_control_event where event_id in
+        <foreach item="eventId" collection="array" open="(" separator="," close=")">
+            #{eventId}
+        </foreach>
+    </delete>
+</mapper>

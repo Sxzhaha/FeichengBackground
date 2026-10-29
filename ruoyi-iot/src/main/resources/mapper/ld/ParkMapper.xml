@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.ParkMapper">
+    
+    <resultMap type="Park" id="ParkResult">
+        <result property="parkId"       column="park_id"       />
+        <result property="parkName"    column="park_name"    />
+        <result property="parkCode"    column="park_code"    />
+        <result property="coordinate"  column="coordinate"   />
+        <result property="region"      column="region"       />
+        <result property="regionCode"  column="region_code"  />
+	    <result property="userId"      column="user_id"      />
+        <result property="createTime"  column="create_time"  />
+        <result property="updateTime"  column="update_time"  />
+    </resultMap>
+    
+    <sql id="selectParkVo">
+        select park_id, park_name, park_code, coordinate, region, region_code, create_time, update_time, user_id
+		from park
+    </sql>
+    
+    <select id="selectParkById" parameterType="Long" resultMap="ParkResult">
+        <include refid="selectParkVo"/>
+        where park_id = #{parkId}
+    </select>
+
+    <select id="selectParkByParkCode" parameterType="String" resultMap="ParkResult">
+        <include refid="selectParkVo"/>
+        where park_code = #{parkCode}
+    </select>
+    
+    <select id="selectParkList" parameterType="Park" resultMap="ParkResult">
+        <include refid="selectParkVo"/>
+        <where>
+			<if test="parkName != null and parkName != ''">
+				AND park_name like concat('%', #{parkName}, '%')
+			</if>
+	        <if test="userId != null">
+		        AND user_id = #{userId}
+	        </if>
+			<if test="parkCode != null and parkCode != ''">
+				AND park_code like concat('%', #{parkCode}, '%')
+			</if>
+
+		</where>
+    </select>
+    
+    <insert id="insertPark" parameterType="Park" useGeneratedKeys="true" keyProperty="parkId">
+        insert into park (
+			<if test="parkName != null and parkName != '' ">park_name, </if>
+			<if test="parkCode != null and parkCode != '' ">park_code, </if>
+			<if test="coordinate != null and coordinate != '' ">coordinate, </if>
+			<if test="region != null and region != '' ">region, </if>
+			<if test="regionCode != null and regionCode != '' ">region_code, </if>
+	    	<if test="userId != null and userId != '' ">user_id, </if>
+			create_time
+ 		)values(
+			<if test="parkName != null and parkName != ''">#{parkName}, </if>
+			<if test="parkCode != null and parkCode != ''">#{parkCode}, </if>
+			<if test="coordinate != null and coordinate != ''">#{coordinate}, </if>
+			<if test="region != null and region != ''">#{region}, </if>
+			<if test="regionCode != null and regionCode != ''">#{regionCode}, </if>
+	    	<if test="userId != null and userId != '' ">#{userId}, </if>
+			sysdate()
+		)
+    </insert>
+ 	 
+    <update id="updatePark" parameterType="Park">
+        update park 
+        <set>
+            <if test="parkName != null and parkName != ''">park_name = #{parkName}, </if>
+            <if test="parkCode != null and parkCode != ''">park_code = #{parkCode}, </if>
+            <if test="coordinate != null and coordinate != ''">coordinate = #{coordinate}, </if>
+            <if test="region != null and region != ''">region = #{region}, </if>
+            <if test="regionCode != null and regionCode != ''">region_code = #{regionCode}, </if>
+	        <if test="userId != null and userId != '' ">user_id = #{userId}, </if>
+ 			update_time = sysdate()
+        </set>
+        where park_id = #{parkId}
+    </update>
+	
+    <delete id="deleteParkById" parameterType="Long">
+        delete from park where park_id = #{parkId}
+    </delete>
+    
+    <delete id="deleteParkByIds" parameterType="Long">
+        delete from park where park_id in 
+        <foreach item="parkId" collection="array" open="(" separator="," close=")">
+            #{parkId}
+        </foreach>
+    </delete>
+
+    <select id="checkParkNameUnique" parameterType="String" resultMap="ParkResult">
+        <include refid="selectParkVo"/>
+        where park_name = #{parkName} limit 1
+    </select>
+
+    <select id="checkParkCodeUnique" parameterType="String" resultMap="ParkResult">
+        <include refid="selectParkVo"/>
+        where park_code = #{parkCode} limit 1
+    </select>
+    
+</mapper>

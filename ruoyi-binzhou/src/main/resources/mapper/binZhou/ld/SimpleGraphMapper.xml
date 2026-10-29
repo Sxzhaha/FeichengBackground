@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.ld.mapper.SimpleGraphMapper">
+
+    <delete id="clearKnowledgeRelations">
+        DELETE FROM ld_knowledge_relations
+    </delete>
+
+    <delete id="clearKnowledgeNodes">
+        DELETE FROM ld_knowledge_nodes
+    </delete>
+
+    <insert id="generateCropNodes">
+        INSERT INTO ld_knowledge_nodes (node_id, node_name, node_type, description, create_time)
+        SELECT CONCAT('crop_', id), name, 'crop', description, NOW() FROM ld_crop_category
+    </insert>
+
+    <insert id="generateVarietyNodes">
+        INSERT INTO ld_knowledge_nodes (node_id, node_name, node_type, parent_id, description, create_time)
+        SELECT CONCAT('variety_', cv.id), cv.variety_name, 'variety', CONCAT('crop_', cv.category_id),
+               CONCAT(COALESCE(cv.breeding_unit, '未知'), '选育，', COALESCE(cv.approval_year, ''), '年审定'), NOW()
+        FROM ld_crop_variety cv WHERE cv.status = 1
+    </insert>
+
+    <select id="selectCropVarietiesForFeatures" resultType="map">
+        SELECT id, variety_name, characteristics FROM ld_crop_variety WHERE status = 1 AND characteristics IS NOT NULL
+    </select>
+
+    <select id="getMaxFeatureId" resultType="java.lang.Integer">
+        SELECT COALESCE(MAX(CAST(SUBSTRING(node_id, 9) AS UNSIGNED)), 0)
+        FROM ld_knowledge_nodes WHERE node_id LIKE 'feature_%'
+    </select>
+
+    <select id="checkNodeExists" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM ld_knowledge_nodes WHERE node_id = #{nodeId}
+    </select>
+
+    <insert id="insertFeatureNode">
+        INSERT INTO ld_knowledge_nodes (node_id, node_name, node_type, parent_id, description, create_time)
+        VALUES (#{nodeId}, #{nodeName}, 'feature', #{parentId}, #{description}, NOW())
+    </insert>
+
+    <insert id="generateCropVarietyRelations">
+        INSERT INTO ld_knowledge_relations (source_node_id, target_node_id, relation_type, relation_label, create_time)
+        SELECT CONCAT('crop_', cv.category_id), CONCAT('variety_', cv.id), '包含', '品种', NOW()
+        FROM ld_crop_variety cv WHERE cv.status = 1
+    </insert>
+
+    <insert id="generateVarietyFeatureRelations">
+        INSERT INTO ld_knowledge_relations (source_node_id, target_node_id, relation_type, relation_label, create_time)
+        SELECT kn1.node_id, kn2.node_id, '具有', '特征', NOW()
+        FROM ld_knowledge_nodes kn1
+        JOIN ld_knowledge_nodes kn2 ON kn1.node_id = kn2.parent_id
+        WHERE kn1.node_type = 'variety' AND kn2.node_type = 'feature'
+    </insert>
+
+    <select id="selectNodeById" parameterType="String" resultType="map">
+        SELECT node_id as id, node_name as name, node_type as type, description, 3 as level 
+        FROM ld_knowledge_nodes 
+        WHERE node_id = #{nodeId}
+    </select>
+
+    <select id="selectNodesByParentIdAndType" resultType="map">
+        SELECT node_id as id, node_name as name, node_type as type, description, 2 as level 
+        FROM ld_knowledge_nodes 
+        WHERE node_type = #{nodeType} AND parent_id = #{parentId}
+        ORDER BY node_name
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <select id="selectNodesByParentIdsAndType" resultType="map">
+        SELECT node_id as id, node_name as name, node_type as type, description, 1 as level 
+        FROM ld_knowledge_nodes 
+        WHERE node_type = #{nodeType} 
+        AND parent_id IN 
+        <foreach item="item" collection="parentIds" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="selectSiblingVarietyNodes" resultType="map">
+        SELECT node_id as id, node_name as name, node_type as type, description, 2 as level 
+        FROM ld_knowledge_nodes 
+        WHERE node_type = 'variety' AND parent_id = #{parentId} AND node_id != #{excludeNodeId}
+        ORDER BY node_name
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectVarietyAndParentCropNodes" parameterType="String" resultType="map">
+        SELECT kn.node_id as id, kn.node_name as name, kn.node_type as type, kn.description, 
+               CASE WHEN kn.node_type = 'crop' THEN 3 WHEN kn.node_type = 'variety' THEN 2 ELSE 1 END as level, 
+               kn.parent_id 
+        FROM ld_knowledge_nodes kn 
+        WHERE kn.node_id = #{centerNode} 
+        OR kn.node_id = (SELECT parent_id FROM ld_knowledge_nodes WHERE node_id = #{centerNode})
+    </select>
+
+    <select id="selectGraphLinks" parameterType="String" resultType="map">
+        SELECT kr.source_node_id as source, kr.target_node_id as target, kr.relation_type as type, kr.relation_label as label 
+        FROM ld_knowledge_relations kr 
+        WHERE kr.source_node_id = #{centerNode} OR kr.target_node_id = #{centerNode} 
+        OR kr.source_node_id IN (SELECT target_node_id FROM ld_knowledge_relations WHERE source_node_id = #{centerNode})
+    </select>
+
+    <select id="selectSuggestions" parameterType="String" resultType="map">
+        SELECT cv.id, cv.variety_name, cv.category_id, cc.name as crop_name 
+        FROM ld_crop_variety cv 
+        LEFT JOIN ld_crop_category cc ON cv.category_id = cc.id 
+        WHERE cv.variety_name LIKE CONCAT('%', #{keyword}, '%') AND cv.status = 1 
+        ORDER BY cv.variety_name 
+        LIMIT 10
+    </select>
+
+    <select id="selectOneCropVarietyByName" parameterType="String" resultType="map">
+        SELECT cv.id, cv.variety_name, cv.category_id 
+        FROM ld_crop_variety cv 
+        WHERE cv.variety_name LIKE CONCAT('%', #{keyword}, '%') AND cv.status = 1 
+        LIMIT 1
+    </select>
+
+    <select id="selectNodeDetail" parameterType="String" resultType="map">
+        SELECT node_id as nodeId, node_name as nodeName, node_type as nodeType, description, 
+               CASE WHEN node_type = 'variety' THEN SUBSTRING(node_id, 9) ELSE NULL END as varietyId 
+        FROM ld_knowledge_nodes 
+        WHERE node_id = #{nodeId}
+    </select>
+
+</mapper>

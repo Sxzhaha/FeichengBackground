@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.binZhou.wr.mapper.WarningRecordMapper">
+
+    <resultMap type="WarningRecord" id="WarningRecordResult">
+        <result property="id" column="id"/>
+        <result property="taskId" column="task_id"/>
+        <result property="taskName" column="task_name"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="deviceName" column="device_name"/>
+        <result property="responsibleUserId" column="responsible_user_id"/>
+        <result property="roleName" column="role_name"/>
+        <result property="warningType" column="warning_type"/>
+        <result property="warningLevel" column="warning_level"/>
+        <result property="indicatorCode" column="indicator_code"/>
+        <result property="currentValue" column="current_value"/>
+        <result property="aiSuggestion" column="ai_suggestion"/>
+        <result property="aiResultJson" column="ai_result_json"/>
+        <result property="warningTime" column="warning_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectWarningRecordVo">
+        select
+            r.id,
+            r.task_id,
+            k.task_name,
+            r.device_id,
+            d.device_name,
+            r.responsible_user_id,
+            sr.role_name,
+            r.warning_type,
+            r.warning_level,
+            r.indicator_code,
+            r.current_value,
+            r.ai_suggestion,
+            r.ai_result_json,
+            r.warning_time,
+            r.create_time,
+            r.update_time
+        from wr_warning_record r
+                 left join wr_warning_task k
+                           on r.task_id = k.id
+                 left join iot_device d
+                           on r.device_id = d.device_id
+                 left join sys_role sr
+                           on r.responsible_user_id = sr.role_id
+    </sql>
+
+    <!-- 预警记录列表查询 -->
+    <select id="selectWarningRecordList"
+            parameterType="WarningRecord"
+            resultMap="WarningRecordResult">
+
+        <include refid="selectWarningRecordVo"/>
+
+        <where>
+            <if test="taskId != null">
+                and r.task_id = #{taskId}
+            </if>
+
+            <if test="deviceId != null">
+                and r.device_id = #{deviceId}
+            </if>
+
+            <if test="responsibleUserId != null">
+                and r.responsible_user_id = #{responsibleUserId}
+            </if>
+
+            <if test="warningType != null and warningType != ''">
+                and r.warning_type = #{warningType}
+            </if>
+
+            <if test="warningLevel != null and warningLevel != ''">
+                and r.warning_level = #{warningLevel}
+            </if>
+
+            <if test="indicatorCode != null and indicatorCode != ''">
+                and r.indicator_code = #{indicatorCode}
+            </if>
+
+            <if test="currentValue != null">
+                and r.current_value = #{currentValue}
+            </if>
+
+            <if test="aiSuggestion != null and aiSuggestion != ''">
+                and r.ai_suggestion like concat('%', #{aiSuggestion}, '%')
+            </if>
+
+            <if test="aiResultJson != null and aiResultJson != ''">
+                and r.ai_result_json = #{aiResultJson}
+            </if>
+
+            <!-- 精确时间查询 -->
+            <if test="warningTime != null">
+                and r.warning_time = #{warningTime}
+            </if>
+
+            <!-- 本周、本月开始时间 -->
+            <if test="params != null
+                    and params.beginTime != null
+                    and params.beginTime != ''">
+                and r.warning_time <![CDATA[ >= ]]> #{params.beginTime}
+            </if>
+
+            <!-- 本周、本月结束时间 -->
+            <if test="params != null
+                    and params.endTime != null
+                    and params.endTime != ''">
+                and r.warning_time <![CDATA[ <= ]]> #{params.endTime}
+            </if>
+        </where>
+
+        order by r.warning_time desc, r.id desc
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectWarningRecordById"
+            parameterType="Long"
+            resultMap="WarningRecordResult">
+
+        <include refid="selectWarningRecordVo"/>
+
+        where r.id = #{id}
+    </select>
+
+
+    <!-- 查询任务所属园区的最新实时气象指标值，设备关系无效时回退到模板园区 -->
+    <select id="selectLatestWeatherLiveValue" resultType="java.math.BigDecimal">
+        select
+        <choose>
+            <when test="indicatorCode == 'AIR_TEMP'">
+                w.temperature
+            </when>
+            <when test="indicatorCode == 'AIR_HUMIDITY'">
+                w.humidity
+            </when>
+            <when test="indicatorCode == 'WIND_SPEED'">
+                round(w.wind_speed / 3.6, 2)
+            </when>
+            <otherwise>
+                null
+            </otherwise>
+        </choose>
+        from ld_agri_weather_live w
+        where w.park_id = coalesce(
+            (
+                select a.park_id
+                from iot_device d
+                inner join location l on l.location_id = d.location_id
+                inner join area a on a.area_id = l.area_id
+                where d.device_id = #{deviceId}
+                limit 1
+            ),
+            (
+                select t.park_id
+                from wr_warning_template t
+                where t.id = #{templateId}
+                limit 1
+            )
+        )
+          and w.report_time is not null
+        order by w.report_time desc, w.id desc
+        limit 1
+    </select>
+    <!-- 新增预警记录 -->
+    <insert id="insertWarningRecord"
+            parameterType="WarningRecord"
+            useGeneratedKeys="true"
+            keyProperty="id">
+
+        insert into wr_warning_record
+
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="taskId != null">
+                task_id,
+            </if>
+
+            <if test="deviceId != null">
+                device_id,
+            </if>
+
+            <if test="responsibleUserId != null">
+                responsible_user_id,
+            </if>
+
+            <if test="warningType != null">
+                warning_type,
+            </if>
+
+            <if test="warningLevel != null">
+                warning_level,
+            </if>
+
+            <if test="indicatorCode != null and indicatorCode != ''">
+                indicator_code,
+            </if>
+
+            <if test="currentValue != null">
+                current_value,
+            </if>
+
+            <if test="aiSuggestion != null">
+                ai_suggestion,
+            </if>
+
+            <if test="aiResultJson != null">
+                ai_result_json,
+            </if>
+
+            <if test="warningTime != null">
+                warning_time,
+            </if>
+
+            <if test="createTime != null">
+                create_time,
+            </if>
+
+            <if test="updateTime != null">
+                update_time,
+            </if>
+        </trim>
+
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="taskId != null">
+                #{taskId},
+            </if>
+
+            <if test="deviceId != null">
+                #{deviceId},
+            </if>
+
+            <if test="responsibleUserId != null">
+                #{responsibleUserId},
+            </if>
+
+            <if test="warningType != null">
+                #{warningType},
+            </if>
+
+            <if test="warningLevel != null">
+                #{warningLevel},
+            </if>
+
+            <if test="indicatorCode != null and indicatorCode != ''">
+                #{indicatorCode},
+            </if>
+
+            <if test="currentValue != null">
+                #{currentValue},
+            </if>
+
+            <if test="aiSuggestion != null">
+                #{aiSuggestion},
+            </if>
+
+            <if test="aiResultJson != null">
+                #{aiResultJson},
+            </if>
+
+            <if test="warningTime != null">
+                #{warningTime},
+            </if>
+
+            <if test="createTime != null">
+                #{createTime},
+            </if>
+
+            <if test="updateTime != null">
+                #{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <!-- 修改预警记录 -->
+    <update id="updateWarningRecord"
+            parameterType="WarningRecord">
+
+        update wr_warning_record
+
+        <trim prefix="set" suffixOverrides=",">
+            <if test="taskId != null">
+                task_id = #{taskId},
+            </if>
+
+            <if test="deviceId != null">
+                device_id = #{deviceId},
+            </if>
+
+            <if test="responsibleUserId != null">
+                responsible_user_id = #{responsibleUserId},
+            </if>
+
+            <if test="warningType != null">
+                warning_type = #{warningType},
+            </if>
+
+            <if test="warningLevel != null">
+                warning_level = #{warningLevel},
+            </if>
+
+            <if test="indicatorCode != null and indicatorCode != ''">
+                indicator_code = #{indicatorCode},
+            </if>
+
+            <if test="currentValue != null">
+                current_value = #{currentValue},
+            </if>
+
+            <if test="aiSuggestion != null">
+                ai_suggestion = #{aiSuggestion},
+            </if>
+
+            <if test="aiResultJson != null">
+                ai_result_json = #{aiResultJson},
+            </if>
+
+            <if test="warningTime != null">
+                warning_time = #{warningTime},
+            </if>
+
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </trim>
+
+        where id = #{id}
+    </update>
+
+    <!-- 删除单条预警记录 -->
+    <delete id="deleteWarningRecordById" parameterType="Long">
+        delete from wr_warning_record
+        where id = #{id}
+    </delete>
+
+    <!-- 批量删除预警记录 -->
+    <delete id="deleteWarningRecordByIds" parameterType="String">
+        delete from wr_warning_record
+        where id in
+
+        <foreach
+                item="id"
+                collection="array"
+                open="("
+                separator=","
+                close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

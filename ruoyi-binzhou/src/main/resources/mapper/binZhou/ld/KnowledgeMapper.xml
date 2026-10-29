@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.ld.mapper.KnowledgeMapper">
+    
+    <resultMap type="Knowledge" id="KnowledgeResult">
+        <result property="id"    column="id"    />
+        <result property="plusDsiCategoryfirst"    column="plus_dsi_categoryfirst"    />
+        <result property="plusDsiCategorysecond"    column="plus_dsi_categorysecond"    />
+        <result property="plusDsiCategorythird"    column="plus_dsi_categorythird"    />
+        <result property="plusDsiName"    column="plus_dsi_name"    />
+        <result property="disPestType"    column="dis_pest_type"    />
+        <result property="plusDsiNameeng"    column="plus_dsi_nameeng"    />
+        <result property="plusDsiSynonyms"    column="plus_dsi_synonyms"    />
+        <result property="plusDsiIntroduction"    column="plus_dsi_introduction"    />
+        <result property="plusDsiPath"    column="plus_dsi_path"    />
+        <result property="plusDsiDamagesym"    column="plus_dsi_damagesym"    />
+        <result property="plusDsiPathogen"    column="plus_dsi_pathogen"    />
+        <result property="plusDsiCycle"    column="plus_dsi_cycle"    />
+        <result property="plusDsiOfactor"    column="plus_dsi_ofactor"    />
+        <result property="plusDsiMorphology"    column="plus_dsi_morphology"    />
+        <result property="plusDsiHabits"    column="plus_dsi_habits"    />
+        <result property="plusDsiCmethod"    column="plus_dsi_cmethod"    />
+        <result property="createdAt"    column="created_at"    />
+        <result property="createdBy"    column="created_by"    />
+        <result property="lastupdatedAt"    column="lastupdated_at"    />
+        <result property="lastupdatedBy"    column="lastupdated_by"    />
+        <result property="deletedAt"    column="deleted_at"    />
+        <result property="deletedBy"    column="deleted_by"    />
+        <result property="isdeleted"    column="isdeleted"    />
+        <result property="timestamp"    column="timestamp"    />
+        <result property="companyid"    column="companyid"    />
+        <result property="organizeid"    column="organizeid"    />
+        <result property="provice"    column="provice"    />
+        <result property="proviceCode"    column="provice_code"    />
+        <result property="city"    column="city"    />
+        <result property="cityCode"    column="city_code"    />
+        <result property="district"    column="district"    />
+        <result property="districtCode"    column="district_code"    />
+    </resultMap>
+    <resultMap id="KnowledgeCategoryResultMap" type="com.ruoyi.binZhou.ld.domain.KnowledgeCategory">
+        <result property="firstLevel" column="plus_dsi_categoryfirst"/>
+        <result property="secondLevel" column="plus_dsi_categorysecond"/>
+        <result property="thirdLevel" column="plus_dsi_categorythird"/>
+    </resultMap>
+
+
+
+    <sql id="selectKnowledgeVo">
+        select id, plus_dsi_categoryfirst, plus_dsi_categorysecond, plus_dsi_categorythird, plus_dsi_name, dis_pest_type, plus_dsi_nameeng, plus_dsi_synonyms, plus_dsi_introduction, plus_dsi_path, plus_dsi_damagesym, plus_dsi_pathogen, plus_dsi_cycle, plus_dsi_ofactor, plus_dsi_morphology, plus_dsi_habits, plus_dsi_cmethod, created_at, created_by, lastupdated_at, lastupdated_by, deleted_at, deleted_by, isdeleted, timestamp, companyid, organizeid, provice, provice_code, city, city_code, district, district_code from knowledge
+    </sql>
+    <select id="findAllCategories" resultMap="KnowledgeCategoryResultMap">
+        SELECT DISTINCT
+            plus_dsi_categoryfirst,
+            plus_dsi_categorysecond,
+            plus_dsi_categorythird
+        FROM knowledge
+        WHERE isdeleted = 0
+        ORDER BY plus_dsi_categoryfirst, plus_dsi_categorysecond, plus_dsi_categorythird
+    </select>
+    <select id="selectKnowledgeList" parameterType="Knowledge" resultMap="KnowledgeResult">
+        <include refid="selectKnowledgeVo"/>
+        <where>  
+            <if test="plusDsiCategoryfirst != null  and plusDsiCategoryfirst != ''"> and plus_dsi_categoryfirst = #{plusDsiCategoryfirst}</if>
+            <if test="plusDsiCategorysecond != null  and plusDsiCategorysecond != ''"> and plus_dsi_categorysecond = #{plusDsiCategorysecond}</if>
+            <if test="plusDsiCategorythird != null  and plusDsiCategorythird != ''"> and plus_dsi_categorythird = #{plusDsiCategorythird}</if>
+            <if test="plusDsiName != null  and plusDsiName != ''"> and plus_dsi_name like concat('%', #{plusDsiName}, '%')</if>
+            <if test="disPestType != null "> and dis_pest_type = #{disPestType}</if>
+            <if test="plusDsiNameeng != null  and plusDsiNameeng != ''"> and plus_dsi_nameeng = #{plusDsiNameeng}</if>
+            <if test="plusDsiSynonyms != null  and plusDsiSynonyms != ''"> and plus_dsi_synonyms = #{plusDsiSynonyms}</if>
+            <if test="plusDsiIntroduction != null  and plusDsiIntroduction != ''"> and plus_dsi_introduction = #{plusDsiIntroduction}</if>
+            <if test="plusDsiPath != null  and plusDsiPath != ''"> and plus_dsi_path = #{plusDsiPath}</if>
+            <if test="plusDsiDamagesym != null  and plusDsiDamagesym != ''"> and plus_dsi_damagesym = #{plusDsiDamagesym}</if>
+            <if test="plusDsiPathogen != null  and plusDsiPathogen != ''"> and plus_dsi_pathogen = #{plusDsiPathogen}</if>
+            <if test="plusDsiCycle != null  and plusDsiCycle != ''"> and plus_dsi_cycle = #{plusDsiCycle}</if>
+            <if test="plusDsiOfactor != null  and plusDsiOfactor != ''"> and plus_dsi_ofactor = #{plusDsiOfactor}</if>
+            <if test="plusDsiMorphology != null  and plusDsiMorphology != ''"> and plus_dsi_morphology = #{plusDsiMorphology}</if>
+            <if test="plusDsiHabits != null  and plusDsiHabits != ''"> and plus_dsi_habits = #{plusDsiHabits}</if>
+            <if test="plusDsiCmethod != null  and plusDsiCmethod != ''"> and plus_dsi_cmethod = #{plusDsiCmethod}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+            <if test="createdBy != null  and createdBy != ''"> and created_by = #{createdBy}</if>
+            <if test="lastupdatedAt != null "> and lastupdated_at = #{lastupdatedAt}</if>
+            <if test="lastupdatedBy != null  and lastupdatedBy != ''"> and lastupdated_by = #{lastupdatedBy}</if>
+            <if test="deletedAt != null "> and deleted_at = #{deletedAt}</if>
+            <if test="deletedBy != null  and deletedBy != ''"> and deleted_by = #{deletedBy}</if>
+            <if test="isdeleted != null "> and isdeleted = #{isdeleted}</if>
+            <if test="timestamp != null "> and timestamp = #{timestamp}</if>
+            <if test="companyid != null  and companyid != ''"> and companyid = #{companyid}</if>
+            <if test="organizeid != null  and organizeid != ''"> and organizeid = #{organizeid}</if>
+            <if test="provice != null  and provice != ''"> and provice = #{provice}</if>
+            <if test="proviceCode != null  and proviceCode != ''"> and provice_code = #{proviceCode}</if>
+            <if test="city != null  and city != ''"> and city = #{city}</if>
+            <if test="cityCode != null  and cityCode != ''"> and city_code = #{cityCode}</if>
+            <if test="district != null  and district != ''"> and district = #{district}</if>
+            <if test="districtCode != null  and districtCode != ''"> and district_code = #{districtCode}</if>
+        </where>
+    </select>
+    
+    <select id="selectKnowledgeById" parameterType="Long" resultMap="KnowledgeResult">
+        <include refid="selectKnowledgeVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertKnowledge" parameterType="Knowledge" useGeneratedKeys="true" keyProperty="id">
+        insert into knowledge
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="plusDsiCategoryfirst != null and plusDsiCategoryfirst != ''">plus_dsi_categoryfirst,</if>
+            <if test="plusDsiCategorysecond != null and plusDsiCategorysecond != ''">plus_dsi_categorysecond,</if>
+            <if test="plusDsiCategorythird != null and plusDsiCategorythird != ''">plus_dsi_categorythird,</if>
+            <if test="plusDsiName != null and plusDsiName != ''">plus_dsi_name,</if>
+            <if test="disPestType != null">dis_pest_type,</if>
+            <if test="plusDsiNameeng != null">plus_dsi_nameeng,</if>
+            <if test="plusDsiSynonyms != null">plus_dsi_synonyms,</if>
+            <if test="plusDsiIntroduction != null">plus_dsi_introduction,</if>
+            <if test="plusDsiPath != null">plus_dsi_path,</if>
+            <if test="plusDsiDamagesym != null">plus_dsi_damagesym,</if>
+            <if test="plusDsiPathogen != null">plus_dsi_pathogen,</if>
+            <if test="plusDsiCycle != null">plus_dsi_cycle,</if>
+            <if test="plusDsiOfactor != null">plus_dsi_ofactor,</if>
+            <if test="plusDsiMorphology != null">plus_dsi_morphology,</if>
+            <if test="plusDsiHabits != null">plus_dsi_habits,</if>
+            <if test="plusDsiCmethod != null">plus_dsi_cmethod,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="createdBy != null">created_by,</if>
+            <if test="lastupdatedAt != null">lastupdated_at,</if>
+            <if test="lastupdatedBy != null">lastupdated_by,</if>
+            <if test="deletedAt != null">deleted_at,</if>
+            <if test="deletedBy != null">deleted_by,</if>
+            <if test="isdeleted != null">isdeleted,</if>
+            <if test="timestamp != null">timestamp,</if>
+            <if test="companyid != null">companyid,</if>
+            <if test="organizeid != null">organizeid,</if>
+            <if test="provice != null">provice,</if>
+            <if test="proviceCode != null">provice_code,</if>
+            <if test="city != null">city,</if>
+            <if test="cityCode != null">city_code,</if>
+            <if test="district != null">district,</if>
+            <if test="districtCode != null">district_code,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="plusDsiCategoryfirst != null and plusDsiCategoryfirst != ''">#{plusDsiCategoryfirst},</if>
+            <if test="plusDsiCategorysecond != null and plusDsiCategorysecond != ''">#{plusDsiCategorysecond},</if>
+            <if test="plusDsiCategorythird != null and plusDsiCategorythird != ''">#{plusDsiCategorythird},</if>
+            <if test="plusDsiName != null and plusDsiName != ''">#{plusDsiName},</if>
+            <if test="disPestType != null">#{disPestType},</if>
+            <if test="plusDsiNameeng != null">#{plusDsiNameeng},</if>
+            <if test="plusDsiSynonyms != null">#{plusDsiSynonyms},</if>
+            <if test="plusDsiIntroduction != null">#{plusDsiIntroduction},</if>
+            <if test="plusDsiPath != null">#{plusDsiPath},</if>
+            <if test="plusDsiDamagesym != null">#{plusDsiDamagesym},</if>
+            <if test="plusDsiPathogen != null">#{plusDsiPathogen},</if>
+            <if test="plusDsiCycle != null">#{plusDsiCycle},</if>
+            <if test="plusDsiOfactor != null">#{plusDsiOfactor},</if>
+            <if test="plusDsiMorphology != null">#{plusDsiMorphology},</if>
+            <if test="plusDsiHabits != null">#{plusDsiHabits},</if>
+            <if test="plusDsiCmethod != null">#{plusDsiCmethod},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="createdBy != null">#{createdBy},</if>
+            <if test="lastupdatedAt != null">#{lastupdatedAt},</if>
+            <if test="lastupdatedBy != null">#{lastupdatedBy},</if>
+            <if test="deletedAt != null">#{deletedAt},</if>
+            <if test="deletedBy != null">#{deletedBy},</if>
+            <if test="isdeleted != null">#{isdeleted},</if>
+            <if test="timestamp != null">#{timestamp},</if>
+            <if test="companyid != null">#{companyid},</if>
+            <if test="organizeid != null">#{organizeid},</if>
+            <if test="provice != null">#{provice},</if>
+            <if test="proviceCode != null">#{proviceCode},</if>
+            <if test="city != null">#{city},</if>
+            <if test="cityCode != null">#{cityCode},</if>
+            <if test="district != null">#{district},</if>
+            <if test="districtCode != null">#{districtCode},</if>
+         </trim>
+    </insert>
+
+    <update id="updateKnowledge" parameterType="Knowledge">
+        update knowledge
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="plusDsiCategoryfirst != null and plusDsiCategoryfirst != ''">plus_dsi_categoryfirst = #{plusDsiCategoryfirst},</if>
+            <if test="plusDsiCategorysecond != null and plusDsiCategorysecond != ''">plus_dsi_categorysecond = #{plusDsiCategorysecond},</if>
+            <if test="plusDsiCategorythird != null and plusDsiCategorythird != ''">plus_dsi_categorythird = #{plusDsiCategorythird},</if>
+            <if test="plusDsiName != null and plusDsiName != ''">plus_dsi_name = #{plusDsiName},</if>
+            <if test="disPestType != null">dis_pest_type = #{disPestType},</if>
+            <if test="plusDsiNameeng != null">plus_dsi_nameeng = #{plusDsiNameeng},</if>
+            <if test="plusDsiSynonyms != null">plus_dsi_synonyms = #{plusDsiSynonyms},</if>
+            <if test="plusDsiIntroduction != null">plus_dsi_introduction = #{plusDsiIntroduction},</if>
+            <if test="plusDsiPath != null">plus_dsi_path = #{plusDsiPath},</if>
+            <if test="plusDsiDamagesym != null">plus_dsi_damagesym = #{plusDsiDamagesym},</if>
+            <if test="plusDsiPathogen != null">plus_dsi_pathogen = #{plusDsiPathogen},</if>
+            <if test="plusDsiCycle != null">plus_dsi_cycle = #{plusDsiCycle},</if>
+            <if test="plusDsiOfactor != null">plus_dsi_ofactor = #{plusDsiOfactor},</if>
+            <if test="plusDsiMorphology != null">plus_dsi_morphology = #{plusDsiMorphology},</if>
+            <if test="plusDsiHabits != null">plus_dsi_habits = #{plusDsiHabits},</if>
+            <if test="plusDsiCmethod != null">plus_dsi_cmethod = #{plusDsiCmethod},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="createdBy != null">created_by = #{createdBy},</if>
+            <if test="lastupdatedAt != null">lastupdated_at = #{lastupdatedAt},</if>
+            <if test="lastupdatedBy != null">lastupdated_by = #{lastupdatedBy},</if>
+            <if test="deletedAt != null">deleted_at = #{deletedAt},</if>
+            <if test="deletedBy != null">deleted_by = #{deletedBy},</if>
+            <if test="isdeleted != null">isdeleted = #{isdeleted},</if>
+            <if test="timestamp != null">timestamp = #{timestamp},</if>
+            <if test="companyid != null">companyid = #{companyid},</if>
+            <if test="organizeid != null">organizeid = #{organizeid},</if>
+            <if test="provice != null">provice = #{provice},</if>
+            <if test="proviceCode != null">provice_code = #{proviceCode},</if>
+            <if test="city != null">city = #{city},</if>
+            <if test="cityCode != null">city_code = #{cityCode},</if>
+            <if test="district != null">district = #{district},</if>
+            <if test="districtCode != null">district_code = #{districtCode},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteKnowledgeById" parameterType="Long">
+        delete from knowledge where id = #{id}
+    </delete>
+
+    <delete id="deleteKnowledgeByIds" parameterType="String">
+        delete from knowledge where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="getKnowledgeMenuByLikeName" parameterType="String" resultType="java.lang.String">
+       select distinct plus_dsi_categorythird from knowledge where plus_dsi_categorythird like concat('%',#{name},'%')
+    </select>
+</mapper>

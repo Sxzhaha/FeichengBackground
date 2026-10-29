@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.xwq.mapper.AiPestMapper">
+
+    <resultMap type="AiPest" id="AiPestResult">
+        <result property="pestId"    column="pest_id"    />
+        <result property="recordId"    column="record_id"    />
+        <result property="imageId"    column="image_id"    />
+        <result property="pestName"    column="pest_name"    />
+        <result property="pestCode"    column="pest_code"    />
+        <result property="pestCrop"    column="pest_crop"    />
+        <result property="pestConfidence"    column="pest_confidence"    />
+        <result property="pestCount"    column="pest_count"    />
+        <result property="pestTotalCount"    column="pest_total_count"    />
+        <result property="pestResult"    column="pest_result"    />
+        <result property="pestAdvice"    column="pest_advice"    />
+        <result property="pestResultImgUrl"    column="pest_result_img_url"    />
+        <result property="bboxJson"    column="bbox_json"    />
+        <result property="isWarning"    column="is_warning"    />
+        <result property="warningLevel"    column="warning_level"    />
+        <result property="imageName"    column="image_name"    />
+        <result property="imageUrl"    column="image_url"    />
+        <result property="recordNo"    column="record_no"    />
+        <result property="recordMode"    column="record_mode"    />
+        <result property="recordStatus"    column="record_status"    />
+        <result property="parkId"    column="park_id"    />
+        <result property="areaId"    column="area_id"    />
+        <result property="locationId"    column="location_id"    />
+        <result property="deviceId"    column="device_id"    />
+        <result property="parkName"    column="park_name"    />
+        <result property="areaName"    column="area_name"    />
+        <result property="locationName"    column="location_name"    />
+        <result property="deviceName"    column="device_name"    />
+        <result property="pestA"    column="pest_a"    />
+        <result property="pestB"    column="pest_b"    />
+        <result property="pestC"    column="pest_c"    />
+        <result property="pestD"    column="pest_d"    />
+        <result property="pestE"    column="pest_e"    />
+        <result property="pestF"    column="pest_f"    />
+        <result property="pestG"    column="pest_g"    />
+        <result property="pestH"    column="pest_h"    />
+        <result property="pestI"    column="pest_i"    />
+        <result property="pestJ"    column="pest_j"    />
+    </resultMap>
+
+    <sql id="selectAiPestVo">
+        select pest_id, record_id, image_id, pest_name, pest_code, pest_crop, pest_confidence, pest_count, pest_total_count, pest_result, pest_advice, pest_result_img_url, bbox_json, is_warning, warning_level, pest_a, pest_b, pest_c, pest_d, pest_e, pest_f, pest_g, pest_h, pest_i, pest_j from xwq_ai_pest
+    </sql>
+
+    <select id="selectAiPestList" parameterType="AiPest" resultMap="AiPestResult">
+        select
+        p.pest_id,
+        p.record_id,
+        p.image_id,
+        p.pest_name,
+        p.pest_code,
+        p.pest_crop,
+        p.pest_confidence,
+        p.pest_count,
+        p.pest_total_count,
+        p.pest_result,
+        p.pest_advice,
+        p.pest_result_img_url,
+        p.bbox_json,
+        p.is_warning,
+        p.warning_level,
+        p.pest_a,
+        p.pest_b,
+        p.pest_c,
+        p.pest_d,
+        p.pest_e,
+        p.pest_f,
+        p.pest_g,
+        p.pest_h,
+        p.pest_i,
+        p.pest_j,
+
+        img.image_name,
+        img.image_url,
+        coalesce(r.park_id, img.park_id) as park_id,
+        coalesce(r.plot_id, img.plot_id) as area_id,
+        img.image_b as location_id,
+        coalesce(r.device_id, img.device_id) as device_id,
+
+        r.record_no,
+        r.record_mode,
+        r.record_status,
+
+        pk.park_name,
+        a.area_name,
+        l.location_name,
+        d.device_name
+        from xwq_ai_pest p
+        left join xwq_ai_image img on img.image_id = p.image_id
+        left join xwq_ai_record r on r.record_id = p.record_id
+        left join iot_device d on img.device_id = d.device_id
+        left join location l on img.image_b = cast(l.location_id as char)
+        left join area a on img.plot_id = a.area_id
+        left join park pk on coalesce(r.park_id, img.park_id) = pk.park_id
+        <where>
+            <if test="params != null and params.pestIds != null and params.pestIds.size() > 0">
+                and p.pest_id in
+                <foreach item="pestId" collection="params.pestIds" open="(" separator="," close=")">
+                    #{pestId}
+                </foreach>
+            </if>
+            <if test="recordId != null"> and p.record_id = #{recordId}</if>
+            <if test="imageId != null"> and p.image_id = #{imageId}</if>
+            <if test="pestName != null and pestName != ''"> and p.pest_name like concat('%', #{pestName}, '%')</if>
+            <if test="pestCode != null and pestCode != ''"> and p.pest_code = #{pestCode}</if>
+            <if test="pestCrop != null and pestCrop != ''"> and p.pest_crop = #{pestCrop}</if>
+            <if test="pestConfidence != null"> and p.pest_confidence = #{pestConfidence}</if>
+            <if test="pestCount != null"> and p.pest_count = #{pestCount}</if>
+            <if test="pestTotalCount != null"> and p.pest_total_count = #{pestTotalCount}</if>
+            <if test="pestResult != null and pestResult != ''"> and p.pest_result = #{pestResult}</if>
+            <if test="pestAdvice != null and pestAdvice != ''"> and p.pest_advice = #{pestAdvice}</if>
+            <if test="isWarning != null"> and p.is_warning = #{isWarning}</if>
+            <if test="warningLevel != null and warningLevel != ''"> and p.warning_level = #{warningLevel}</if>
+            <if test="pestA != null and pestA != ''"> and p.pest_a = #{pestA}</if>
+
+            <if test="parkId != null"> and coalesce(r.park_id, img.park_id) = #{parkId}</if>
+            <if test="areaId != null"> and coalesce(r.plot_id, img.plot_id) = #{areaId}</if>
+            <if test="locationId != null and locationId != ''"> and img.image_b = #{locationId}</if>
+            <if test="deviceId != null"> and img.device_id = #{deviceId}</if>
+            <if test="params != null and params.startDate != null and params.startDate != ''">
+                and str_to_date(left(p.pest_a, 10), '%Y-%m-%d')
+                    &gt;= str_to_date(#{params.startDate}, '%Y-%m-%d')
+            </if>
+            <if test="params != null and params.endDate != null and params.endDate != ''">
+                and str_to_date(left(p.pest_a, 10), '%Y-%m-%d')
+                    &lt;= str_to_date(#{params.endDate}, '%Y-%m-%d')
+            </if>
+        </where>
+        order by p.pest_id desc
+    </select>
+
+    <select id="selectAiPestByPestId" parameterType="Long" resultMap="AiPestResult">
+        <include refid="selectAiPestVo"/>
+        where pest_id = #{pestId}
+    </select>
+
+    <select id="selectPestHistoryTrend" parameterType="map" resultType="map">
+        select
+            date_format(str_to_date(left(p.pest_a, 10), '%Y-%m-%d'), '%m-%d') as dateLabel,
+            ifnull(sum(p.pest_total_count), 0) as pestCount
+        from xwq_ai_pest p
+        left join xwq_ai_image img on img.image_id = p.image_id
+        left join xwq_ai_record r on r.record_id = p.record_id
+        <where>
+            p.pest_a is not null
+            and p.pest_a != ''
+            and str_to_date(left(p.pest_a, 10), '%Y-%m-%d') &gt;= date_sub(curdate(), interval 6 day)
+            <if test="parkId != null"> and coalesce(r.park_id, img.park_id) = #{parkId}</if>
+            <if test="areaId != null"> and coalesce(r.plot_id, img.plot_id) = #{areaId}</if>
+            <if test="locationId != null and locationId != ''"> and img.image_b = #{locationId}</if>
+            <if test="deviceId != null"> and img.device_id = #{deviceId}</if>
+            <if test="pestName != null and pestName != ''"> and p.pest_name = #{pestName}</if>
+        </where>
+        group by date_format(str_to_date(left(p.pest_a, 10), '%Y-%m-%d'), '%m-%d')
+        order by min(str_to_date(left(p.pest_a, 10), '%Y-%m-%d')) asc
+    </select>
+
+    <insert id="insertAiPest" parameterType="AiPest" useGeneratedKeys="true" keyProperty="pestId">
+        insert into xwq_ai_pest
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="recordId != null">record_id,</if>
+            <if test="imageId != null">image_id,</if>
+            <if test="pestName != null and pestName != ''">pest_name,</if>
+            <if test="pestCode != null">pest_code,</if>
+            <if test="pestCrop != null">pest_crop,</if>
+            <if test="pestConfidence != null">pest_confidence,</if>
+            <if test="pestCount != null">pest_count,</if>
+            <if test="pestTotalCount != null">pest_total_count,</if>
+            <if test="pestResult != null">pest_result,</if>
+            <if test="pestAdvice != null">pest_advice,</if>
+            <if test="pestResultImgUrl != null">pest_result_img_url,</if>
+            <if test="bboxJson != null">bbox_json,</if>
+            <if test="isWarning != null">is_warning,</if>
+            <if test="warningLevel != null">warning_level,</if>
+            <if test="pestA != null">pest_a,</if>
+            <if test="pestB != null">pest_b,</if>
+            <if test="pestC != null">pest_c,</if>
+            <if test="pestD != null">pest_d,</if>
+            <if test="pestE != null">pest_e,</if>
+            <if test="pestF != null">pest_f,</if>
+            <if test="pestG != null">pest_g,</if>
+            <if test="pestH != null">pest_h,</if>
+            <if test="pestI != null">pest_i,</if>
+            <if test="pestJ != null">pest_j,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="recordId != null">#{recordId},</if>
+            <if test="imageId != null">#{imageId},</if>
+            <if test="pestName != null and pestName != ''">#{pestName},</if>
+            <if test="pestCode != null">#{pestCode},</if>
+            <if test="pestCrop != null">#{pestCrop},</if>
+            <if test="pestConfidence != null">#{pestConfidence},</if>
+            <if test="pestCount != null">#{pestCount},</if>
+            <if test="pestTotalCount != null">#{pestTotalCount},</if>
+            <if test="pestResult != null">#{pestResult},</if>
+            <if test="pestAdvice != null">#{pestAdvice},</if>
+            <if test="pestResultImgUrl != null">#{pestResultImgUrl},</if>
+            <if test="bboxJson != null">#{bboxJson},</if>
+            <if test="isWarning != null">#{isWarning},</if>
+            <if test="warningLevel != null">#{warningLevel},</if>
+            <if test="pestA != null">#{pestA},</if>
+            <if test="pestB != null">#{pestB},</if>
+            <if test="pestC != null">#{pestC},</if>
+            <if test="pestD != null">#{pestD},</if>
+            <if test="pestE != null">#{pestE},</if>
+            <if test="pestF != null">#{pestF},</if>
+            <if test="pestG != null">#{pestG},</if>
+            <if test="pestH != null">#{pestH},</if>
+            <if test="pestI != null">#{pestI},</if>
+            <if test="pestJ != null">#{pestJ},</if>
+        </trim>
+    </insert>
+
+    <update id="updateAiPest" parameterType="AiPest">
+        update xwq_ai_pest
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="recordId != null">record_id = #{recordId},</if>
+            <if test="imageId != null">image_id = #{imageId},</if>
+            <if test="pestName != null and pestName != ''">pest_name = #{pestName},</if>
+            <if test="pestCode != null">pest_code = #{pestCode},</if>
+            <if test="pestCrop != null">pest_crop = #{pestCrop},</if>
+            <if test="pestConfidence != null">pest_confidence = #{pestConfidence},</if>
+            <if test="pestCount != null">pest_count = #{pestCount},</if>
+            <if test="pestTotalCount != null">pest_total_count = #{pestTotalCount},</if>
+            <if test="pestResult != null">pest_result = #{pestResult},</if>
+            <if test="pestAdvice != null">pest_advice = #{pestAdvice},</if>
+            <if test="pestResultImgUrl != null">pest_result_img_url = #{pestResultImgUrl},</if>
+            <if test="bboxJson != null">bbox_json = #{bboxJson},</if>
+            <if test="isWarning != null">is_warning = #{isWarning},</if>
+            <if test="warningLevel != null">warning_level = #{warningLevel},</if>
+            <if test="pestA != null">pest_a = #{pestA},</if>
+            <if test="pestB != null">pest_b = #{pestB},</if>
+            <if test="pestC != null">pest_c = #{pestC},</if>
+            <if test="pestD != null">pest_d = #{pestD},</if>
+            <if test="pestE != null">pest_e = #{pestE},</if>
+            <if test="pestF != null">pest_f = #{pestF},</if>
+            <if test="pestG != null">pest_g = #{pestG},</if>
+            <if test="pestH != null">pest_h = #{pestH},</if>
+            <if test="pestI != null">pest_i = #{pestI},</if>
+            <if test="pestJ != null">pest_j = #{pestJ},</if>
+        </trim>
+        where pest_id = #{pestId}
+    </update>
+
+    <delete id="deleteAiPestByPestId" parameterType="Long">
+        delete from xwq_ai_pest where pest_id = #{pestId}
+    </delete>
+
+    <delete id="deleteAiPestByPestIds" parameterType="String">
+        delete from xwq_ai_pest where pest_id in
+        <foreach item="pestId" collection="array" open="(" separator="," close=")">
+            #{pestId}
+        </foreach>
+    </delete>
+</mapper>

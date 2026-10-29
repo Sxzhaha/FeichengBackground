@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.xwq.mapper.AiKeyMapper">
+    
+    <resultMap type="AiKey" id="AiKeyResult">
+        <result property="keyId"    column="key_id"    />
+        <result property="keyName"    column="key_name"    />
+        <result property="keyProviderName"    column="key_provider_name"    />
+        <result property="keyApiKey"    column="key_api_key"    />
+        <result property="keySecret"    column="key_secret"    />
+        <result property="keyBaseUrl"    column="key_base_url"    />
+        <result property="keyModelId"    column="key_model_id"    />
+        <result property="keyA"    column="key_a"    />
+        <result property="keyB"    column="key_b"    />
+        <result property="keyC"    column="key_c"    />
+        <result property="keyD"    column="key_d"    />
+        <result property="keyE"    column="key_e"    />
+        <result property="keyF"    column="key_f"    />
+        <result property="keyG"    column="key_g"    />
+        <result property="keyH"    column="key_h"    />
+        <result property="keyI"    column="key_i"    />
+        <result property="keyJ"    column="key_j"    />
+    </resultMap>
+
+    <sql id="selectAiKeyVo">
+        select key_id, key_name, key_provider_name, key_api_key, key_secret, key_base_url, key_model_id, key_a, key_b, key_c, key_d, key_e, key_f, key_g, key_h, key_i, key_j from xwq_ai_key
+    </sql>
+
+    <select id="selectAiKeyList" parameterType="AiKey" resultMap="AiKeyResult">
+        <include refid="selectAiKeyVo"/>
+        <where>  
+            <if test="keyName != null  and keyName != ''"> and key_name like concat('%', #{keyName}, '%')</if>
+            <if test="keyProviderName != null  and keyProviderName != ''"> and key_provider_name like concat('%', #{keyProviderName}, '%')</if>
+            <if test="keyApiKey != null  and keyApiKey != ''"> and key_api_key = #{keyApiKey}</if>
+            <if test="keySecret != null  and keySecret != ''"> and key_secret = #{keySecret}</if>
+            <if test="keyBaseUrl != null  and keyBaseUrl != ''"> and key_base_url = #{keyBaseUrl}</if>
+            <if test="keyModelId != null "> and key_model_id = #{keyModelId}</if>
+            <if test="keyA != null  and keyA != ''"> and key_a = #{keyA}</if>
+            <if test="keyB != null  and keyB != ''"> and key_b = #{keyB}</if>
+            <if test="keyC != null  and keyC != ''"> and key_c = #{keyC}</if>
+            <if test="keyD != null  and keyD != ''"> and key_d = #{keyD}</if>
+            <if test="keyE != null  and keyE != ''"> and key_e = #{keyE}</if>
+            <if test="keyF != null  and keyF != ''"> and key_f = #{keyF}</if>
+            <if test="keyG != null  and keyG != ''"> and key_g = #{keyG}</if>
+            <if test="keyH != null  and keyH != ''"> and key_h = #{keyH}</if>
+            <if test="keyI != null  and keyI != ''"> and key_i = #{keyI}</if>
+            <if test="keyJ != null  and keyJ != ''"> and key_j = #{keyJ}</if>
+        </where>
+    </select>
+    
+    <select id="selectAiKeyByKeyId" parameterType="Long" resultMap="AiKeyResult">
+        <include refid="selectAiKeyVo"/>
+        where key_id = #{keyId}
+    </select>
+
+    <insert id="insertAiKey" parameterType="AiKey" useGeneratedKeys="true" keyProperty="keyId">
+        insert into xwq_ai_key
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="keyName != null and keyName != ''">key_name,</if>
+            <if test="keyProviderName != null">key_provider_name,</if>
+            <if test="keyApiKey != null">key_api_key,</if>
+            <if test="keySecret != null">key_secret,</if>
+            <if test="keyBaseUrl != null">key_base_url,</if>
+            <if test="keyModelId != null">key_model_id,</if>
+            <if test="keyA != null">key_a,</if>
+            <if test="keyB != null">key_b,</if>
+            <if test="keyC != null">key_c,</if>
+            <if test="keyD != null">key_d,</if>
+            <if test="keyE != null">key_e,</if>
+            <if test="keyF != null">key_f,</if>
+            <if test="keyG != null">key_g,</if>
+            <if test="keyH != null">key_h,</if>
+            <if test="keyI != null">key_i,</if>
+            <if test="keyJ != null">key_j,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="keyName != null and keyName != ''">#{keyName},</if>
+            <if test="keyProviderName != null">#{keyProviderName},</if>
+            <if test="keyApiKey != null">#{keyApiKey},</if>
+            <if test="keySecret != null">#{keySecret},</if>
+            <if test="keyBaseUrl != null">#{keyBaseUrl},</if>
+            <if test="keyModelId != null">#{keyModelId},</if>
+            <if test="keyA != null">#{keyA},</if>
+            <if test="keyB != null">#{keyB},</if>
+            <if test="keyC != null">#{keyC},</if>
+            <if test="keyD != null">#{keyD},</if>
+            <if test="keyE != null">#{keyE},</if>
+            <if test="keyF != null">#{keyF},</if>
+            <if test="keyG != null">#{keyG},</if>
+            <if test="keyH != null">#{keyH},</if>
+            <if test="keyI != null">#{keyI},</if>
+            <if test="keyJ != null">#{keyJ},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAiKey" parameterType="AiKey">
+        update xwq_ai_key
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="keyName != null and keyName != ''">key_name = #{keyName},</if>
+            <if test="keyProviderName != null">key_provider_name = #{keyProviderName},</if>
+            <if test="keyApiKey != null">key_api_key = #{keyApiKey},</if>
+            <if test="keySecret != null">key_secret = #{keySecret},</if>
+            <if test="keyBaseUrl != null">key_base_url = #{keyBaseUrl},</if>
+            <if test="keyModelId != null">key_model_id = #{keyModelId},</if>
+            <if test="keyA != null">key_a = #{keyA},</if>
+            <if test="keyB != null">key_b = #{keyB},</if>
+            <if test="keyC != null">key_c = #{keyC},</if>
+            <if test="keyD != null">key_d = #{keyD},</if>
+            <if test="keyE != null">key_e = #{keyE},</if>
+            <if test="keyF != null">key_f = #{keyF},</if>
+            <if test="keyG != null">key_g = #{keyG},</if>
+            <if test="keyH != null">key_h = #{keyH},</if>
+            <if test="keyI != null">key_i = #{keyI},</if>
+            <if test="keyJ != null">key_j = #{keyJ},</if>
+        </trim>
+        where key_id = #{keyId}
+    </update>
+
+    <delete id="deleteAiKeyByKeyId" parameterType="Long">
+        delete from xwq_ai_key where key_id = #{keyId}
+    </delete>
+
+    <delete id="deleteAiKeyByKeyIds" parameterType="String">
+        delete from xwq_ai_key where key_id in 
+        <foreach item="keyId" collection="array" open="(" separator="," close=")">
+            #{keyId}
+        </foreach>
+    </delete>
+</mapper>

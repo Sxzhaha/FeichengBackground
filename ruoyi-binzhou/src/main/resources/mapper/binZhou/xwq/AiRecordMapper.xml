@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.xwq.mapper.AiRecordMapper">
+    
+    <resultMap type="AiRecord" id="AiRecordResult">
+        <result property="recordId"    column="record_id"    />
+        <result property="recordNo"    column="record_no"    />
+        <result property="recordType"    column="record_type"    />
+        <result property="recordMode"    column="record_mode"    />
+        <result property="modelId"    column="model_id"    />
+        <result property="modelName"    column="model_name"    />
+        <result property="imageId"    column="image_id"    />
+        <result property="cropType"    column="crop_type"    />
+        <result property="deviceId"    column="device_id"    />
+        <result property="parkId"    column="park_id"    />
+        <result property="plotId"    column="plot_id"    />
+        <result property="recordStatus"    column="record_status"    />
+        <result property="recordA"    column="record_a"    />
+        <result property="recordB"    column="record_b"    />
+        <result property="recordC"    column="record_c"    />
+        <result property="recordD"    column="record_d"    />
+        <result property="recordE"    column="record_e"    />
+        <result property="recordF"    column="record_f"    />
+        <result property="recordG"    column="record_g"    />
+        <result property="recordH"    column="record_h"    />
+        <result property="recordI"    column="record_i"    />
+        <result property="recordJ"    column="record_j"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"  column="create_time"  />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"  column="update_time"  />
+        <result property="remark"      column="remark"       />
+    </resultMap>
+
+    <sql id="selectAiRecordVo">
+        select record_id, record_no, record_type, record_mode, model_id, model_name, image_id, crop_type, device_id, park_id, plot_id, record_status, record_a, record_b, record_c, record_d, record_e, record_f, record_g, record_h, record_i, record_j, create_by, create_time, update_by, update_time, remark from xwq_ai_record
+    </sql>
+
+    <select id="selectAiRecordList" parameterType="AiRecord" resultMap="AiRecordResult">
+        <include refid="selectAiRecordVo"/>
+        <where>  
+            <if test="recordNo != null  and recordNo != ''"> and record_no = #{recordNo}</if>
+            <if test="recordType != null  and recordType != ''"> and record_type = #{recordType}</if>
+            <if test="recordMode != null  and recordMode != ''"> and record_mode = #{recordMode}</if>
+            <if test="modelId != null "> and model_id = #{modelId}</if>
+            <if test="modelName != null  and modelName != ''"> and model_name like concat('%', #{modelName}, '%')</if>
+            <if test="imageId != null "> and image_id = #{imageId}</if>
+            <if test="cropType != null  and cropType != ''"> and crop_type = #{cropType}</if>
+            <if test="deviceId != null "> and device_id = #{deviceId}</if>
+            <if test="parkId != null "> and park_id = #{parkId}</if>
+            <if test="plotId != null "> and plot_id = #{plotId}</if>
+            <if test="recordStatus != null "> and record_status = #{recordStatus}</if>
+            <if test="recordA != null  and recordA != ''"> and record_a = #{recordA}</if>
+            <if test="recordB != null  and recordB != ''"> and record_b = #{recordB}</if>
+            <if test="recordC != null  and recordC != ''"> and record_c = #{recordC}</if>
+            <if test="recordD != null  and recordD != ''"> and record_d = #{recordD}</if>
+            <if test="recordE != null  and recordE != ''"> and record_e = #{recordE}</if>
+            <if test="recordF != null  and recordF != ''"> and record_f = #{recordF}</if>
+            <if test="recordG != null  and recordG != ''"> and record_g = #{recordG}</if>
+            <if test="recordH != null  and recordH != ''"> and record_h = #{recordH}</if>
+            <if test="recordI != null  and recordI != ''"> and record_i = #{recordI}</if>
+            <if test="recordJ != null  and recordJ != ''"> and record_j = #{recordJ}</if>
+        </where>
+    </select>
+    
+    <select id="selectAiRecordByRecordId" parameterType="Long" resultMap="AiRecordResult">
+        <include refid="selectAiRecordVo"/>
+        where record_id = #{recordId}
+    </select>
+
+    <insert id="insertAiRecord" parameterType="AiRecord" useGeneratedKeys="true" keyProperty="recordId">
+        insert into xwq_ai_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="recordNo != null and recordNo != ''">record_no,</if>
+            <if test="recordType != null and recordType != ''">record_type,</if>
+            <if test="recordMode != null and recordMode != ''">record_mode,</if>
+            <if test="modelId != null">model_id,</if>
+            <if test="modelName != null">model_name,</if>
+            <if test="imageId != null">image_id,</if>
+            <if test="cropType != null">crop_type,</if>
+            <if test="deviceId != null">device_id,</if>
+            <if test="parkId != null">park_id,</if>
+            <if test="plotId != null">plot_id,</if>
+            <if test="recordStatus != null">record_status,</if>
+            <if test="recordA != null">record_a,</if>
+            <if test="recordB != null">record_b,</if>
+            <if test="recordC != null">record_c,</if>
+            <if test="recordD != null">record_d,</if>
+            <if test="recordE != null">record_e,</if>
+            <if test="recordF != null">record_f,</if>
+            <if test="recordG != null">record_g,</if>
+            <if test="recordH != null">record_h,</if>
+            <if test="recordI != null">record_i,</if>
+            <if test="recordJ != null">record_j,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="recordNo != null and recordNo != ''">#{recordNo},</if>
+            <if test="recordType != null and recordType != ''">#{recordType},</if>
+            <if test="recordMode != null and recordMode != ''">#{recordMode},</if>
+            <if test="modelId != null">#{modelId},</if>
+            <if test="modelName != null">#{modelName},</if>
+            <if test="imageId != null">#{imageId},</if>
+            <if test="cropType != null">#{cropType},</if>
+            <if test="deviceId != null">#{deviceId},</if>
+            <if test="parkId != null">#{parkId},</if>
+            <if test="plotId != null">#{plotId},</if>
+            <if test="recordStatus != null">#{recordStatus},</if>
+            <if test="recordA != null">#{recordA},</if>
+            <if test="recordB != null">#{recordB},</if>
+            <if test="recordC != null">#{recordC},</if>
+            <if test="recordD != null">#{recordD},</if>
+            <if test="recordE != null">#{recordE},</if>
+            <if test="recordF != null">#{recordF},</if>
+            <if test="recordG != null">#{recordG},</if>
+            <if test="recordH != null">#{recordH},</if>
+            <if test="recordI != null">#{recordI},</if>
+            <if test="recordJ != null">#{recordJ},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAiRecord" parameterType="AiRecord">
+        update xwq_ai_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="recordNo != null and recordNo != ''">record_no = #{recordNo},</if>
+            <if test="recordType != null and recordType != ''">record_type = #{recordType},</if>
+            <if test="recordMode != null and recordMode != ''">record_mode = #{recordMode},</if>
+            <if test="modelId != null">model_id = #{modelId},</if>
+            <if test="modelName != null">model_name = #{modelName},</if>
+            <if test="imageId != null">image_id = #{imageId},</if>
+            <if test="cropType != null">crop_type = #{cropType},</if>
+            <if test="deviceId != null">device_id = #{deviceId},</if>
+            <if test="parkId != null">park_id = #{parkId},</if>
+            <if test="plotId != null">plot_id = #{plotId},</if>
+            <if test="recordStatus != null">record_status = #{recordStatus},</if>
+            <if test="recordA != null">record_a = #{recordA},</if>
+            <if test="recordB != null">record_b = #{recordB},</if>
+            <if test="recordC != null">record_c = #{recordC},</if>
+            <if test="recordD != null">record_d = #{recordD},</if>
+            <if test="recordE != null">record_e = #{recordE},</if>
+            <if test="recordF != null">record_f = #{recordF},</if>
+            <if test="recordG != null">record_g = #{recordG},</if>
+            <if test="recordH != null">record_h = #{recordH},</if>
+            <if test="recordI != null">record_i = #{recordI},</if>
+            <if test="recordJ != null">record_j = #{recordJ},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where record_id = #{recordId}
+    </update>
+
+    <delete id="deleteAiRecordByRecordId" parameterType="Long">
+        delete from xwq_ai_record where record_id = #{recordId}
+    </delete>
+
+    <delete id="deleteAiRecordByRecordIds" parameterType="String">
+        delete from xwq_ai_record where record_id in 
+        <foreach item="recordId" collection="array" open="(" separator="," close=")">
+            #{recordId}
+        </foreach>
+    </delete>
+</mapper>

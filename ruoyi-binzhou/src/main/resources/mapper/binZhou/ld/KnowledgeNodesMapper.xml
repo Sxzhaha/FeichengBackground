@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.ld.mapper.KnowledgeNodesMapper">
+    
+    <resultMap type="KnowledgeNodes" id="KnowledgeNodesResult">
+        <result property="id"    column="id"    />
+        <result property="nodeId"    column="node_id"    />
+        <result property="nodeName"    column="node_name"    />
+        <result property="nodeType"    column="node_type"    />
+        <result property="parentId"    column="parent_id"    />
+        <result property="description"    column="description"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectKnowledgeNodesVo">
+        select id, node_id, node_name, node_type, parent_id, description, create_time from ld_knowledge_nodes
+    </sql>
+
+    <select id="selectKnowledgeNodesList" parameterType="KnowledgeNodes" resultMap="KnowledgeNodesResult">
+        <include refid="selectKnowledgeNodesVo"/>
+        <where>  
+            <if test="nodeId != null  and nodeId != ''"> and node_id = #{nodeId}</if>
+            <if test="nodeName != null  and nodeName != ''"> and node_name like concat('%', #{nodeName}, '%')</if>
+            <if test="nodeType != null  and nodeType != ''"> and node_type = #{nodeType}</if>
+            <if test="parentId != null  and parentId != ''"> and parent_id = #{parentId}</if>
+            <if test="description != null  and description != ''"> and description = #{description}</if>
+        </where>
+    </select>
+    
+    <select id="selectKnowledgeNodesById" parameterType="Long" resultMap="KnowledgeNodesResult">
+        <include refid="selectKnowledgeNodesVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertKnowledgeNodes" parameterType="KnowledgeNodes" useGeneratedKeys="true" keyProperty="id">
+        insert into ld_knowledge_nodes
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="nodeId != null and nodeId != ''">node_id,</if>
+            <if test="nodeName != null and nodeName != ''">node_name,</if>
+            <if test="nodeType != null and nodeType != ''">node_type,</if>
+            <if test="parentId != null and parentId != ''">parent_id,</if>
+            <if test="description != null">description,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="nodeId != null and nodeId != ''">#{nodeId},</if>
+            <if test="nodeName != null and nodeName != ''">#{nodeName},</if>
+            <if test="nodeType != null and nodeType != ''">#{nodeType},</if>
+            <if test="parentId != null and parentId != ''">#{parentId},</if>
+            <if test="description != null">#{description},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateKnowledgeNodes" parameterType="KnowledgeNodes">
+        update ld_knowledge_nodes
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="nodeId != null and nodeId != ''">node_id = #{nodeId},</if>
+            <if test="nodeName != null and nodeName != ''">node_name = #{nodeName},</if>
+            <if test="nodeType != null and nodeType != ''">node_type = #{nodeType},</if>
+            <if test="parentId != null and parentId != ''">parent_id = #{parentId},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteKnowledgeNodesById" parameterType="Long">
+        delete from ld_knowledge_nodes where id = #{id}
+    </delete>
+
+    <delete id="deleteKnowledgeNodesByIds" parameterType="String">
+        delete from ld_knowledge_nodes where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

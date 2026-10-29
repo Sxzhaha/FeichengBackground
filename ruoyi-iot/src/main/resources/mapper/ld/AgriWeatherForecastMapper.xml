@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.AgriWeatherForecastMapper">
+    
+    <resultMap type="AgriWeatherForecast" id="AgriWeatherForecastResult">
+        <result property="id"    column="id"    />
+        <result property="parkId"    column="park_id"    />
+        <result property="fetchTime"    column="fetch_time"    />
+        <result property="forecastDate"    column="forecast_date"    />
+        <result property="tempMax"    column="temp_max"    />
+        <result property="tempMin"    column="temp_min"    />
+        <result property="humidityAvg"    column="humidity_avg"    />
+        <result property="windDirDay"    column="wind_dir_day"    />
+        <result property="windScaleDay"    column="wind_scale_day"    />
+        <result property="precipTotal"    column="precip_total"    />
+        <result property="precipProb"    column="precip_prob"    />
+        <result property="weatherTextDay"    column="weather_text_day"    />
+        <result property="weatherTextNight"    column="weather_text_night"    />
+        <result property="dayCode"    column="day_code"    />
+        <result property="moonCode"    column="moon_code"    />
+        <result property="forecastType"    column="forecast_type"    />
+        <result property="remark1"    column="remark1"    />
+        <result property="remark2"    column="remark2"    />
+    </resultMap>
+
+    <sql id="selectAgriWeatherForecastVo">
+        select id, park_id, fetch_time, forecast_date, temp_max, temp_min, humidity_avg, wind_dir_day, wind_scale_day, precip_total, precip_prob, weather_text_day, weather_text_night, day_code, moon_code, forecast_type, remark1, remark2 from ld_agri_weather_forecast
+    </sql>
+
+    <select id="selectAgriWeatherForecastList" parameterType="AgriWeatherForecast" resultMap="AgriWeatherForecastResult">
+        <include refid="selectAgriWeatherForecastVo"/>
+        <where>  
+            <if test="parkId != null  and parkId != ''"> and park_id = #{parkId}</if>
+            <if test="fetchTime != null "> and fetch_time = #{fetchTime}</if>
+            <if test="params != null and params.latest != null and params.latest == 'true'">
+                and fetch_time = (select max(fetch_time) from ld_agri_weather_forecast f where f.park_id = ld_agri_weather_forecast.park_id)
+            </if>
+            <if test="forecastDate != null "> and forecast_date = #{forecastDate}</if>
+            <if test="tempMax != null "> and temp_max = #{tempMax}</if>
+            <if test="tempMin != null "> and temp_min = #{tempMin}</if>
+            <if test="humidityAvg != null "> and humidity_avg = #{humidityAvg}</if>
+            <if test="windDirDay != null  and windDirDay != ''"> and wind_dir_day = #{windDirDay}</if>
+            <if test="windScaleDay != null  and windScaleDay != ''"> and wind_scale_day = #{windScaleDay}</if>
+            <if test="precipTotal != null "> and precip_total = #{precipTotal}</if>
+            <if test="precipProb != null "> and precip_prob = #{precipProb}</if>
+            <if test="weatherTextDay != null  and weatherTextDay != ''"> and weather_text_day = #{weatherTextDay}</if>
+            <if test="weatherTextNight != null  and weatherTextNight != ''"> and weather_text_night = #{weatherTextNight}</if>
+            <if test="dayCode != null  and dayCode != ''"> and day_code = #{dayCode}</if>
+            <if test="moonCode != null  and moonCode != ''"> and moon_code = #{moonCode}</if>
+            <if test="forecastType != null "> and forecast_type = #{forecastType}</if>
+            <if test="remark1 != null "> and remark1 = #{remark1}</if>
+            <if test="remark2 != null  and remark2 != ''"> and remark2 = #{remark2}</if>
+        </where>
+    </select>
+    
+    <select id="selectAgriWeatherForecastById" parameterType="Long" resultMap="AgriWeatherForecastResult">
+        <include refid="selectAgriWeatherForecastVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertAgriWeatherForecast" parameterType="AgriWeatherForecast" useGeneratedKeys="true" keyProperty="id">
+        insert into ld_agri_weather_forecast
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="parkId != null and parkId != ''">park_id,</if>
+            <if test="fetchTime != null">fetch_time,</if>
+            <if test="forecastDate != null">forecast_date,</if>
+            <if test="tempMax != null">temp_max,</if>
+            <if test="tempMin != null">temp_min,</if>
+            <if test="humidityAvg != null">humidity_avg,</if>
+            <if test="windDirDay != null">wind_dir_day,</if>
+            <if test="windScaleDay != null">wind_scale_day,</if>
+            <if test="precipTotal != null">precip_total,</if>
+            <if test="precipProb != null">precip_prob,</if>
+            <if test="weatherTextDay != null">weather_text_day,</if>
+            <if test="weatherTextNight != null">weather_text_night,</if>
+            <if test="dayCode != null">day_code,</if>
+            <if test="moonCode != null">moon_code,</if>
+            <if test="forecastType != null">forecast_type,</if>
+            <if test="remark1 != null">remark1,</if>
+            <if test="remark2 != null">remark2,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="parkId != null and parkId != ''">#{parkId},</if>
+            <if test="fetchTime != null">#{fetchTime},</if>
+            <if test="forecastDate != null">#{forecastDate},</if>
+            <if test="tempMax != null">#{tempMax},</if>
+            <if test="tempMin != null">#{tempMin},</if>
+            <if test="humidityAvg != null">#{humidityAvg},</if>
+            <if test="windDirDay != null">#{windDirDay},</if>
+            <if test="windScaleDay != null">#{windScaleDay},</if>
+            <if test="precipTotal != null">#{precipTotal},</if>
+            <if test="precipProb != null">#{precipProb},</if>
+            <if test="weatherTextDay != null">#{weatherTextDay},</if>
+            <if test="weatherTextNight != null">#{weatherTextNight},</if>
+            <if test="dayCode != null">#{dayCode},</if>
+            <if test="moonCode != null">#{moonCode},</if>
+            <if test="forecastType != null">#{forecastType},</if>
+            <if test="remark1 != null">#{remark1},</if>
+            <if test="remark2 != null">#{remark2},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAgriWeatherForecast" parameterType="AgriWeatherForecast">
+        update ld_agri_weather_forecast
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="parkId != null and parkId != ''">park_id = #{parkId},</if>
+            <if test="fetchTime != null">fetch_time = #{fetchTime},</if>
+            <if test="forecastDate != null">forecast_date = #{forecastDate},</if>
+            <if test="tempMax != null">temp_max = #{tempMax},</if>
+            <if test="tempMin != null">temp_min = #{tempMin},</if>
+            <if test="humidityAvg != null">humidity_avg = #{humidityAvg},</if>
+            <if test="windDirDay != null">wind_dir_day = #{windDirDay},</if>
+            <if test="windScaleDay != null">wind_scale_day = #{windScaleDay},</if>
+            <if test="precipTotal != null">precip_total = #{precipTotal},</if>
+            <if test="precipProb != null">precip_prob = #{precipProb},</if>
+            <if test="weatherTextDay != null">weather_text_day = #{weatherTextDay},</if>
+            <if test="weatherTextNight != null">weather_text_night = #{weatherTextNight},</if>
+            <if test="dayCode != null">day_code = #{dayCode},</if>
+            <if test="moonCode != null">moon_code = #{moonCode},</if>
+            <if test="forecastType != null">forecast_type = #{forecastType},</if>
+            <if test="remark1 != null">remark1 = #{remark1},</if>
+            <if test="remark2 != null">remark2 = #{remark2},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAgriWeatherForecastById" parameterType="Long">
+        delete from ld_agri_weather_forecast where id = #{id}
+    </delete>
+
+    <delete id="deleteAgriWeatherForecastByIds" parameterType="String">
+        delete from ld_agri_weather_forecast where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

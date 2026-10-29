@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.wr.mapper.WarningTemplateRuleMapper">
+
+    <resultMap type="WarningTemplateRule" id="WarningTemplateRuleResult">
+        <result property="id"    column="id"    />
+        <result property="templateId"    column="template_id"    />
+        <result property="templateName"  column="template_name"  />
+        <result property="indicatorCode"    column="indicator_code"    />
+        <result property="operator"    column="operator"    />
+        <result property="thresholdMin"    column="threshold_min"    />
+        <result property="thresholdMax"    column="threshold_max"    />
+        <result property="level"    column="level"    />
+        <result property="durationSeconds"    column="duration_seconds"    />
+        <result property="triggerType"    column="trigger_type"    />
+        <result property="logicGroup"    column="logic_group"    />
+        <result property="logicOperator"    column="logic_operator"    />
+        <result property="sortOrder"    column="sort_order"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectWarningTemplateRuleVo">
+        select id, template_id, indicator_code, operator, threshold_min, threshold_max, level, duration_seconds, trigger_type, logic_group, logic_operator, sort_order, create_time, update_time from wr_warning_template_rule
+    </sql>
+
+    <select id="selectWarningTemplateRuleList" parameterType="WarningTemplateRule" resultMap="WarningTemplateRuleResult">
+        select r.id, r.template_id, t.template_name, r.indicator_code, r.operator, r.threshold_min, r.threshold_max, r.level, r.duration_seconds, r.trigger_type, r.logic_group, r.logic_operator, r.sort_order, r.create_time, r.update_time
+        from wr_warning_template_rule r
+        left join wr_warning_template t on r.template_id = t.id
+        <where>
+            <if test="templateId != null "> and r.template_id = #{templateId}</if>
+            <if test="indicatorCode != null  and indicatorCode != ''"> and r.indicator_code = #{indicatorCode}</if>
+            <if test="operator != null  and operator != ''"> and r.operator = #{operator}</if>
+            <if test="thresholdMin != null "> and r.threshold_min = #{thresholdMin}</if>
+            <if test="thresholdMax != null "> and r.threshold_max = #{thresholdMax}</if>
+            <if test="level != null "> and r.level = #{level}</if>
+            <if test="durationSeconds != null "> and r.duration_seconds = #{durationSeconds}</if>
+            <if test="triggerType != null  and triggerType != ''"> and r.trigger_type = #{triggerType}</if>
+            <if test="logicGroup != null  and logicGroup != ''"> and r.logic_group = #{logicGroup}</if>
+            <if test="logicOperator != null  and logicOperator != ''"> and r.logic_operator = #{logicOperator}</if>
+            <if test="sortOrder != null "> and r.sort_order = #{sortOrder}</if>
+            <if test="createTime != null "> and r.create_time = #{createTime}</if>
+            <if test="updateTime != null "> and r.update_time = #{updateTime}</if>
+        </where>
+    </select>
+
+    <select id="selectWarningTemplateRuleById" parameterType="Long" resultMap="WarningTemplateRuleResult">
+        <include refid="selectWarningTemplateRuleVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertWarningTemplateRule" parameterType="WarningTemplateRule" useGeneratedKeys="true" keyProperty="id">
+        insert into wr_warning_template_rule
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="templateId != null">template_id,</if>
+            <if test="indicatorCode != null and indicatorCode != ''">indicator_code,</if>
+            <if test="operator != null and operator != ''">operator,</if>
+            <if test="thresholdMin != null">threshold_min,</if>
+            <if test="thresholdMax != null">threshold_max,</if>
+            <if test="level != null">level,</if>
+            <if test="durationSeconds != null">duration_seconds,</if>
+            <if test="triggerType != null and triggerType != ''">trigger_type,</if>
+            <if test="logicGroup != null">logic_group,</if>
+            <if test="logicOperator != null">logic_operator,</if>
+            <if test="sortOrder != null">sort_order,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="templateId != null">#{templateId},</if>
+            <if test="indicatorCode != null and indicatorCode != ''">#{indicatorCode},</if>
+            <if test="operator != null and operator != ''">#{operator},</if>
+            <if test="thresholdMin != null">#{thresholdMin},</if>
+            <if test="thresholdMax != null">#{thresholdMax},</if>
+            <if test="level != null">#{level},</if>
+            <if test="durationSeconds != null">#{durationSeconds},</if>
+            <if test="triggerType != null and triggerType != ''">#{triggerType},</if>
+            <if test="logicGroup != null">#{logicGroup},</if>
+            <if test="logicOperator != null">#{logicOperator},</if>
+            <if test="sortOrder != null">#{sortOrder},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateWarningTemplateRule" parameterType="WarningTemplateRule">
+        update wr_warning_template_rule
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="templateId != null">template_id = #{templateId},</if>
+            <if test="indicatorCode != null and indicatorCode != ''">indicator_code = #{indicatorCode},</if>
+            <if test="operator != null and operator != ''">operator = #{operator},</if>
+            <if test="thresholdMin != null">threshold_min = #{thresholdMin},</if>
+            <if test="thresholdMax != null">threshold_max = #{thresholdMax},</if>
+            <if test="level != null">level = #{level},</if>
+            <if test="durationSeconds != null">duration_seconds = #{durationSeconds},</if>
+            <if test="triggerType != null and triggerType != ''">trigger_type = #{triggerType},</if>
+            <if test="logicGroup != null">logic_group = #{logicGroup},</if>
+            <if test="logicOperator != null">logic_operator = #{logicOperator},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWarningTemplateRuleById" parameterType="Long">
+        delete from wr_warning_template_rule where id = #{id}
+    </delete>
+
+    <delete id="deleteWarningTemplateRuleByIds" parameterType="String">
+        delete from wr_warning_template_rule where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

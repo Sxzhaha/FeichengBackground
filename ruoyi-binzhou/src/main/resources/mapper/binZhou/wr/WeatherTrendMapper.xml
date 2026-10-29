@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.binZhou.wr.mapper.WeatherTrendMapper">
+
+    <!--
+        查询过去若干天的历史天气实况
+        不包含今天
+        按天汇总平均温度、平均湿度
+    -->
+    <select id="selectHistoryWeather"
+            resultType="com.ruoyi.binZhou.wr.domain.vo.WeatherTrendVo$HistoryWeatherItem">
+
+        SELECT
+        t.date,
+        t.temperature,
+        t.humidity,
+        t.windSpeed
+        FROM
+        (
+
+        <!-- 第一部分：实况数据 -->
+        SELECT
+        DATE_FORMAT(w.report_time,'%Y-%m-%d') AS date,
+        ROUND(AVG(w.temperature),1) AS temperature,
+        ROUND(AVG(w.humidity),1) AS humidity,
+        ROUND(AVG(w.wind_speed) / 3.6, 1) AS windSpeed,
+        1 AS priority
+        FROM ld_agri_weather_live w
+        WHERE w.park_id = #{parkId}
+        AND w.report_time <![CDATA[ >= ]]>
+        DATE_SUB(CURDATE(), INTERVAL #{historyDays} DAY)
+        AND w.report_time <![CDATA[ < ]]> CURDATE()
+        GROUP BY DATE_FORMAT(w.report_time,'%Y-%m-%d')
+
+
+        UNION ALL
+
+
+        <!-- 第二部分：预报历史数据 -->
+        SELECT
+        DATE_FORMAT(f.forecast_date,'%Y-%m-%d') AS date,
+        ROUND((f.temp_max+f.temp_min)/2,1) AS temperature,
+        f.humidity_avg AS humidity,
+        NULL AS windSpeed,
+        2 AS priority
+        FROM ld_agri_weather_forecast f
+        WHERE f.park_id = #{parkId}
+        AND f.forecast_date <![CDATA[ >= ]]>
+        DATE_SUB(CURDATE(), INTERVAL #{historyDays} DAY)
+        AND f.forecast_date <![CDATA[ < ]]> CURDATE()
+        AND f.id =
+        (
+            SELECT f2.id
+            FROM ld_agri_weather_forecast f2
+            WHERE f2.park_id = f.park_id
+            AND f2.forecast_date = f.forecast_date
+            ORDER BY f2.fetch_time DESC, f2.id DESC
+            LIMIT 1
+        )
+
+
+        ) t
+
+        WHERE NOT EXISTS
+        (
+        SELECT 1
+        FROM ld_agri_weather_live l
+        WHERE l.park_id = #{parkId}
+        AND DATE_FORMAT(l.report_time,'%Y-%m-%d') = t.date
+        )
+
+        OR t.priority = 1
+
+
+        ORDER BY t.date ASC
+
+    </select>
+
+    <!--
+        查询当前最新天气实况
+        优先查询今天最新一条
+        如果今天没有数据，则查询该园区最近一条实况数据
+    -->
+    <select id="selectCurrentWeather"
+            resultType="com.ruoyi.binZhou.wr.domain.vo.WeatherTrendVo$CurrentWeatherItem">
+
+        SELECT
+            DATE_FORMAT(w.report_time, '%Y-%m-%d') AS date,
+            DATE_FORMAT(w.report_time, '%Y-%m-%d %H:%i:%s') AS reportTime,
+            w.temperature AS temperature,
+            w.humidity AS humidity,
+            ROUND(w.wind_speed / 3.6, 2) AS windSpeed
+        FROM ld_agri_weather_live w
+        WHERE w.park_id = #{parkId}
+          AND w.report_time IS NOT NULL
+        ORDER BY
+            CASE
+            WHEN w.report_time <![CDATA[ >= ]]> CURDATE()
+            AND w.report_time <![CDATA[ < ]]> DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+            THEN 0
+            ELSE 1
+        END ASC,
+            w.report_time DESC,
+            w.id DESC
+        LIMIT 1
+
+    </select>
+
+    <!--
+        查询未来天气预报
+        按园区和预测日期分别取最新记录
+        查询明天到未来 forecastDays 天
+    -->
+    <select id="selectForecastWeather"
+            resultType="com.ruoyi.binZhou.wr.domain.vo.WeatherTrendVo$ForecastWeatherItem">
+
+        SELECT
+            DATE_FORMAT(f.forecast_date, '%Y-%m-%d') AS date,
+            f.temp_max AS tempMax,
+            f.temp_min AS tempMin,
+            CASE
+                WHEN f.temp_max IS NOT NULL
+                 AND f.temp_min IS NOT NULL
+                THEN ROUND((f.temp_max + f.temp_min) / 2, 1)
+
+                WHEN f.temp_max IS NOT NULL
+                THEN f.temp_max
+
+                WHEN f.temp_min IS NOT NULL
+                THEN f.temp_min
+
+                ELSE NULL
+        END AS temperature,
+            f.humidity_avg AS humidity,
+            f.wind_scale_day AS windScaleDay,
+            f.remark2 AS rawForecastJson,
+            f.weather_text_day AS weatherTextDay,
+            f.weather_text_night AS weatherTextNight
+        FROM ld_agri_weather_forecast f
+        WHERE f.park_id = #{parkId}
+        AND f.forecast_date <![CDATA[ > ]]> CURDATE()
+        AND f.forecast_date <![CDATA[ <= ]]>
+              DATE_ADD(CURDATE(), INTERVAL #{forecastDays} DAY)
+        AND f.id =
+        (
+            SELECT f2.id
+            FROM ld_agri_weather_forecast f2
+            WHERE f2.park_id = f.park_id
+              AND f2.forecast_date = f.forecast_date
+              AND f2.fetch_time IS NOT NULL
+            ORDER BY f2.fetch_time DESC, f2.id DESC
+            LIMIT 1
+        )
+        ORDER BY f.forecast_date ASC
+
+    </select>
+
+</mapper>

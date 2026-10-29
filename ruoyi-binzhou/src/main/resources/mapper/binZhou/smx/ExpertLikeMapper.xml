@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.smx.mapper.ExpertLikeMapper">
+
+    <select id="existsLike" resultType="int">
+        select count(1) from smx_expert_like
+        where user_id = #{userId} and target_type = #{targetType} and target_id = #{targetId}
+    </select>
+
+    <insert id="insertLike">
+        insert ignore into smx_expert_like (user_id, target_type, target_id)
+        values (#{userId}, #{targetType}, #{targetId})
+    </insert>
+
+    <delete id="deleteLike">
+        delete from smx_expert_like
+        where user_id = #{userId} and target_type = #{targetType} and target_id = #{targetId}
+    </delete>
+
+    <!-- 删除问题时级联清理：问题本身的点赞 + 其所有回答的点赞（须在删除回答行之前执行，子查询依赖回答仍存在） -->
+    <delete id="deleteLikesByQuestion">
+        delete from smx_expert_like
+        where (target_type = '1' and target_id = #{questionId})
+           or (target_type = '2' and target_id in (select answer_id from smx_expert_answer where question_id = #{questionId}))
+    </delete>
+
+    <!-- 删除单条回答时级联清理其点赞记录 -->
+    <delete id="deleteLikesByAnswer">
+        delete from smx_expert_like
+        where target_type = '2' and target_id = #{answerId}
+    </delete>
+</mapper>

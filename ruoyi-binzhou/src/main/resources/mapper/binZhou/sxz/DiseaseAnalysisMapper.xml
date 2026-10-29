@@ -1,0 +1,349 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.sxz.mapper.DiseaseAnalysisMapper">
+
+    <sql id="diseaseFilter">
+        <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, dev.location_id) = #{parkId}</if>
+        <if test="deviceId != null">AND COALESCE(r.device_id, i.device_id) = #{deviceId}</if>
+        AND d.create_time IS NOT NULL
+        <choose>
+            <when test="days == 7">
+                AND d.create_time &gt;= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            </when>
+            <when test="days == 90">
+                AND d.create_time &gt;= DATE_SUB(NOW(), INTERVAL 90 DAY)
+            </when>
+            <otherwise>
+                AND d.create_time &gt;= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="weatherTimeFilter">
+        <choose>
+            <when test="days == 7">
+                report_time &gt;= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            </when>
+            <when test="days == 90">
+                report_time &gt;= DATE_SUB(NOW(), INTERVAL 90 DAY)
+            </when>
+            <otherwise>
+                report_time &gt;= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="forecastDateFilter">
+        <choose>
+            <when test="days == 7">
+                forecast_date &gt; DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                AND forecast_date &lt;= CURDATE()
+            </when>
+            <when test="days == 90">
+                forecast_date &gt; DATE_SUB(CURDATE(), INTERVAL 90 DAY)
+                AND forecast_date &lt;= CURDATE()
+            </when>
+            <otherwise>
+                forecast_date &gt; DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                AND forecast_date &lt;= CURDATE()
+            </otherwise>
+        </choose>
+    </sql>
+
+    <select id="selectCategoryStats" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisDashboard$CategoryStat">
+        SELECT d.disease_name AS name,
+               COUNT(*) AS count,
+               ROUND(AVG(COALESCE(d.disease_confidence, 0)) * 100, 2) AS avgConfidence,
+               ROUND(MAX(COALESCE(d.disease_confidence, 0)) * 100, 2) AS maxConfidence,
+               COALESCE(DATE_FORMAT(MIN(d.create_time), '%Y-%m-%d'), '暂无记录') AS firstTime,
+               COALESCE(DATE_FORMAT(MAX(d.create_time), '%Y-%m-%d'), '暂无记录') AS latestTime,
+               COALESCE(MAX(p.park_name), '未关联园区') AS parkName,
+               MAX(d.disease_result) AS result,
+               MAX(d.disease_desc) AS description,
+               MAX(d.disease_advice) AS advice,
+               COALESCE(MAX(d.disease_result_img_url), MAX(i.image_result_url), MAX(i.image_url)) AS imageUrl
+        FROM xwq_ai_disease d
+        LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
+        LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
+        LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+        LEFT JOIN park p ON p.park_id = COALESCE(r.park_id, i.park_id, dev.location_id)
+        WHERE 1 = 1
+        <include refid="diseaseFilter"/>
+        GROUP BY d.disease_name
+        ORDER BY count DESC, d.disease_name
+    </select>
+
+    <select id="selectTrendStats" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisDashboard$TrendStat">
+        SELECT category.date,
+               category.name,
+               category.count,
+               category.avgConfidence,
+               daily.totalCount,
+               daily.diseaseCount,
+               ROUND(daily.diseaseCount * 100.0 / NULLIF(daily.totalCount, 0), 2) AS detectionRate
+        FROM (
+            SELECT DATE_FORMAT(d.create_time, '%Y-%m-%d') AS date,
+                   d.disease_name AS name,
+                   COUNT(*) AS count,
+                   ROUND(AVG(COALESCE(d.disease_confidence, 0)) * 100, 2) AS avgConfidence
+            FROM xwq_ai_disease d
+            LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
+            LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
+            LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+            WHERE 1 = 1
+            <include refid="diseaseFilter"/>
+            GROUP BY DATE_FORMAT(d.create_time, '%Y-%m-%d'), d.disease_name
+        ) category
+        INNER JOIN (
+            SELECT DATE_FORMAT(d.create_time, '%Y-%m-%d') AS date,
+                   COUNT(*) AS totalCount,
+                   SUM(CASE WHEN d.disease_name IS NOT NULL
+                                  AND TRIM(d.disease_name) &lt;&gt; ''
+                                  AND d.disease_name NOT LIKE '%健康%'
+                                  AND d.disease_name NOT LIKE '%正常%'
+                                  AND d.disease_name NOT LIKE '%无病虫害%'
+                            THEN 1 ELSE 0 END) AS diseaseCount
+            FROM xwq_ai_disease d
+            LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
+            LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
+            LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+            WHERE 1 = 1
+            <include refid="diseaseFilter"/>
+            GROUP BY DATE_FORMAT(d.create_time, '%Y-%m-%d')
+        ) daily ON daily.date = category.date
+        ORDER BY category.date, category.name
+    </select>
+
+    <select id="selectParkStats" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisDashboard$ParkStat">
+        SELECT COALESCE(r.park_id, i.park_id, dev.location_id) AS parkId,
+               COALESCE(p.park_name, '未关联园区') AS parkName,
+               COUNT(*) AS count,
+               SUM(CASE WHEN d.is_warning = 1 THEN 1 ELSE 0 END) AS warningCount,
+               ROUND(AVG(COALESCE(d.disease_confidence, 0)) * 100, 2) AS avgConfidence
+        FROM xwq_ai_disease d
+        LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
+        LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
+        LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+        LEFT JOIN park p ON p.park_id = COALESCE(r.park_id, i.park_id, dev.location_id)
+        WHERE 1 = 1
+        <include refid="diseaseFilter"/>
+        GROUP BY COALESCE(r.park_id, i.park_id, dev.location_id), p.park_name
+        ORDER BY count DESC
+    </select>
+
+    <select id="selectRecentRecords" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisDashboard$RecentRecord">
+        SELECT d.disease_id AS diseaseId,
+               d.disease_name AS name,
+               ROUND(COALESCE(d.disease_confidence, 0) * 100, 2) AS confidence,
+               COALESCE(DATE_FORMAT(d.create_time, '%Y-%m-%d %H:%i:%s'), '暂无记录') AS time,
+               COALESCE(r.model_name, '未知模型') AS model,
+               COALESCE(p.park_name, '未关联园区') AS parkName,
+               CASE WHEN r.plot_id IS NULL THEN '未关联地块' ELSE CONCAT('地块', r.plot_id) END AS plotName,
+               i.image_name AS imageName,
+               COALESCE(d.disease_result_img_url, i.image_result_url, i.image_url) AS imageUrl
+        FROM xwq_ai_disease d
+        LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
+        LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
+        LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+        LEFT JOIN park p ON p.park_id = COALESCE(r.park_id, i.park_id, dev.location_id)
+        WHERE 1 = 1
+        <include refid="diseaseFilter"/>
+        ORDER BY d.create_time DESC, d.disease_id DESC
+        LIMIT 20
+    </select>
+
+    <select id="selectParkOptions" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisDashboard$ParkOption">
+        SELECT park_id AS parkId, park_name AS parkName FROM park ORDER BY park_id
+    </select>
+
+    <select id="selectDeviceOptions" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisDashboard$DeviceOption">
+        SELECT device_id AS deviceId,
+               COALESCE(NULLIF(device_name, ''), device_sn, CONCAT('设备', device_id)) AS deviceName,
+               location_id AS parkId
+        FROM iot_device
+        WHERE 1 = 1
+        <if test="parkId != null">AND location_id = #{parkId}</if>
+        ORDER BY location_id, device_id
+    </select>
+
+    <select id="selectEnvironmentStats" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisDashboard$EnvironmentStat">
+        SELECT DATE_FORMAT(base.stat_time, '%m-%d %H:00') AS time,
+               COALESCE(recognition.total_count, 0) AS totalCount,
+               COALESCE(recognition.disease_count, 0) AS diseaseCount,
+               CASE WHEN recognition.total_count IS NULL OR recognition.total_count = 0 THEN NULL
+                    ELSE ROUND(recognition.disease_count * 100.0 / recognition.total_count, 2)
+               END AS detectionRate,
+               weather.temperature,
+               weather.humidity,
+               weather.precipitation
+        FROM (
+            SELECT DATE_FORMAT(report_time, '%Y-%m-%d %H:00:00') AS stat_time
+            FROM ld_agri_weather_live
+            WHERE <include refid="weatherTimeFilter"/>
+            <if test="parkId != null">AND CAST(park_id AS UNSIGNED) = #{parkId}</if>
+            <if test="deviceId != null">AND CAST(park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+            UNION
+            SELECT DATE_FORMAT(f.forecast_date, '%Y-%m-%d 00:00:00') AS stat_time
+            FROM ld_agri_weather_forecast f
+            WHERE <include refid="forecastDateFilter"/>
+            <if test="parkId != null">AND CAST(f.park_id AS UNSIGNED) = #{parkId}</if>
+            <if test="deviceId != null">AND CAST(f.park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM ld_agri_weather_live live
+                  WHERE DATE(live.report_time) = f.forecast_date
+                  <if test="parkId != null">AND CAST(live.park_id AS UNSIGNED) = #{parkId}</if>
+                  <if test="deviceId != null">AND CAST(live.park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+              )
+            GROUP BY f.forecast_date
+            UNION
+            SELECT DATE_FORMAT(d.create_time, '%Y-%m-%d %H:00:00') AS stat_time
+            FROM xwq_ai_disease d
+            LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
+            LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
+            LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+            WHERE d.create_time IS NOT NULL
+              AND r.record_type = '病虫害'
+              AND r.record_mode = '自动定时'
+            <include refid="diseaseFilter"/>
+            <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, dev.location_id) = #{parkId}</if>
+            <if test="deviceId != null">AND COALESCE(r.device_id, i.device_id) = #{deviceId}</if>
+        ) base
+        LEFT JOIN (
+            SELECT DATE_FORMAT(report_time, '%Y-%m-%d %H:00:00') AS stat_time,
+                   ROUND(AVG(temperature), 2) AS temperature,
+                   ROUND(AVG(humidity), 2) AS humidity,
+                   ROUND(AVG(COALESCE(precipitation, 0)), 2) AS precipitation
+            FROM ld_agri_weather_live
+            WHERE <include refid="weatherTimeFilter"/>
+            <if test="parkId != null">AND CAST(park_id AS UNSIGNED) = #{parkId}</if>
+            <if test="deviceId != null">AND CAST(park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+            GROUP BY DATE_FORMAT(report_time, '%Y-%m-%d %H:00:00')
+            UNION ALL
+            SELECT DATE_FORMAT(f.forecast_date, '%Y-%m-%d 00:00:00') AS stat_time,
+                   ROUND(AVG((f.temp_max + f.temp_min) / 2), 2) AS temperature,
+                   ROUND(AVG(f.humidity_avg), 2) AS humidity,
+                   ROUND(AVG(COALESCE(f.precip_total, 0)), 2) AS precipitation
+            FROM ld_agri_weather_forecast f
+            INNER JOIN (
+                SELECT forecast_date, park_id, MAX(fetch_time) AS fetch_time
+                FROM ld_agri_weather_forecast
+                WHERE <include refid="forecastDateFilter"/>
+                <if test="parkId != null">AND CAST(park_id AS UNSIGNED) = #{parkId}</if>
+                <if test="deviceId != null">AND CAST(park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+                GROUP BY forecast_date, park_id
+            ) latest ON latest.forecast_date = f.forecast_date
+                    AND latest.park_id = f.park_id
+                    AND latest.fetch_time = f.fetch_time
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM ld_agri_weather_live live
+                WHERE DATE(live.report_time) = f.forecast_date
+                <if test="parkId != null">AND CAST(live.park_id AS UNSIGNED) = #{parkId}</if>
+                <if test="deviceId != null">AND CAST(live.park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+            )
+            GROUP BY f.forecast_date
+        ) weather ON weather.stat_time = base.stat_time
+        LEFT JOIN (
+            SELECT DATE_FORMAT(d.create_time, '%Y-%m-%d %H:00:00') AS stat_time,
+                   COUNT(*) AS total_count,
+                   SUM(CASE WHEN d.disease_name IS NOT NULL
+                                  AND TRIM(d.disease_name) &lt;&gt; ''
+                                  <choose>
+                                      <when test="environmentDiseaseName != null and environmentDiseaseName != ''">
+                                          AND d.disease_name = #{environmentDiseaseName}
+                                      </when>
+                                      <otherwise>
+                                  AND d.disease_name NOT LIKE '%健康%'
+                                  AND d.disease_name NOT LIKE '%正常%'
+                                  AND d.disease_name NOT LIKE '%无病虫害%'
+                                      </otherwise>
+                                  </choose>
+                            THEN 1 ELSE 0 END) AS disease_count
+            FROM xwq_ai_disease d
+            LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
+            LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
+            LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+            WHERE d.create_time IS NOT NULL
+              AND r.record_type = '病虫害'
+              AND r.record_mode = '自动定时'
+            <include refid="diseaseFilter"/>
+            <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, dev.location_id) = #{parkId}</if>
+            <if test="deviceId != null">AND COALESCE(r.device_id, i.device_id) = #{deviceId}</if>
+            GROUP BY DATE_FORMAT(d.create_time, '%Y-%m-%d %H:00:00')
+        ) recognition ON recognition.stat_time = base.stat_time
+        ORDER BY base.stat_time ASC
+    </select>
+
+	    <select id="selectCorrelationDailyRecords" resultType="com.ruoyi.binZhou.sxz.domain.EnvironmentCorrelationAnalysis$DailyRecord">
+	        SELECT recognition.stat_date AS date,
+	               recognition.disease_name AS diseaseName,
+	               recognition.total_count AS totalCount,
+	               recognition.disease_count AS diseaseCount,
+	               weather.temperature,
+	               weather.humidity,
+	               weather.rainfall
+	        FROM (
+	            SELECT disease_daily.stat_date,
+	                   disease_daily.disease_name,
+	                   total_daily.total_count,
+	                   disease_daily.disease_count
+	            FROM (
+	                SELECT DATE_FORMAT(d.create_time, '%Y-%m-%d') AS stat_date,
+	                       d.disease_name,
+	                       COUNT(*) AS disease_count
+	                FROM xwq_ai_disease d
+	                INNER JOIN xwq_ai_record r ON r.record_id = d.record_id
+	                LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
+	                LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+	                WHERE d.create_time IS NOT NULL
+	                  AND d.create_time &gt;= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
+	                  AND r.record_type = '病虫害'
+	                  AND r.record_mode IS NOT NULL
+	                  AND (r.record_mode LIKE '%自动%' OR r.record_mode LIKE '%定时%')
+	                  AND d.disease_name IS NOT NULL
+	                  AND TRIM(d.disease_name) &lt;&gt; ''
+	                <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, dev.location_id) = #{parkId}</if>
+	                <if test="deviceId != null">AND COALESCE(r.device_id, i.device_id) = #{deviceId}</if>
+	                GROUP BY DATE_FORMAT(d.create_time, '%Y-%m-%d'), d.disease_name
+	            ) disease_daily
+	            INNER JOIN (
+	                SELECT DATE_FORMAT(d.create_time, '%Y-%m-%d') AS stat_date,
+	                       COUNT(*) AS total_count
+	                FROM xwq_ai_disease d
+	                INNER JOIN xwq_ai_record r ON r.record_id = d.record_id
+	                LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
+	                LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+	                WHERE d.create_time IS NOT NULL
+	                  AND d.create_time &gt;= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
+	                  AND r.record_type = '病虫害'
+	                  AND r.record_mode IS NOT NULL
+	                  AND (r.record_mode LIKE '%自动%' OR r.record_mode LIKE '%定时%')
+	                <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, dev.location_id) = #{parkId}</if>
+	                <if test="deviceId != null">AND COALESCE(r.device_id, i.device_id) = #{deviceId}</if>
+	                GROUP BY DATE_FORMAT(d.create_time, '%Y-%m-%d')
+	            ) total_daily ON total_daily.stat_date = disease_daily.stat_date
+	        ) recognition
+        INNER JOIN (
+            SELECT station.stat_date,
+                   ROUND(AVG(station.temperature), 2) AS temperature,
+                   ROUND(AVG(station.humidity), 2) AS humidity,
+                   ROUND(AVG(station.rainfall), 2) AS rainfall
+            FROM (
+                SELECT DATE_FORMAT(report_time, '%Y-%m-%d') AS stat_date,
+                       park_id,
+                       AVG(temperature) AS temperature,
+                       AVG(humidity) AS humidity,
+                       SUM(COALESCE(precipitation, 0)) AS rainfall
+                FROM ld_agri_weather_live
+                WHERE report_time &gt;= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
+                <if test="parkId != null">AND CAST(park_id AS UNSIGNED) = #{parkId}</if>
+                <if test="deviceId != null">AND CAST(park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+                GROUP BY DATE_FORMAT(report_time, '%Y-%m-%d'), park_id
+            ) station
+            GROUP BY station.stat_date
+        ) weather ON weather.stat_date = recognition.stat_date
+        ORDER BY recognition.stat_date DESC
+        LIMIT 30
+    </select>
+</mapper>

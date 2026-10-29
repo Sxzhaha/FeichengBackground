@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.sxz.mapper.DiseaseAutoTaskMapper">
+
+    <resultMap id="TaskResult" type="com.ruoyi.binZhou.sxz.domain.DiseaseAutoTask">
+        <id property="taskId" column="task_id"/>
+        <result property="taskName" column="task_name"/>
+        <result property="cameraTaskId" column="camera_task_id"/>
+        <result property="cameraTaskName" column="camera_task_name"/>
+        <result property="consumeMode" column="consume_mode"/>
+        <result property="parkId" column="park_id"/>
+        <result property="parkName" column="park_name"/>
+        <result property="areaId" column="area_id"/>
+        <result property="areaName" column="area_name"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="deviceName" column="device_name"/>
+        <result property="deviceSn" column="device_sn"/>
+        <result property="presetId" column="preset_id"/>
+        <result property="pointIndex" column="point_index"/>
+        <result property="captureTaskStatus" column="capture_task_status"/>
+        <result property="captureJobType" column="capture_job_type"/>
+        <result property="captureExecuteTime" column="capture_execute_time"/>
+        <result property="captureCronExpression" column="capture_cron_expression"/>
+        <result property="modelId" column="model_id"/>
+        <result property="modelName" column="model_name"/>
+        <result property="cropType" column="crop_type"/>
+        <result property="scheduleType" column="schedule_type"/>
+        <result property="fixedTimes" column="fixed_times"/>
+        <result property="intervalMinutes" column="interval_minutes"/>
+        <result property="activeStartTime" column="active_start_time"/>
+        <result property="activeEndTime" column="active_end_time"/>
+        <result property="maxRetryCount" column="max_retry_count"/>
+        <result property="taskStatus" column="task_status"/>
+        <result property="runState" column="run_state"/>
+        <result property="executionToken" column="execution_token"/>
+        <result property="executionLockTime" column="execution_lock_time"/>
+        <result property="lastRunTime" column="last_run_time"/>
+        <result property="nextRunTime" column="next_run_time"/>
+        <result property="lastRunStatus" column="last_run_status"/>
+        <result property="lastRunMessage" column="last_run_message"/>
+        <result property="lastSourceImageId" column="last_source_image_id"/>
+        <result property="invalidReason" column="invalid_reason"/>
+        <result property="version" column="version"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="RunResult" type="com.ruoyi.binZhou.sxz.domain.DiseaseAutoTaskRun">
+        <id property="runId" column="run_id"/>
+        <result property="taskId" column="task_id"/>
+        <result property="cameraTaskId" column="camera_task_id"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="parkId" column="park_id"/>
+        <result property="modelId" column="model_id"/>
+        <result property="taskName" column="task_name"/>
+        <result property="triggerType" column="trigger_type"/>
+        <result property="runStatus" column="run_status"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="sourceCount" column="source_count"/>
+        <result property="recognizeCount" column="recognize_count"/>
+        <result property="successCount" column="success_count"/>
+        <result property="failCount" column="fail_count"/>
+        <result property="skipCount" column="skip_count"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <resultMap id="ItemResult" type="com.ruoyi.binZhou.sxz.domain.DiseaseAutoTaskItem">
+        <id property="itemId" column="item_id"/>
+        <result property="taskId" column="task_id"/>
+        <result property="runId" column="run_id"/>
+        <result property="sourceImageId" column="source_image_id"/>
+        <result property="modelIdSnapshot" column="model_id_snapshot"/>
+        <result property="captureTime" column="capture_time"/>
+        <result property="aiImageId" column="ai_image_id"/>
+        <result property="recordId" column="record_id"/>
+        <result property="diseaseId" column="disease_id"/>
+        <result property="itemStatus" column="item_status"/>
+        <result property="attemptCount" column="attempt_count"/>
+        <result property="nextRetryTime" column="next_retry_time"/>
+        <result property="startTime" column="start_time"/>
+        <result property="finishTime" column="finish_time"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="imageUrl" column="image_url"/>
+    </resultMap>
+
+    <resultMap id="RecognitionResult" type="com.ruoyi.binZhou.sxz.domain.DiseaseAutoTaskResult">
+        <id property="itemId" column="item_id"/>
+        <result property="taskId" column="task_id"/>
+        <result property="taskName" column="task_name"/>
+        <result property="runId" column="run_id"/>
+        <result property="recordId" column="record_id"/>
+        <result property="diseaseId" column="disease_id"/>
+        <result property="imageId" column="image_id"/>
+        <result property="imageName" column="image_name"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="resultImageUrl" column="result_image_url"/>
+        <result property="diseaseName" column="disease_name"/>
+        <result property="confidence" column="confidence"/>
+        <result property="warningLevel" column="warning_level"/>
+        <result property="diseaseResult" column="disease_result"/>
+        <result property="diseaseDesc" column="disease_desc"/>
+        <result property="diseaseAdvice" column="disease_advice"/>
+        <result property="parkId" column="park_id"/>
+        <result property="parkName" column="park_name"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="deviceName" column="device_name"/>
+        <result property="modelId" column="model_id"/>
+        <result property="modelName" column="model_name"/>
+        <result property="cropType" column="crop_type"/>
+        <result property="recordMode" column="record_mode"/>
+        <result property="recognizeTime" column="recognize_time"/>
+    </resultMap>
+
+    <resultMap id="OptionResult" type="com.ruoyi.binZhou.sxz.domain.DiseaseAutoTaskOption">
+        <result property="value" column="value"/>
+        <result property="label" column="label"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="deviceName" column="device_name"/>
+        <result property="deviceSn" column="device_sn"/>
+        <result property="parkId" column="park_id"/>
+        <result property="parkName" column="park_name"/>
+        <result property="areaId" column="area_id"/>
+        <result property="areaName" column="area_name"/>
+        <result property="presetId" column="preset_id"/>
+        <result property="pointIndex" column="point_index"/>
+        <result property="jobType" column="job_type"/>
+        <result property="executeTime" column="execute_time"/>
+        <result property="cronExpression" column="cron_expression"/>
+        <result property="captureCount" column="capture_count"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <sql id="taskColumns">
+        select t.*, ct.task_name camera_task_name, ct.status capture_task_status,
+               ct.job_type capture_job_type, ct.execute_time capture_execute_time,
+               ct.cron_expression capture_cron_expression,
+               cp.id preset_id, cp.point_index, d.device_name, d.device_sn,
+               a.area_id, a.area_name, p.park_name, m.model_name
+        from sxz_disease_auto_task t
+        left join camera_task ct on ct.task_id = t.camera_task_id
+        left join camera_preset cp on cp.id = ct.preset_id
+        left join iot_device d on d.device_id = cp.device_id
+        left join location l on l.location_id = d.location_id
+        left join area a on a.area_id = l.area_id
+        left join park p on p.park_id = a.park_id
+        left join xwq_ai_model m on m.model_id = t.model_id
+    </sql>
+
+    <select id="selectTaskList" resultMap="TaskResult">
+        <include refid="taskColumns"/>
+        <where>
+            t.del_flag = '0'
+            <if test="taskName != null and taskName != ''">and t.task_name like concat('%', #{taskName}, '%')</if>
+            <if test="parkId != null">and t.park_id = #{parkId}</if>
+            <if test="deviceId != null">and t.device_id = #{deviceId}</if>
+            <if test="taskStatus != null and taskStatus != ''">and t.task_status = #{taskStatus}</if>
+            <if test="runState != null and runState != ''">and t.run_state = #{runState}</if>
+        </where>
+        order by t.create_time desc, t.task_id desc
+    </select>
+
+    <select id="selectTaskById" resultMap="TaskResult">
+        <include refid="taskColumns"/>
+        where t.task_id = #{taskId} and t.del_flag = '0'
+    </select>
+
+    <insert id="insertTask" useGeneratedKeys="true" keyProperty="taskId">
+        insert into sxz_disease_auto_task
+        (task_name, camera_task_id, consume_mode, park_id, device_id, model_id, crop_type,
+         max_retry_count, task_status, run_state, invalid_reason,
+         remark, create_by, create_time, update_by, update_time)
+        values
+        (#{taskName}, #{cameraTaskId}, #{consumeMode}, #{parkId}, #{deviceId}, #{modelId}, #{cropType},
+         #{maxRetryCount}, #{taskStatus}, 'IDLE', #{invalidReason},
+         #{remark}, 'system', now(), 'system', now())
+    </insert>
+
+    <update id="updateTask">
+        update sxz_disease_auto_task
+        set task_name = #{taskName}, camera_task_id = #{cameraTaskId}, consume_mode = #{consumeMode},
+            park_id = #{parkId}, device_id = #{deviceId}, model_id = #{modelId}, crop_type = #{cropType},
+            max_retry_count = #{maxRetryCount}, task_status = #{taskStatus},
+            invalid_reason = #{invalidReason}, next_run_time = null,
+            remark = #{remark}, version = version + 1, update_time = now()
+        where task_id = #{taskId} and del_flag = '0' and run_state = 'IDLE'
+    </update>
+
+    <update id="deleteTaskByIds">
+        update sxz_disease_auto_task set del_flag = '2', task_status = '1', update_time = now()
+        where del_flag = '0' and run_state = 'IDLE' and task_id in
+        <foreach item="taskId" collection="taskIds" open="(" separator="," close=")">#{taskId}</foreach>
+    </update>
+
+    <update id="updateTaskStatus">
+        update sxz_disease_auto_task
+        set task_status = #{taskStatus}, next_run_time = null, version = version + 1, update_time = now()
+        where task_id = #{taskId} and del_flag = '0' and run_state = 'IDLE'
+    </update>
+
+    <select id="selectDueTaskList" resultMap="TaskResult">
+        <include refid="taskColumns"/>
+        where t.del_flag = '0' and t.task_status = '0'
+          and t.camera_task_id is not null
+          and (t.run_state = 'IDLE' or t.execution_lock_time &lt; date_sub(now(), interval 30 minute))
+        order by coalesce(t.last_run_time, '1970-01-01 00:00:00'), t.task_id
+        limit #{limit}
+    </select>
+
+    <update id="acquireTask">
+        update sxz_disease_auto_task
+        set run_state = 'RUNNING', execution_token = #{token}, execution_lock_time = now(),
+            version = version + 1, update_time = now()
+        where task_id = #{taskId} and del_flag = '0' and task_status = '0'
+          and (run_state = 'IDLE' or execution_lock_time &lt; date_sub(now(), interval 30 minute))
+    </update>
+
+    <update id="acquireTaskForImmediate">
+        update sxz_disease_auto_task
+        set run_state = 'RUNNING', execution_token = #{token}, execution_lock_time = now(),
+            version = version + 1, update_time = now()
+        where task_id = #{taskId} and del_flag = '0'
+          and (run_state = 'IDLE' or execution_lock_time &lt; date_sub(now(), interval 30 minute))
+    </update>
+
+    <update id="releaseTask">
+        update sxz_disease_auto_task
+        set run_state = 'IDLE', execution_token = null, execution_lock_time = null,
+            last_run_time = #{lastRunTime}, next_run_time = null,
+            last_run_status = #{lastRunStatus}, last_run_message = #{lastRunMessage},
+            version = version + 1, update_time = now()
+        where task_id = #{taskId} and execution_token = #{executionToken}
+    </update>
+
+    <insert id="insertRun" useGeneratedKeys="true" keyProperty="runId">
+        insert into sxz_disease_auto_task_run
+        (task_id, camera_task_id, device_id, park_id, model_id, task_name,
+         trigger_type, run_status, start_time, source_count,
+         recognize_count, success_count, fail_count, skip_count, create_by, create_time)
+        values
+        (#{taskId}, #{cameraTaskId}, #{deviceId}, #{parkId}, #{modelId}, #{taskName},
+         #{triggerType}, #{runStatus}, #{startTime}, #{sourceCount},
+         #{recognizeCount}, #{successCount}, #{failCount}, #{skipCount}, #{createBy}, now())
+    </insert>
+
+    <update id="updateRun">
+        update sxz_disease_auto_task_run
+        set run_status = #{runStatus}, end_time = #{endTime}, source_count = #{sourceCount},
+            recognize_count = #{recognizeCount}, success_count = #{successCount},
+            fail_count = #{failCount}, skip_count = #{skipCount}, error_message = #{errorMessage},
+            update_time = now()
+        where run_id = #{runId}
+    </update>
+
+    <select id="selectRunList" resultMap="RunResult">
+        select * from sxz_disease_auto_task_run
+        where task_id = #{taskId}
+        order by start_time desc, run_id desc
+    </select>
+
+    <select id="selectSummary" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAutoTaskSummary">
+        select
+          (select count(*) from sxz_disease_auto_task where del_flag = '0') taskCount,
+          (select count(*) from sxz_disease_auto_task where del_flag = '0' and task_status = '0') enabledTaskCount,
+          (select count(*) from sxz_disease_auto_task where del_flag = '0' and task_status = '1') disabledTaskCount,
+          (select count(*) from sxz_disease_auto_task where del_flag = '0' and last_run_status in ('FAILED','PARTIAL')) abnormalTaskCount,
+          (select count(*) from sxz_disease_auto_task_run where start_time &gt;= curdate()) todayRunCount,
+          (select count(distinct r.record_id) from xwq_ai_record r
+             where r.record_type = '病虫害' and r.record_mode = '自动定时' and r.create_time &gt;= curdate()) todayImageCount,
+          (select count(*) from xwq_ai_record r join xwq_ai_disease d on d.record_id = r.record_id
+             where r.record_type = '病虫害' and r.record_mode = '自动定时' and r.create_time &gt;= curdate()
+               and trim(d.disease_name) in ('健康','健康叶片')) todayHealthyCount,
+          (select count(*) from xwq_ai_record r join xwq_ai_disease d on d.record_id = r.record_id
+             where r.record_type = '病虫害' and r.record_mode = '自动定时' and r.create_time &gt;= curdate()
+               and trim(d.disease_name) not in ('健康','健康叶片')) todayDiseaseCount,
+          coalesce((select round(sum(case when trim(d.disease_name) not in ('健康','健康叶片') then 1 else 0 end) * 100.0 / nullif(count(*), 0), 2)
+             from xwq_ai_record r join xwq_ai_disease d on d.record_id = r.record_id
+             where r.record_type = '病虫害' and r.record_mode = '自动定时' and r.create_time &gt;= curdate()), 0) todayDetectionRate,
+          coalesce((select round(sum(success_count) * 100.0 / nullif(sum(success_count + fail_count), 0), 2)
+             from sxz_disease_auto_task_run where start_time &gt;= curdate()), 0) todaySuccessRate,
+          (select max(r.create_time) from xwq_ai_record r
+             where r.record_type = '病虫害' and r.record_mode = '自动定时') latestRecognizeTime
+    </select>
+
+    <select id="selectParkOptions" resultMap="OptionResult">
+        select park_id value, park_name label from park order by park_id
+    </select>
+
+    <select id="selectDeviceOptions" resultMap="OptionResult">
+        select d.device_id value, d.device_name label
+        from iot_device d
+        left join location l on l.location_id = d.location_id
+        left join area a on a.area_id = l.area_id
+        <where><if test="parkId != null">a.park_id = #{parkId}</if></where>
+        order by d.device_id
+    </select>
+
+    <select id="selectModelOptions" resultMap="OptionResult">
+        select model_id value, model_name label
+        from xwq_ai_model
+        where model_status = 1 and model_url is not null and trim(model_url) != ''
+          and lower(trim(model_type)) in ('病虫害','disease','disease_recognition')
+        order by model_id
+    </select>
+
+    <sql id="captureTaskOptionColumns">
+        select ct.task_id value, ct.task_name label, ct.status, ct.job_type,
+               ct.execute_time, ct.cron_expression, ct.count capture_count,
+               cp.id preset_id, cp.point_index, d.device_id, d.device_name, d.device_sn,
+               a.area_id, a.area_name, p.park_id, p.park_name
+        from camera_task ct
+        left join camera_preset cp on cp.id = ct.preset_id
+        left join iot_device d on d.device_id = cp.device_id
+        left join location l on l.location_id = d.location_id
+        left join area a on a.area_id = l.area_id
+        left join park p on p.park_id = a.park_id
+    </sql>
+
+    <select id="selectCaptureTaskOptions" resultMap="OptionResult">
+        <include refid="captureTaskOptionColumns"/>
+        order by case when ct.status = '0' then 0 else 1 end, ct.create_time desc, ct.task_id desc
+    </select>
+
+    <select id="selectCaptureTaskOptionById" resultMap="OptionResult">
+        <include refid="captureTaskOptionColumns"/>
+        where ct.task_id = #{cameraTaskId}
+        limit 1
+    </select>
+
+    <select id="selectDeviceParkId" resultType="java.lang.Long">
+        select a.park_id from iot_device d
+        left join location l on l.location_id = d.location_id
+        left join area a on a.area_id = l.area_id
+        where d.device_id = #{deviceId} limit 1
+    </select>
+
+    <select id="countAvailableModel" resultType="int">
+        select count(*) from xwq_ai_model
+        where model_id = #{modelId} and model_status = 1
+          and model_url is not null and trim(model_url) != ''
+          and lower(trim(model_type)) in ('病虫害','disease','disease_recognition')
+    </select>
+
+    <select id="countDuplicateTask" resultType="int">
+        select count(*) from sxz_disease_auto_task
+        where del_flag = '0' and camera_task_id = #{cameraTaskId} and model_id = #{modelId}
+          <if test="taskId != null">and task_id != #{taskId}</if>
+    </select>
+
+    <select id="selectSourceImages" resultMap="ItemResult">
+        select r.id source_image_id, r.url image_url, #{task.modelId} model_id_snapshot,
+               coalesce(r.capture_time, r.create_time) capture_time
+        from image_record r
+        where r.task_id = #{task.cameraTaskId} and r.url is not null and trim(r.url) != ''
+          and not exists (select 1 from sxz_disease_auto_task_item i
+                          where i.task_id = #{task.taskId} and i.source_image_id = r.id)
+        order by coalesce(r.capture_time, r.create_time) asc, r.id asc
+        limit #{limit}
+    </select>
+
+    <select id="selectLatestSourceImage" resultMap="ItemResult">
+        select r.id source_image_id, r.url image_url, #{task.modelId} model_id_snapshot,
+               coalesce(r.capture_time, r.create_time) capture_time
+        from image_record r
+        where r.url is not null and trim(r.url) != ''
+          and (
+              r.task_id = #{task.cameraTaskId}
+              or (
+                  r.device_id = #{task.deviceId}
+                  and not exists (
+                      select 1 from image_record exact_image
+                      where exact_image.task_id = #{task.cameraTaskId}
+                        and exact_image.url is not null and trim(exact_image.url) != ''
+                  )
+              )
+          )
+        order by case when r.task_id = #{task.cameraTaskId} then 0 else 1 end,
+                 coalesce(r.capture_time, r.create_time) desc, r.id desc
+        limit 1
+    </select>
+
+    <insert id="insertItem" useGeneratedKeys="true" keyProperty="itemId">
+        insert into sxz_disease_auto_task_item
+        (task_id, run_id, source_image_id, model_id_snapshot, capture_time,
+         item_status, attempt_count, create_time, update_time)
+        values (#{taskId}, #{runId}, #{sourceImageId}, #{modelIdSnapshot}, #{captureTime},
+                #{itemStatus}, 0, now(), now())
+    </insert>
+
+    <insert id="insertAiImage">
+        insert into xwq_ai_image
+        (image_name, image_url, image_ai_type, image_source, image_source_id, image_size,
+         image_format, park_id, plot_id, device_id, image_status, image_a, image_b, create_time, update_time)
+        select concat('auto_', #{task.taskId}, '_', r.id, '_', substring_index(r.url, '/', -1)),
+               r.url, 'disease', '摄像头', r.id, r.file_size,
+               lower(substring_index(r.url, '.', -1)), a.park_id, a.area_id, r.device_id,
+               0, #{task.cropType}, cast(#{task.taskId} as char), now(), now()
+        from image_record r
+        left join iot_device d on d.device_id = r.device_id
+        left join location l on l.location_id = d.location_id
+        left join area a on a.area_id = l.area_id
+        where r.id = #{item.sourceImageId}
+          and not exists (select 1 from xwq_ai_image i
+                          where i.image_source = '摄像头' and i.image_source_id = r.id
+                            and i.image_ai_type = 'disease')
+    </insert>
+
+    <select id="selectAiImageId" resultType="java.lang.Long">
+        select image_id from xwq_ai_image
+        where image_source = '摄像头' and image_source_id = #{sourceImageId} and image_ai_type = 'disease'
+        order by image_id desc limit 1
+    </select>
+
+    <update id="updateAiImageStatus">
+        update xwq_ai_image set image_status = #{imageStatus}, update_time = now() where image_id = #{imageId}
+    </update>
+
+    <update id="updateItemRunning">
+        update sxz_disease_auto_task_item
+        set ai_image_id = #{aiImageId}, item_status = 'RUNNING', attempt_count = #{attemptCount},
+            start_time = #{startTime}, update_time = now()
+        where item_id = #{itemId}
+    </update>
+
+    <update id="updateItemSuccess">
+        update sxz_disease_auto_task_item
+        set record_id = #{recordId}, disease_id = #{diseaseId}, item_status = 'SUCCESS',
+            attempt_count = #{attemptCount}, next_retry_time = null,
+            finish_time = #{finishTime}, error_message = null, update_time = now()
+        where item_id = #{itemId}
+    </update>
+
+    <update id="updateItemFailed">
+        update sxz_disease_auto_task_item
+        set ai_image_id = #{aiImageId}, item_status = 'FAILED', finish_time = #{finishTime},
+            attempt_count = #{attemptCount}, next_retry_time = null,
+            error_message = #{errorMessage}, update_time = now()
+        where item_id = #{itemId}
+    </update>
+
+    <sql id="recognitionColumns">
+        select i.item_id, i.task_id, coalesce(t.task_name, '自动定时识别') task_name, i.run_id,
+               r.record_id, d.disease_id,
+               img.image_id, img.image_name, img.image_url,
+               coalesce(d.disease_result_img_url, img.image_result_url) result_image_url,
+               d.disease_name, d.disease_confidence confidence, d.warning_level,
+               d.disease_result, d.disease_desc, d.disease_advice,
+               r.park_id, p.park_name, r.device_id, dev.device_name, r.model_id, m.model_name,
+               r.crop_type, r.record_mode, r.create_time recognize_time
+        from xwq_ai_record r
+        join xwq_ai_disease d on d.record_id = r.record_id
+        left join sxz_disease_auto_task_item i
+          on i.record_id = r.record_id and i.disease_id = d.disease_id and i.item_status = 'SUCCESS'
+        left join sxz_disease_auto_task t on t.task_id = i.task_id
+        left join xwq_ai_image img on img.image_id = coalesce(i.ai_image_id, r.image_id, d.image_id)
+        left join park p on p.park_id = r.park_id
+        left join iot_device dev on dev.device_id = r.device_id
+        left join xwq_ai_model m on m.model_id = r.model_id
+    </sql>
+
+    <select id="selectResultList" resultMap="RecognitionResult">
+        <include refid="recognitionColumns"/>
+        <where>
+            r.record_type = '病虫害' and r.record_mode = '自动定时'
+            <if test="days != null">and r.create_time &gt;= date_sub(now(), interval #{days} day)</if>
+            <if test="beginTime != null and beginTime != ''">and r.create_time &gt;= #{beginTime}</if>
+            <if test="endTime != null and endTime != ''">and r.create_time &lt;= #{endTime}</if>
+            <if test="parkId != null">and r.park_id = #{parkId}</if>
+            <if test="deviceId != null">and r.device_id = #{deviceId}</if>
+            <if test="modelId != null">and r.model_id = #{modelId}</if>
+            <if test="taskId != null">and i.task_id = #{taskId}</if>
+            <if test="diseaseName != null and diseaseName != ''">and d.disease_name like concat('%', #{diseaseName}, '%')</if>
+            <if test="resultType == 'HEALTHY'">and trim(d.disease_name) in ('健康','健康叶片')</if>
+            <if test="resultType == 'DISEASE'">and trim(d.disease_name) not in ('健康','健康叶片')</if>
+        </where>
+        order by r.create_time desc, i.item_id desc
+    </select>
+
+    <select id="selectResultByItemId" resultMap="RecognitionResult">
+        <include refid="recognitionColumns"/>
+        where i.item_id = #{itemId} and i.item_status = 'SUCCESS'
+          and r.record_type = '病虫害' and r.record_mode = '自动定时'
+    </select>
+
+    <select id="selectRunItems" resultMap="ItemResult">
+        select i.*, img.image_url
+        from sxz_disease_auto_task_item i
+        left join xwq_ai_image img on img.image_id = i.ai_image_id
+        where i.run_id = #{runId}
+        order by i.item_id
+    </select>
+</mapper>

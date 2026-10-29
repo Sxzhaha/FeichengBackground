@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.sxz.mapper.DiseaseAutoManageMapper">
+
+    <select id="selectSummary" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAutoManageSummary">
+        select
+            (select count(*) from sxz_disease_auto_task where del_flag = '0') taskCount,
+            (select count(*) from sxz_disease_auto_task where del_flag = '0' and task_status = '0') enabledTaskCount,
+            (select count(*) from sxz_disease_auto_task where del_flag = '0' and run_state = 'RUNNING') runningTaskCount,
+            (select count(*) from sxz_disease_auto_task_run) runCount,
+            (select count(*) from sxz_disease_auto_task_run where run_status = 'SUCCESS') successRunCount,
+            (select count(*) from sxz_disease_auto_task_item) itemCount,
+            (select count(*) from sxz_disease_auto_task_item where item_status = 'SUCCESS') successItemCount,
+            (select count(*) from sxz_disease_auto_task_item where item_status = 'FAILED') failedItemCount
+    </select>
+
+    <select id="selectTaskRows" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAutoManageTaskRow">
+        select t.task_id taskId, t.task_name taskName, p.park_name parkName,
+               d.device_name deviceName, m.model_name modelName, t.crop_type cropType,
+               t.schedule_type scheduleType, t.fixed_times fixedTimes,
+               t.interval_minutes intervalMinutes, t.task_status taskStatus,
+               t.run_state runState, t.last_run_time lastRunTime,
+               t.next_run_time nextRunTime, t.last_run_status lastRunStatus
+        from sxz_disease_auto_task t
+        left join park p on p.park_id = t.park_id
+        left join iot_device d on d.device_id = t.device_id
+        left join xwq_ai_model m on m.model_id = t.model_id
+        <where>
+            t.del_flag = '0'
+            <if test="taskName != null and taskName != ''">and t.task_name like concat('%', #{taskName}, '%')</if>
+            <if test="parkId != null">and t.park_id = #{parkId}</if>
+            <if test="deviceId != null">and t.device_id = #{deviceId}</if>
+            <if test="taskStatus != null and taskStatus != ''">and t.task_status = #{taskStatus}</if>
+            <if test="runState != null and runState != ''">and t.run_state = #{runState}</if>
+        </where>
+        order by t.create_time desc, t.task_id desc
+    </select>
+
+    <select id="selectRunRows" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAutoManageRunRow">
+        select r.run_id runId, r.task_id taskId, r.task_name taskName,
+               r.trigger_type triggerType, r.run_status runStatus,
+               r.start_time startTime, r.end_time endTime,
+               r.source_count sourceCount, r.recognize_count recognizeCount,
+               r.success_count successCount, r.fail_count failCount,
+               r.skip_count skipCount, r.error_message errorMessage
+        from sxz_disease_auto_task_run r
+        <where>
+            <if test="taskId != null">r.task_id = #{taskId}</if>
+            <if test="taskName != null and taskName != ''">and r.task_name like concat('%', #{taskName}, '%')</if>
+            <if test="triggerType != null and triggerType != ''">and r.trigger_type = #{triggerType}</if>
+            <if test="runStatus != null and runStatus != ''">and r.run_status = #{runStatus}</if>
+            <if test="beginTime != null and beginTime != ''">and r.start_time &gt;= #{beginTime}</if>
+            <if test="endTime != null and endTime != ''">and r.start_time &lt;= #{endTime}</if>
+        </where>
+        order by r.start_time desc, r.run_id desc
+    </select>
+
+    <select id="selectItemRows" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAutoManageItemRow">
+        select i.item_id itemId, t.task_name taskName, i.run_id runId,
+               i.source_image_id sourceImageId, i.ai_image_id aiImageId,
+               i.record_id recordId, i.disease_id diseaseId,
+               d.disease_name diseaseName, d.disease_confidence confidence,
+               i.item_status itemStatus, i.attempt_count attemptCount,
+               i.start_time startTime, i.finish_time finishTime,
+               i.error_message errorMessage,
+               coalesce(img.image_url, src.url) imageUrl,
+               coalesce(d.disease_result_img_url, img.image_result_url) resultImageUrl
+        from sxz_disease_auto_task_item i
+        join sxz_disease_auto_task t on t.task_id = i.task_id
+        left join image_record src on src.id = i.source_image_id
+        left join xwq_ai_image img on img.image_id = i.ai_image_id
+        left join xwq_ai_disease d on d.disease_id = i.disease_id
+        <where>
+            <if test="taskId != null">i.task_id = #{taskId}</if>
+            <if test="runId != null">and i.run_id = #{runId}</if>
+            <if test="taskName != null and taskName != ''">and t.task_name like concat('%', #{taskName}, '%')</if>
+            <if test="itemStatus != null and itemStatus != ''">and i.item_status = #{itemStatus}</if>
+            <if test="diseaseName != null and diseaseName != ''">and d.disease_name like concat('%', #{diseaseName}, '%')</if>
+            <if test="beginTime != null and beginTime != ''">and i.create_time &gt;= #{beginTime}</if>
+            <if test="endTime != null and endTime != ''">and i.create_time &lt;= #{endTime}</if>
+        </where>
+        order by i.create_time desc, i.item_id desc
+    </select>
+</mapper>

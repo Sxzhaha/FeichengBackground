@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.AgriWeatherLiveMapper">
+    
+    <resultMap type="AgriWeatherLive" id="AgriWeatherLiveResult">
+        <result property="id"    column="id"    />
+        <result property="parkId"    column="park_id"    />
+        <result property="fetchTime"    column="fetch_time"    />
+        <result property="reportTime"    column="report_time"    />
+        <result property="temperature"    column="temperature"    />
+        <result property="humidity"    column="humidity"    />
+        <result property="windDirection"    column="wind_direction"    />
+        <result property="windSpeed"    column="wind_speed"    />
+        <result property="windScale"    column="wind_scale"    />
+        <result property="precipitation"    column="precipitation"    />
+        <result property="airPressure"    column="air_pressure"    />
+        <result property="weatherCode"    column="weather_code"    />
+        <result property="weatherText"    column="weather_text"    />
+        <result property="remark1"    column="remark1"    />
+        <result property="remark2"    column="remark2"    />
+    </resultMap>
+
+    <sql id="selectAgriWeatherLiveVo">
+        select id, park_id, fetch_time, report_time, temperature, humidity, wind_direction, wind_speed, wind_scale, precipitation, air_pressure, weather_code, weather_text, remark1, remark2 from ld_agri_weather_live
+    </sql>
+
+    <select id="selectAgriWeatherLiveList" parameterType="AgriWeatherLive" resultMap="AgriWeatherLiveResult">
+        <include refid="selectAgriWeatherLiveVo"/>
+        <where>  
+            <if test="parkId != null  and parkId != ''"> and park_id = #{parkId}</if>
+            <if test="fetchTime != null "> and fetch_time = #{fetchTime}</if>
+            <if test="reportTime != null "> and report_time = #{reportTime}</if>
+            <if test="temperature != null "> and temperature = #{temperature}</if>
+            <if test="humidity != null "> and humidity = #{humidity}</if>
+            <if test="windDirection != null  and windDirection != ''"> and wind_direction = #{windDirection}</if>
+            <if test="windSpeed != null "> and wind_speed = #{windSpeed}</if>
+            <if test="windScale != null "> and wind_scale = #{windScale}</if>
+            <if test="precipitation != null "> and precipitation = #{precipitation}</if>
+            <if test="airPressure != null "> and air_pressure = #{airPressure}</if>
+            <if test="weatherCode != null  and weatherCode != ''"> and weather_code = #{weatherCode}</if>
+            <if test="weatherText != null  and weatherText != ''"> and weather_text = #{weatherText}</if>
+            <if test="remark1 != null "> and remark1 = #{remark1}</if>
+            <if test="remark2 != null  and remark2 != ''"> and remark2 = #{remark2}</if>
+        </where>
+    </select>
+    
+    <select id="selectAgriWeatherLiveById" parameterType="Long" resultMap="AgriWeatherLiveResult">
+        <include refid="selectAgriWeatherLiveVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertAgriWeatherLive" parameterType="AgriWeatherLive" useGeneratedKeys="true" keyProperty="id">
+        insert into ld_agri_weather_live
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="parkId != null and parkId != ''">park_id,</if>
+            <if test="fetchTime != null">fetch_time,</if>
+            <if test="reportTime != null">report_time,</if>
+            <if test="temperature != null">temperature,</if>
+            <if test="humidity != null">humidity,</if>
+            <if test="windDirection != null">wind_direction,</if>
+            <if test="windSpeed != null">wind_speed,</if>
+            <if test="windScale != null">wind_scale,</if>
+            <if test="precipitation != null">precipitation,</if>
+            <if test="airPressure != null">air_pressure,</if>
+            <if test="weatherCode != null">weather_code,</if>
+            <if test="weatherText != null">weather_text,</if>
+            <if test="remark1 != null">remark1,</if>
+            <if test="remark2 != null">remark2,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="parkId != null and parkId != ''">#{parkId},</if>
+            <if test="fetchTime != null">#{fetchTime},</if>
+            <if test="reportTime != null">#{reportTime},</if>
+            <if test="temperature != null">#{temperature},</if>
+            <if test="humidity != null">#{humidity},</if>
+            <if test="windDirection != null">#{windDirection},</if>
+            <if test="windSpeed != null">#{windSpeed},</if>
+            <if test="windScale != null">#{windScale},</if>
+            <if test="precipitation != null">#{precipitation},</if>
+            <if test="airPressure != null">#{airPressure},</if>
+            <if test="weatherCode != null">#{weatherCode},</if>
+            <if test="weatherText != null">#{weatherText},</if>
+            <if test="remark1 != null">#{remark1},</if>
+            <if test="remark2 != null">#{remark2},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAgriWeatherLive" parameterType="AgriWeatherLive">
+        update ld_agri_weather_live
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="parkId != null and parkId != ''">park_id = #{parkId},</if>
+            <if test="fetchTime != null">fetch_time = #{fetchTime},</if>
+            <if test="reportTime != null">report_time = #{reportTime},</if>
+            <if test="temperature != null">temperature = #{temperature},</if>
+            <if test="humidity != null">humidity = #{humidity},</if>
+            <if test="windDirection != null">wind_direction = #{windDirection},</if>
+            <if test="windSpeed != null">wind_speed = #{windSpeed},</if>
+            <if test="windScale != null">wind_scale = #{windScale},</if>
+            <if test="precipitation != null">precipitation = #{precipitation},</if>
+            <if test="airPressure != null">air_pressure = #{airPressure},</if>
+            <if test="weatherCode != null">weather_code = #{weatherCode},</if>
+            <if test="weatherText != null">weather_text = #{weatherText},</if>
+            <if test="remark1 != null">remark1 = #{remark1},</if>
+            <if test="remark2 != null">remark2 = #{remark2},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAgriWeatherLiveById" parameterType="Long">
+        delete from ld_agri_weather_live where id = #{id}
+    </delete>
+
+    <delete id="deleteAgriWeatherLiveByIds" parameterType="String">
+        delete from ld_agri_weather_live where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

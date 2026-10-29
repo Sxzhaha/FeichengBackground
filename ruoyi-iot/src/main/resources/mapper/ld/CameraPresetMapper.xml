@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.CameraPresetMapper">
+    
+    <resultMap type="CameraPreset" id="CameraPresetResult">
+        <result property="deviceId"    column="device_id"    />
+        <result property="deviceName"    column="device_name"    />
+        <result property="snCode" column="sn_code"/>
+        <result property="pointIndex"    column="point_index"    />
+        <result property="remark"    column="remark"    />
+        <result property="creatorId"    column="creator_id"    />
+        <result property="creatorName"    column="creator_name"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="id"    column="id"    />
+    </resultMap>
+
+    <sql id="selectCameraPresetVo">
+        select cp.device_id, point_index, cp.remark, cp.creator_id, cp.create_time, cp.update_by, cp.update_time, cp.id, d.device_name, d.device_sn sn_code,u.nick_name as creator_name from camera_preset cp left join iot_device d on cp.device_id = d.device_id left join sys_user u on cp.creator_id = u.user_id
+    </sql>
+
+    <select id="selectCameraPresetList" parameterType="CameraPreset" resultMap="CameraPresetResult">
+        <include refid="selectCameraPresetVo"/>
+        <where>  
+            <if test="deviceId != null "> and cp.device_id = #{deviceId}</if>
+            <if test="pointIndex != null "> and point_index = #{pointIndex}</if>
+            <if test="creatorId != null "> and cp.creator_id = #{creatorId}</if>
+        </where>
+    </select>
+    
+    <select id="selectCameraPresetByDeviceId" parameterType="Long" resultMap="CameraPresetResult">
+        <include refid="selectCameraPresetVo"/>
+        where cp.device_id = #{deviceId}
+    </select>
+    <select id="selectCameraPresetById" parameterType="Long" resultMap="CameraPresetResult">
+        <include refid="selectCameraPresetVo"/>
+        where cp.id = #{presetId}
+    </select>
+
+    <insert id="insertCameraPreset" parameterType="CameraPreset">
+        insert into camera_preset
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="deviceId != null">device_id,</if>
+            <if test="pointIndex != null">point_index,</if>
+            <if test="remark != null">remark,</if>
+            <if test="creatorId != null">creator_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="id != null">id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="deviceId != null">#{deviceId},</if>
+            <if test="pointIndex != null">#{pointIndex},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="creatorId != null">#{creatorId},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="id != null">#{id},</if>
+         </trim>
+    </insert>
+
+    <update id="updateCameraPreset" parameterType="CameraPreset">
+        update camera_preset
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="pointIndex != null">point_index = #{pointIndex},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="creatorId != null">creator_id = #{creatorId},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="deviceId != null">device_id = #{deviceId},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteCameraPresetById" parameterType="Long">
+        delete from camera_preset where id = #{d}
+    </delete>
+
+    <delete id="deleteCameraPresetByIds" parameterType="String">
+        delete from camera_preset where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

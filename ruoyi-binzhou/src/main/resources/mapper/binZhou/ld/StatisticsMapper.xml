@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.ld.mapper.StatisticsMapper">
+
+    <select id="countNodesByType" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM ld_knowledge_nodes WHERE node_type = #{nodeType}
+    </select>
+
+    <select id="countUnifiedNodesByCategory" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM ld_unified_knowledge_nodes WHERE category = #{category} AND status = 1
+    </select>
+
+    <select id="countDiseaseAltNodes" resultType="int">
+        SELECT COUNT(*) FROM ld_disease_knowledge_nodes WHERE node_type = 'disease'
+    </select>
+
+    <select id="countPestAltNodes" resultType="int">
+        SELECT COUNT(*) FROM ld_disease_knowledge_nodes WHERE node_type = 'pest'
+    </select>
+
+    <select id="selectCropVarietyStatistics" resultType="map">
+        SELECT n1.node_name as cropName, COUNT(n2.id) as varietyCount
+        FROM ld_knowledge_nodes n1
+        LEFT JOIN ld_knowledge_nodes n2 ON n2.parent_id = n1.node_id AND n2.node_type = 'variety'
+        WHERE n1.node_type = 'crop'
+        GROUP BY n1.node_id, n1.node_name
+        ORDER BY varietyCount DESC
+    </select>
+
+    <select id="selectUnifiedCategoryStatistics" resultType="map">
+        SELECT category, COUNT(*) as count
+        FROM ld_unified_knowledge_nodes
+        WHERE category IN ('病害', '虫害', '非生物胁迫') AND status = 1
+        GROUP BY category
+    </select>
+
+    <select id="selectUnifiedPestDiseaseStatistics" resultType="map">
+        SELECT category, node_type as nodeType, COUNT(*) as count
+        FROM ld_unified_knowledge_nodes
+        WHERE category IN ('病害', '虫害', '非生物胁迫') AND status = 1
+        GROUP BY category, node_type
+        ORDER BY category, node_type
+    </select>
+
+    <select id="selectAltPestDiseaseStatistics" resultType="map">
+        SELECT node_type as nodeType, COUNT(*) as count
+        FROM ld_disease_knowledge_nodes
+        GROUP BY node_type
+    </select>
+
+</mapper>

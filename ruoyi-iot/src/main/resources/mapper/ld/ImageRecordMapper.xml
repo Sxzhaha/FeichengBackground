@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.ImageRecordMapper">
+    
+    <resultMap type="ImageRecord" id="ImageRecordResult">
+        <result property="id"    column="id"    />
+        <result property="deviceId"    column="device_id"    />
+        <result property="url"    column="url"    />
+        <result property="fileSize"    column="file_size"    />
+        <result property="captureTime"    column="capture_time"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="taskId" column="task_id"/>
+        <result property="taskName" column="task_name"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="nick_name"/>
+    </resultMap>
+
+    <sql id="selectImageRecordVo">
+        select id, ir.device_id, url, file_size, capture_time, ir.create_time,ir.task_id,ct.task_name,ir.user_id,su.user_id,su.nick_name from image_record ir left join camera_task ct on ct.task_id = ir.task_id
+        left join sys_user su on su.user_id = ir.user_id
+    </sql>
+
+    <select id="selectImageRecordList" parameterType="ImageRecord" resultMap="ImageRecordResult">
+        <include refid="selectImageRecordVo"/>
+        <where>  
+            <if test="deviceId != null "> and ir.device_id = #{deviceId}</if>
+            <if test="url != null  and url != ''"> and url = #{url}</if>
+            <if test="fileSize != null "> and file_size = #{fileSize}</if>
+            <if test="captureTime != null "> and date_format(capture_time,'%y%m%d') = date_format(#{captureTime},'%y%m%d')</if>
+            <if test="params.beginTime != null and params.beginTime != ''"> and ir.capture_time &gt;= #{params.beginTime}</if>
+            <if test="params.endTime != null and params.endTime != ''"> and ir.capture_time &lt;= #{params.endTime}</if>
+            <if test="taskId != null "> and task_id = #{taskId}</if>
+             <if test="userId != null "> and ir.user_id = #{userId}</if>
+        </where>
+        order by ir.capture_time desc
+    </select>
+    
+    <select id="selectImageRecordById" parameterType="Long" resultMap="ImageRecordResult">
+        <include refid="selectImageRecordVo"/>
+        where id = #{id}
+        order by ir.capture_time desc
+    </select>
+
+    <insert id="insertImageRecord" parameterType="ImageRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into image_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="deviceId != null">device_id,</if>
+            <if test="url != null and url != ''">url,</if>
+            <if test="fileSize != null">file_size,</if>
+            <if test="captureTime != null">capture_time,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="taskId != null">task_id,</if>
+            <if test="userId != null">user_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="deviceId != null">#{deviceId},</if>
+            <if test="url != null and url != ''">#{url},</if>
+            <if test="fileSize != null">#{fileSize},</if>
+            <if test="captureTime != null">#{captureTime},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="taskId != null">#{taskId},</if>
+            <if test="userId != null">#{userId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateImageRecord" parameterType="ImageRecord">
+        update image_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="deviceId != null">device_id = #{deviceId},</if>
+            <if test="url != null and url != ''">url = #{url},</if>
+            <if test="fileSize != null">file_size = #{fileSize},</if>
+            <if test="captureTime != null">capture_time = #{captureTime},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="taskId != null">task_id = #{taskId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteImageRecordById" parameterType="Long">
+        delete from image_record where id = #{id}
+    </delete>
+
+    <delete id="deleteImageRecordByIds" parameterType="String">
+        delete from image_record where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 查询尚未同步到 xwq_ai_image 的摄像头抓拍图片，只读 image_record -->
+    <select id="selectUnsyncedDiseaseImageRecordIds" resultType="java.lang.Long">
+        select r.id
+        from image_record r
+        where r.url is not null
+          and r.url != ''
+      and not exists (
+          select 1
+          from xwq_ai_image i
+          where i.image_source = '摄像头'
+            and i.image_source_id = r.id
+            and i.image_ai_type = 'disease'
+      )
+        order by r.id asc
+            limit #{limit}
+    </select>
+</mapper>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.IotControlEventMapper">
+
+    <resultMap type="IotControlEvent" id="IotControlEventResult">
+        <result property="eventId" column="event_id" />
+        <result property="controlId" column="control_id" />
+        <result property="alertRecordId" column="alert_record_id" />
+        <result property="deviceId" column="device_id" />
+        <result property="deviceSn" column="device_sn" />
+        <result property="targetModelId" column="target_model_id" />
+        <result property="targetIdentifier" column="target_identifier" />
+        <result property="topic" column="topic" />
+        <result property="payload" column="payload" />
+        <result property="responsePayload" column="response_payload" />
+        <result property="responseDesc" column="response_desc" />
+        <result property="status" column="status" />
+        <result property="sendTime" column="send_time" />
+        <result property="responseTime" column="response_time" />
+        <result property="createBy" column="create_by" />
+        <result property="createTime" column="create_time" />
+        <result property="updateBy" column="update_by" />
+        <result property="updateTime" column="update_time" />
+        <result property="remark" column="remark" />
+        <result property="deviceName" column="device_name" />
+        <result property="actionName" column="action_name" />
+        <result property="targetModelName" column="target_model_name" />
+        <result property="alertLevel" column="alert_level" />
+        <result property="ruleDescription" column="rule_description" />
+    </resultMap>
+
+    <sql id="selectIotControlEventVo">
+        select e.event_id, e.control_id, e.alert_record_id, e.device_id, e.device_sn,
+               e.target_model_id, e.target_identifier, e.topic, e.payload,
+               e.response_payload, e.response_desc, e.status, e.send_time, e.response_time,
+               e.create_by, e.create_time, e.update_by, e.update_time, e.remark,
+               d.device_name,
+               l.action_name,
+               tm.model_name as target_model_name,
+               ac.alert_level, ac.rule_description
+        from iot_control_event e
+        left join iot_device d on e.device_id = d.device_id
+        left join iot_alert_control_linkage l on e.control_id = l.id
+        left join iot_thing_model tm on e.target_model_id = tm.model_id
+        left join ld_agri_product_alert_config ac on l.alert_config_id = ac.id
+    </sql>
+
+    <select id="selectIotControlEventList" parameterType="IotControlEvent" resultMap="IotControlEventResult">
+        <include refid="selectIotControlEventVo"/>
+        <where>
+            <if test="controlId != null"> and e.control_id = #{controlId}</if>
+            <if test="alertRecordId != null"> and e.alert_record_id = #{alertRecordId}</if>
+            <if test="deviceId != null"> and e.device_id = #{deviceId}</if>
+            <if test="deviceSn != null and deviceSn != ''"> and e.device_sn like concat('%', #{deviceSn}, '%')</if>
+            <if test="targetModelId != null"> and e.target_model_id = #{targetModelId}</if>
+            <if test="targetIdentifier != null and targetIdentifier != ''"> and e.target_identifier = #{targetIdentifier}</if>
+            <if test="topic != null and topic != ''"> and e.topic like concat('%', #{topic}, '%')</if>
+            <if test="status != null"> and e.status = #{status}</if>
+            <if test="actionName != null and actionName != ''"> and l.action_name like concat('%', #{actionName}, '%')</if>
+            <if test="params.beginSendTime != null and params.beginSendTime != ''"><!-- 开始下发时间检索 -->
+                and date_format(e.send_time,'%Y%m%d') &gt;= date_format(#{params.beginSendTime},'%Y%m%d')
+            </if>
+            <if test="params.endSendTime != null and params.endSendTime != ''"><!-- 结束下发时间检索 -->
+                and date_format(e.send_time,'%Y%m%d') &lt;= date_format(#{params.endSendTime},'%Y%m%d')
+            </if>
+        </where>
+        order by e.event_id desc
+    </select>
+
+    <select id="selectIotControlEventByEventId" parameterType="Long" resultMap="IotControlEventResult">
+        <include refid="selectIotControlEventVo"/>
+        where e.event_id = #{eventId}
+    </select>
+
+    <insert id="insertIotControlEvent" parameterType="IotControlEvent" useGeneratedKeys="true" keyProperty="eventId">
+        insert into iot_control_event
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="controlId != null">control_id,</if>
+            <if test="alertRecordId != null">alert_record_id,</if>
+            <if test="deviceId != null">device_id,</if>
+            <if test="deviceSn != null">device_sn,</if>
+            <if test="targetModelId != null">target_model_id,</if>
+            <if test="targetIdentifier != null">target_identifier,</if>
+            <if test="topic != null">topic,</if>
+            <if test="payload != null">payload,</if>
+            <if test="responsePayload != null">response_payload,</if>
+            <if test="responseDesc != null">response_desc,</if>
+            <if test="status != null">status,</if>
+            <if test="sendTime != null">send_time,</if>
+            <if test="responseTime != null">response_time,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="controlId != null">#{controlId},</if>
+            <if test="alertRecordId != null">#{alertRecordId},</if>
+            <if test="deviceId != null">#{deviceId},</if>
+            <if test="deviceSn != null">#{deviceSn},</if>
+            <if test="targetModelId != null">#{targetModelId},</if>
+            <if test="targetIdentifier != null">#{targetIdentifier},</if>
+            <if test="topic != null">#{topic},</if>
+            <if test="payload != null">#{payload},</if>
+            <if test="responsePayload != null">#{responsePayload},</if>
+            <if test="responseDesc != null">#{responseDesc},</if>
+            <if test="status != null">#{status},</if>
+            <if test="sendTime != null">#{sendTime},</if>
+            <if test="responseTime != null">#{responseTime},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateIotControlEvent" parameterType="IotControlEvent">
+        update iot_control_event
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="controlId != null">control_id = #{controlId},</if>
+            <if test="alertRecordId != null">alert_record_id = #{alertRecordId},</if>
+            <if test="deviceId != null">device_id = #{deviceId},</if>
+            <if test="deviceSn != null">device_sn = #{deviceSn},</if>
+            <if test="targetModelId != null">target_model_id = #{targetModelId},</if>
+            <if test="targetIdentifier != null">target_identifier = #{targetIdentifier},</if>
+            <if test="topic != null">topic = #{topic},</if>
+            <if test="payload != null">payload = #{payload},</if>
+            <if test="responsePayload != null">response_payload = #{responsePayload},</if>
+            <if test="responseDesc != null">response_desc = #{responseDesc},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="sendTime != null">send_time = #{sendTime},</if>
+            <if test="responseTime != null">response_time = #{responseTime},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where event_id = #{eventId}
+    </update>
+
+    <update id="updateIotControlEventResponseByRes">
+        update iot_control_event
+        set status = 2,
+            response_payload = #{responsePayload},
+            response_desc = #{responseDesc},
+            response_time = sysdate(),
+            update_time = sysdate()
+        where device_sn = #{deviceSn}
+          and status = 1
+          and json_valid(payload)
+          and json_unquote(json_extract(payload, '$.res')) = #{res}
+          and send_time = (
+              select max_send_time
+              from (
+                  select max(send_time) as max_send_time
+                  from iot_control_event
+                  where device_sn = #{deviceSn}
+                    and status = 1
+                    and json_valid(payload)
+                    and json_unquote(json_extract(payload, '$.res')) = #{res}
+              ) t
+          )
+    </update>
+
+    <delete id="deleteIotControlEventByEventId" parameterType="Long">
+        delete from iot_control_event where event_id = #{eventId}
+    </delete>
+
+    <delete id="deleteIotControlEventByEventIds" parameterType="String">
+        delete from iot_control_event where event_id in
+        <foreach item="eventId" collection="array" open="(" separator="," close=")">
+            #{eventId}
+        </foreach>
+    </delete>
+</mapper>

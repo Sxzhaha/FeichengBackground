@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.sxz.mapper.DiseaseKnowledgeRecognitionMapper">
+    <select id="selectKnowledgeAdvice"
+            resultType="com.ruoyi.binZhou.sxz.domain.DiseaseKnowledgeAdvice">
+        SELECT id AS knowledgeId,
+               plus_dsi_name AS knowledgeName,
+               plus_dsi_introduction AS introduction,
+               plus_dsi_damagesym AS damageSymptom,
+               plus_dsi_ofactor AS occurrenceRule,
+               plus_dsi_cmethod AS controlMethod
+        FROM knowledge
+        WHERE isdeleted = 0
+          AND (
+              TRIM(plus_dsi_name) = TRIM(#{diseaseName})
+              OR FIND_IN_SET(
+                  TRIM(#{diseaseName}),
+                  REPLACE(
+                      REPLACE(
+                          REPLACE(
+                              REPLACE(COALESCE(plus_dsi_synonyms, ''), '、', ','),
+                              '，',
+                              ','
+                          ),
+                          '；',
+                          ','
+                      ),
+                      ';',
+                      ','
+                  )
+              ) &gt; 0
+          )
+        ORDER BY CASE
+                     WHEN TRIM(plus_dsi_name) = TRIM(#{diseaseName}) THEN 0
+                     ELSE 1
+                 END,
+                 CASE
+                     WHEN #{cropType} IS NOT NULL
+                          AND #{cropType} != ''
+                          AND plus_dsi_categorythird = #{cropType} THEN 0
+                     ELSE 1
+                 END,
+                 id
+        LIMIT 1
+    </select>
+
+    <update id="updateDiseaseKnowledgeAdvice">
+        UPDATE xwq_ai_disease
+        SET disease_advice = #{controlMethod},
+            disease_desc = CASE
+                WHEN disease_desc IS NULL
+                     OR TRIM(disease_desc) = ''
+                     OR disease_desc = '暂无症状描述'
+                THEN COALESCE(#{damageSymptom}, disease_desc)
+                ELSE disease_desc
+            END
+        WHERE disease_id = #{diseaseId}
+    </update>
+</mapper>

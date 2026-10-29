@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.smx.mapper.ExpertAnswerMapper">
+
+    <resultMap type="com.ruoyi.binZhou.smx.domain.ExpertAnswer" id="ExpertAnswerResult">
+        <id property="answerId" column="answer_id"/>
+        <result property="questionId" column="question_id"/>
+        <result property="answerUserId" column="answer_user_id"/>
+        <result property="expertName" column="expert_name"/>
+        <result property="expertTitle" column="expert_title"/>
+        <result property="expertOrg" column="expert_org"/>
+        <result property="expertAvatar" column="expert_avatar"/>
+        <result property="content" column="content"/>
+        <result property="images" column="images"/>
+        <result property="isAdoption" column="is_adoption"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="date" column="date"/>
+        <result property="expert" column="expert"/>
+        <result property="liked" column="liked"/>
+    </resultMap>
+
+    <select id="selectAnswersByQuestionId" resultMap="ExpertAnswerResult">
+        select answer_id, question_id, answer_user_id, expert_name, expert_title, expert_org, expert_avatar,
+               content, images, is_adoption, like_count, del_flag,
+               date_format(create_time, '%Y-%m-%d %H:%i') as date,
+               concat_ws(' ', expert_name, expert_title) as expert,
+               (select count(1) from smx_expert_like l
+                 where l.target_type = '2' and l.target_id = smx_expert_answer.answer_id
+                   and l.user_id = #{userId}) > 0 as liked
+        from smx_expert_answer
+        where question_id = #{questionId} and del_flag = '0'
+        order by answer_id
+    </select>
+
+    <insert id="insertAnswer" parameterType="com.ruoyi.binZhou.smx.domain.ExpertAnswer" useGeneratedKeys="true" keyProperty="answerId">
+        insert into smx_expert_answer
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="questionId != null">question_id,</if>
+            <if test="answerUserId != null">answer_user_id,</if>
+            <if test="expertName != null">expert_name,</if>
+            <if test="expertTitle != null">expert_title,</if>
+            <if test="expertOrg != null">expert_org,</if>
+            <if test="expertAvatar != null">expert_avatar,</if>
+            <if test="content != null and content != ''">content,</if>
+            <if test="images != null">images,</if>
+            <if test="isAdoption != null and isAdoption != ''">is_adoption,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="questionId != null">#{questionId},</if>
+            <if test="answerUserId != null">#{answerUserId},</if>
+            <if test="expertName != null">#{expertName},</if>
+            <if test="expertTitle != null">#{expertTitle},</if>
+            <if test="expertOrg != null">#{expertOrg},</if>
+            <if test="expertAvatar != null">#{expertAvatar},</if>
+            <if test="content != null and content != ''">#{content},</if>
+            <if test="images != null">#{images},</if>
+            <if test="isAdoption != null and isAdoption != ''">#{isAdoption},</if>
+        </trim>
+    </insert>
+
+    <update id="updateLikeCount">
+        update smx_expert_answer set like_count = greatest(0, like_count + #{delta}) where answer_id = #{answerId}
+    </update>
+
+    <select id="selectAnswerLikeCountById" parameterType="Long" resultType="Long">
+        select like_count from smx_expert_answer where answer_id = #{answerId}
+    </select>
+
+    <select id="selectAnswerMetaById" parameterType="Long" resultMap="ExpertAnswerResult">
+        select answer_id, question_id, answer_user_id
+        from smx_expert_answer
+        where answer_id = #{answerId}
+    </select>
+
+    <delete id="deleteAnswerById" parameterType="Long">
+        delete from smx_expert_answer where answer_id = #{answerId}
+    </delete>
+
+    <delete id="deleteAnswersByQuestionId" parameterType="Long">
+        delete from smx_expert_answer where question_id = #{questionId}
+    </delete>
+
+    <select id="selectPostNameByUserId" parameterType="Long" resultType="String">
+        select p.post_name
+        from sys_post p
+        join sys_user_post up on up.post_id = p.post_id
+        where up.user_id = #{userId}
+        order by p.post_sort
+        limit 1
+    </select>
+</mapper>

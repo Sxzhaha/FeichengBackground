@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.AgriWeatherAlertAdviceMapper">
+    
+    <resultMap type="AgriWeatherAlertAdvice" id="AgriWeatherAlertAdviceResult">
+        <result property="id"    column="id"    />
+        <result property="weatherId"    column="weather_id"    />
+        <result property="anomalyInfo"    column="anomaly_info"    />
+        <result property="alertLevel"    column="alert_level"    />
+        <result property="aqiEvaluation"    column="aqi_evaluation"    />
+        <result property="alertAdvice"    column="alert_advice"    />
+        <result property="auditStatus"    column="audit_status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="remark1"    column="remark1"    />
+        <result property="remark2"    column="remark2"    />
+        <result property="type"    column="type"    />
+        <result property="parkId"    column="park_id"    />
+        <result property="parkName"    column="park_name"    />
+    </resultMap>
+
+    <sql id="selectAgriWeatherAlertAdviceVo">
+        select a.id, a.weather_id, a.anomaly_info, a.alert_level, a.aqi_evaluation, a.alert_advice, a.audit_status, a.create_time, a.remark1, a.remark2, a.type,
+               coalesce(l.park_id, f.park_id) as park_id,
+               p.park_name
+        from ld_agri_weather_alert_advice a
+        left join ld_agri_weather_live l
+               on a.type = 0
+              and json_valid(a.weather_id)
+              and l.id = cast(json_unquote(json_extract(a.weather_id, '$[0]')) as unsigned)
+        left join ld_agri_weather_forecast f
+               on a.type = 1
+              and json_valid(a.weather_id)
+              and f.id = cast(json_unquote(json_extract(a.weather_id, '$[0]')) as unsigned)
+        left join park p on p.park_id = coalesce(l.park_id, f.park_id)
+    </sql>
+
+    <select id="selectAgriWeatherAlertAdviceList" parameterType="AgriWeatherAlertAdvice" resultMap="AgriWeatherAlertAdviceResult">
+        <include refid="selectAgriWeatherAlertAdviceVo"/>
+        <where>  
+            <if test="weatherId != null  and weatherId != ''"> and a.weather_id = #{weatherId}</if>
+            <if test="anomalyInfo != null  and anomalyInfo != ''"> and a.anomaly_info = #{anomalyInfo}</if>
+            <if test="alertLevel != null  and alertLevel != ''"> and a.alert_level = #{alertLevel}</if>
+            <if test="aqiEvaluation != null  and aqiEvaluation != ''"> and a.aqi_evaluation = #{aqiEvaluation}</if>
+            <if test="alertAdvice != null  and alertAdvice != ''"> and a.alert_advice = #{alertAdvice}</if>
+            <if test="auditStatus != null "> and a.audit_status = #{auditStatus}</if>
+            <if test="remark1 != null "> and a.remark1 = #{remark1}</if>
+            <if test="remark2 != null  and remark2 != ''"> and a.remark2 = #{remark2}</if>
+            <if test="type != null "> and a.type = #{type}</if>
+            <if test="parkId != null  and parkId != ''"> and p.park_id = #{parkId}</if>
+        </where>
+    </select>
+    
+    <select id="selectAgriWeatherAlertAdviceById" parameterType="Long" resultMap="AgriWeatherAlertAdviceResult">
+        <include refid="selectAgriWeatherAlertAdviceVo"/>
+        where a.id = #{id}
+    </select>
+
+    <insert id="insertAgriWeatherAlertAdvice" parameterType="AgriWeatherAlertAdvice" useGeneratedKeys="true" keyProperty="id">
+        insert into ld_agri_weather_alert_advice
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="weatherId != null and weatherId != ''">weather_id,</if>
+            <if test="anomalyInfo != null and anomalyInfo != ''">anomaly_info,</if>
+            <if test="alertLevel != null and alertLevel != ''">alert_level,</if>
+            <if test="aqiEvaluation != null">aqi_evaluation,</if>
+            <if test="alertAdvice != null">alert_advice,</if>
+            <if test="auditStatus != null">audit_status,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark1 != null">remark1,</if>
+            <if test="remark2 != null">remark2,</if>
+            <if test="type != null">type,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="weatherId != null and weatherId != ''">#{weatherId},</if>
+            <if test="anomalyInfo != null and anomalyInfo != ''">#{anomalyInfo},</if>
+            <if test="alertLevel != null and alertLevel != ''">#{alertLevel},</if>
+            <if test="aqiEvaluation != null">#{aqiEvaluation},</if>
+            <if test="alertAdvice != null">#{alertAdvice},</if>
+            <if test="auditStatus != null">#{auditStatus},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark1 != null">#{remark1},</if>
+            <if test="remark2 != null">#{remark2},</if>
+            <if test="type != null">#{type},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAgriWeatherAlertAdvice" parameterType="AgriWeatherAlertAdvice">
+        update ld_agri_weather_alert_advice
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="weatherId != null and weatherId != ''">weather_id = #{weatherId},</if>
+            <if test="anomalyInfo != null and anomalyInfo != ''">anomaly_info = #{anomalyInfo},</if>
+            <if test="alertLevel != null and alertLevel != ''">alert_level = #{alertLevel},</if>
+            <if test="aqiEvaluation != null">aqi_evaluation = #{aqiEvaluation},</if>
+            <if test="alertAdvice != null">alert_advice = #{alertAdvice},</if>
+            <if test="auditStatus != null">audit_status = #{auditStatus},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="remark1 != null">remark1 = #{remark1},</if>
+            <if test="remark2 != null">remark2 = #{remark2},</if>
+            <if test="type != null">type = #{type},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAgriWeatherAlertAdviceById" parameterType="Long">
+        delete from ld_agri_weather_alert_advice where id = #{id}
+    </delete>
+
+    <delete id="deleteAgriWeatherAlertAdviceByIds" parameterType="String">
+        delete from ld_agri_weather_alert_advice where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

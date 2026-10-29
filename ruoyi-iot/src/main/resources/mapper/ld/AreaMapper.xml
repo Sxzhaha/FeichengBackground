@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.AreaMapper">
+    
+    <resultMap type="Area" id="AreaResult">
+        <result property="areaId"       column="area_id"       />
+        <result property="parkId"       column="park_id"       />
+        <result property="areaName"     column="area_name"     />
+        <result property="areaCode"     column="area_code"     />
+        <result property="coordinate"   column="coordinate"   />
+        <result property="createTime"   column="create_time"   />
+        <result property="updateTime"   column="update_time"   />
+    </resultMap>
+    
+    <sql id="selectAreaVo">
+        select area_id, park_id, area_name, area_code, coordinate, create_time, update_time 
+		from area
+    </sql>
+    
+    <select id="selectAreaById" parameterType="Long" resultMap="AreaResult">
+        <include refid="selectAreaVo"/>
+        where area_id = #{areaId}
+    </select>
+
+    <select id="selectAreaByAreaCode" parameterType="String" resultMap="AreaResult">
+        <include refid="selectAreaVo"/>
+        where area_code = #{areaCode}
+    </select>
+    
+    <select id="selectAreaList" parameterType="Area" resultMap="AreaResult">
+        <include refid="selectAreaVo"/>
+        <where>
+			<if test="parkId != null">
+				AND park_id = #{parkId}
+			</if>
+			<if test="areaName != null and areaName != ''">
+				AND area_name like concat('%', #{areaName}, '%')
+			</if>
+			<if test="areaCode != null and areaCode != ''">
+				AND area_code like concat('%', #{areaCode}, '%')
+			</if>
+		</where>
+    </select>
+
+    <select id="selectAreaListByParkId" parameterType="Long" resultMap="AreaResult">
+        <include refid="selectAreaVo"/>
+        where park_id = #{parkId}
+    </select>
+    
+    <insert id="insertArea" parameterType="Area" useGeneratedKeys="true" keyProperty="areaId">
+        insert into area (
+			<if test="parkId != null">park_id, </if>
+			<if test="areaName != null and areaName != '' ">area_name, </if>
+			<if test="areaCode != null and areaCode != '' ">area_code, </if>
+			<if test="coordinate != null and coordinate != '' ">coordinate, </if>
+			create_time
+ 		)values(
+			<if test="parkId != null">#{parkId}, </if>
+			<if test="areaName != null and areaName != ''">#{areaName}, </if>
+			<if test="areaCode != null and areaCode != ''">#{areaCode}, </if>
+			<if test="coordinate != null and coordinate != ''">#{coordinate}, </if>
+			sysdate()
+		)
+    </insert>
+	 
+    <update id="updateArea" parameterType="Area">
+        update area 
+        <set>
+            <if test="parkId != null">park_id = #{parkId}, </if>
+            <if test="areaName != null and areaName != ''">area_name = #{areaName}, </if>
+            <if test="areaCode != null and areaCode != ''">area_code = #{areaCode}, </if>
+            <if test="coordinate != null and coordinate != ''">coordinate = #{coordinate}, </if>
+ 			update_time = sysdate()
+        </set>
+        where area_id = #{areaId}
+    </update>
+	
+    <delete id="deleteAreaById" parameterType="Long">
+        delete from area where area_id = #{areaId}
+    </delete>
+    
+    <delete id="deleteAreaByIds" parameterType="Long">
+        delete from area where area_id in 
+        <foreach item="areaId" collection="array" open="(" separator="," close=")">
+            #{areaId}
+        </foreach>
+    </delete>
+
+    <select id="checkAreaCodeUnique" parameterType="String" resultMap="AreaResult">
+        <include refid="selectAreaVo"/>
+        where area_code = #{areaCode} limit 1
+    </select>
+
+    <select id="checkAreaExistByParkId" parameterType="Long" resultType="int">
+        select count(1) from area where park_id = #{parkId}
+    </select>
+    
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.IotThingModelMapper">
+    
+    <resultMap type="IotThingModel" id="IotThingModelResult">
+        <result property="modelId"    column="model_id"    />
+        <result property="productId"    column="product_id"    />
+        <result property="identifier"    column="identifier"    />
+        <result property="modelName"    column="model_name"    />
+        <result property="type"    column="type"    />
+        <result property="specs"    column="specs"    />
+        <result property="isMonitor"    column="is_monitor"    />
+        <result property="productName"  column="product_name"  />
+    </resultMap>
+
+    <sql id="selectIotThingModelVo">
+        select m.model_id, m.product_id, m.identifier, m.model_name, m.type, m.specs, m.is_monitor, p.product_name
+        from iot_thing_model m
+        left join iot_product p on m.product_id = p.product_id
+    </sql>
+
+    <select id="selectIotThingModelList" parameterType="IotThingModel" resultMap="IotThingModelResult">
+        <include refid="selectIotThingModelVo"/>
+        <where>  
+            <if test="productId != null "> and m.product_id = #{productId}</if>
+            <if test="identifier != null  and identifier != ''"> and m.identifier = #{identifier}</if>
+            <if test="modelName != null  and modelName != ''"> and m.model_name like concat('%', #{modelName}, '%')</if>
+            <if test="type != null  and type != ''"> and m.type = #{type}</if>
+            <if test="specs != null  and specs != ''"> and m.specs = #{specs}</if>
+            <if test="isMonitor != null "> and m.is_monitor = #{isMonitor}</if>
+        </where>
+    </select>
+    
+    <select id="selectIotThingModelByModelId" parameterType="Long" resultMap="IotThingModelResult">
+        <include refid="selectIotThingModelVo"/>
+        where m.model_id = #{modelId}
+    </select>
+
+    <insert id="insertIotThingModel" parameterType="IotThingModel" useGeneratedKeys="true" keyProperty="modelId">
+        insert into iot_thing_model
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="productId != null">product_id,</if>
+            <if test="identifier != null and identifier != ''">identifier,</if>
+            <if test="modelName != null and modelName != ''">model_name,</if>
+            <if test="type != null and type != ''">type,</if>
+            <if test="specs != null">specs,</if>
+            <if test="isMonitor != null">is_monitor,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="productId != null">#{productId},</if>
+            <if test="identifier != null and identifier != ''">#{identifier},</if>
+            <if test="modelName != null and modelName != ''">#{modelName},</if>
+            <if test="type != null and type != ''">#{type},</if>
+            <if test="specs != null">#{specs},</if>
+            <if test="isMonitor != null">#{isMonitor},</if>
+         </trim>
+    </insert>
+
+    <update id="updateIotThingModel" parameterType="IotThingModel">
+        update iot_thing_model
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="productId != null">product_id = #{productId},</if>
+            <if test="identifier != null and identifier != ''">identifier = #{identifier},</if>
+            <if test="modelName != null and modelName != ''">model_name = #{modelName},</if>
+            <if test="type != null and type != ''">type = #{type},</if>
+            <if test="specs != null">specs = #{specs},</if>
+            <if test="isMonitor != null">is_monitor = #{isMonitor},</if>
+        </trim>
+        where model_id = #{modelId}
+    </update>
+
+    <delete id="deleteIotThingModelByModelId" parameterType="Long">
+        delete from iot_thing_model where model_id = #{modelId}
+    </delete>
+
+    <delete id="deleteIotThingModelByModelIds" parameterType="String">
+        delete from iot_thing_model where model_id in 
+        <foreach item="modelId" collection="array" open="(" separator="," close=")">
+            #{modelId}
+        </foreach>
+    </delete>
+</mapper>

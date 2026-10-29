@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.IotAlertControlLinkageMapper">
+
+    <resultMap type="IotAlertControlLinkage" id="IotAlertControlLinkageResult">
+        <result property="id" column="id" />
+        <result property="alertConfigId" column="alert_config_id" />
+        <result property="targetDeviceId" column="target_device_id" />
+        <result property="targetModelId" column="target_model_id" />
+        <result property="commandValue" column="command_value" />
+        <result property="actionName" column="action_name" />
+        <result property="enabled" column="enabled" />
+        <result property="priority" column="priority" />
+        <result property="cooldownSeconds" column="cooldown_seconds" />
+        <result property="delaySeconds" column="delay_seconds" />
+        <result property="createBy" column="create_by" />
+        <result property="createTime" column="create_time" />
+        <result property="updateBy" column="update_by" />
+        <result property="updateTime" column="update_time" />
+        <result property="remark" column="remark" />
+        <result property="targetDeviceName" column="target_device_name" />
+        <result property="targetDeviceSn" column="target_device_sn" />
+        <result property="targetModelName" column="target_model_name" />
+        <result property="targetModelIdentifier" column="target_model_identifier" />
+        <result property="alertLevel" column="alert_level" />
+        <result property="ruleDescription" column="rule_description" />
+    </resultMap>
+
+    <sql id="selectIotAlertControlLinkageVo">
+        select l.id, l.alert_config_id, l.target_device_id, l.target_model_id,
+               l.command_value, l.action_name, l.enabled, l.priority, l.cooldown_seconds, l.delay_seconds,
+               l.create_by, l.create_time, l.update_by, l.update_time, l.remark,
+               td.device_name as target_device_name, td.device_sn as target_device_sn,
+               tm.model_name as target_model_name, tm.identifier as target_model_identifier,
+               ac.alert_level, ac.rule_description
+        from iot_alert_control_linkage l
+        left join iot_device td on l.target_device_id = td.device_id
+        left join iot_thing_model tm on l.target_model_id = tm.model_id
+        left join ld_agri_product_alert_config ac on l.alert_config_id = ac.id
+    </sql>
+
+    <select id="selectIotAlertControlLinkageList" parameterType="IotAlertControlLinkage" resultMap="IotAlertControlLinkageResult">
+        <include refid="selectIotAlertControlLinkageVo"/>
+        <where>
+            <if test="alertConfigId != null"> and l.alert_config_id = #{alertConfigId}</if>
+            <if test="targetDeviceId != null"> and l.target_device_id = #{targetDeviceId}</if>
+            <if test="targetModelId != null"> and l.target_model_id = #{targetModelId}</if>
+            <if test="commandValue != null and commandValue != ''"> and l.command_value = #{commandValue}</if>
+            <if test="actionName != null and actionName != ''"> and l.action_name like concat('%', #{actionName}, '%')</if>
+            <if test="enabled != null"> and l.enabled = #{enabled}</if>
+        </where>
+        order by ifnull(l.priority, 2147483647) asc, ifnull(l.delay_seconds, 0) asc, l.id asc
+    </select>
+
+    <select id="selectIotAlertControlLinkageById" parameterType="Long" resultMap="IotAlertControlLinkageResult">
+        <include refid="selectIotAlertControlLinkageVo"/>
+        where l.id = #{id}
+    </select>
+
+    <insert id="insertIotAlertControlLinkage" parameterType="IotAlertControlLinkage" useGeneratedKeys="true" keyProperty="id">
+        insert into iot_alert_control_linkage
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="alertConfigId != null">alert_config_id,</if>
+            <if test="targetDeviceId != null">target_device_id,</if>
+            <if test="targetModelId != null">target_model_id,</if>
+            <if test="commandValue != null and commandValue != ''">command_value,</if>
+            <if test="actionName != null">action_name,</if>
+            <if test="enabled != null">enabled,</if>
+            <if test="priority != null">priority,</if>
+            <if test="cooldownSeconds != null">cooldown_seconds,</if>
+            <if test="delaySeconds != null">delay_seconds,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="alertConfigId != null">#{alertConfigId},</if>
+            <if test="targetDeviceId != null">#{targetDeviceId},</if>
+            <if test="targetModelId != null">#{targetModelId},</if>
+            <if test="commandValue != null and commandValue != ''">#{commandValue},</if>
+            <if test="actionName != null">#{actionName},</if>
+            <if test="enabled != null">#{enabled},</if>
+            <if test="priority != null">#{priority},</if>
+            <if test="cooldownSeconds != null">#{cooldownSeconds},</if>
+            <if test="delaySeconds != null">#{delaySeconds},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateIotAlertControlLinkage" parameterType="IotAlertControlLinkage">
+        update iot_alert_control_linkage
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="alertConfigId != null">alert_config_id = #{alertConfigId},</if>
+            <if test="targetDeviceId != null">target_device_id = #{targetDeviceId},</if>
+            <if test="targetModelId != null">target_model_id = #{targetModelId},</if>
+            <if test="commandValue != null and commandValue != ''">command_value = #{commandValue},</if>
+            <if test="actionName != null">action_name = #{actionName},</if>
+            <if test="enabled != null">enabled = #{enabled},</if>
+            <if test="priority != null">priority = #{priority},</if>
+            <if test="cooldownSeconds != null">cooldown_seconds = #{cooldownSeconds},</if>
+            <if test="delaySeconds != null">delay_seconds = #{delaySeconds},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteIotAlertControlLinkageById" parameterType="Long">
+        delete from iot_alert_control_linkage where id = #{id}
+    </delete>
+
+    <delete id="deleteIotAlertControlLinkageByIds" parameterType="String">
+        delete from iot_alert_control_linkage where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

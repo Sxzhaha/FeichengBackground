@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.ld.mapper.AgriAlertRecordMapper">
+    
+    <resultMap type="AgriAlertRecord" id="AgriAlertRecordResult">
+        <result property="id"    column="id"    />
+        <result property="deviceLogId"    column="device_log_id"    />
+        <result property="levelConfigId"    column="level_config_id"    />
+        <result property="actualValue"    column="actual_value"    />
+        <result property="alertAdvice"    column="alert_advice"    />
+        <result property="handleStatus"    column="handle_status"    />
+        <result property="handlerId"    column="handler_id"    />
+        <result property="handleTime"    column="handle_time"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="remark1"    column="remark1"    />
+        <result property="remark2"    column="remark2"    />
+        <result property="deviceSn"   column="device_sn"    />
+        <result property="deviceName"   column="device_name"    />
+        <result property="payload"   column="payload"    />
+        <result property="productId"   column="product_id"    />
+        <result property="productName"   column="product_name"    />
+    </resultMap>
+
+    <sql id="selectAgriAlertRecordVo">
+        select r.id, r.device_log_id, r.level_config_id, r.actual_value, r.alert_advice, r.handle_status, r.handler_id, r.handle_time, r.create_time, r.remark1, r.remark2,
+               l.device_sn, d.device_name, l.payload, d.product_id, p.product_name
+        from ld_agri_alert_record r
+        left join iot_device_log l on r.device_log_id = l.log_id
+        left join iot_device d on l.device_sn = d.device_sn
+        left join iot_product p on d.product_id = p.product_id
+    </sql>
+
+    <select id="selectAgriAlertRecordList" parameterType="AgriAlertRecord" resultMap="AgriAlertRecordResult">
+        <include refid="selectAgriAlertRecordVo"/>
+        <where>  
+            <if test="deviceLogId != null "> and r.device_log_id = #{deviceLogId}</if>
+            <if test="levelConfigId != null "> and r.level_config_id = #{levelConfigId}</if>
+            <if test="actualValue != null "> and r.actual_value = #{actualValue}</if>
+            <if test="alertAdvice != null  and alertAdvice != ''"> and r.alert_advice = #{alertAdvice}</if>
+            <if test="handleStatus != null "> and r.handle_status = #{handleStatus}</if>
+            <if test="handlerId != null  and handlerId != ''"> and r.handler_id = #{handlerId}</if>
+            <if test="handleTime != null "> and r.handle_time = #{handleTime}</if>
+            <if test="remark1 != null "> and r.remark1 = #{remark1}</if>
+            <if test="remark2 != null  and remark2 != ''"> and r.remark2 = #{remark2}</if>
+            <if test="deviceSn != null  and deviceSn != ''"> and l.device_sn = #{deviceSn}</if>
+            <if test="parkId != null  and parkId != ''">
+                and exists (
+                    select 1 from iot_device d
+                    join location loc on d.location_id = loc.location_id
+                    join area ar on loc.area_id = ar.area_id
+                    where d.device_sn = l.device_sn and ar.park_id = #{parkId}
+                )
+            </if>
+            <if test="locationId != null ">
+                and exists (
+                    select 1 from iot_device d
+                    where d.device_sn = l.device_sn and d.location_id = #{locationId}
+                )
+            </if>
+            <if test="areaId != null ">
+                and exists (
+                    select 1 from iot_device d
+                    join location loc on d.location_id = loc.location_id
+                    where d.device_sn = l.device_sn and loc.area_id = #{areaId}
+                )
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectAgriAlertRecordById" parameterType="Long" resultMap="AgriAlertRecordResult">
+        <include refid="selectAgriAlertRecordVo"/>
+        where r.id = #{id}
+    </select>
+
+    <insert id="insertAgriAlertRecord" parameterType="AgriAlertRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into ld_agri_alert_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="deviceLogId != null">device_log_id,</if>
+            <if test="levelConfigId != null">level_config_id,</if>
+            <if test="actualValue != null">actual_value,</if>
+            <if test="alertAdvice != null">alert_advice,</if>
+            <if test="handleStatus != null">handle_status,</if>
+            <if test="handlerId != null">handler_id,</if>
+            <if test="handleTime != null">handle_time,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark1 != null">remark1,</if>
+            <if test="remark2 != null">remark2,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="deviceLogId != null">#{deviceLogId},</if>
+            <if test="levelConfigId != null">#{levelConfigId},</if>
+            <if test="actualValue != null">#{actualValue},</if>
+            <if test="alertAdvice != null">#{alertAdvice},</if>
+            <if test="handleStatus != null">#{handleStatus},</if>
+            <if test="handlerId != null">#{handlerId},</if>
+            <if test="handleTime != null">#{handleTime},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark1 != null">#{remark1},</if>
+            <if test="remark2 != null">#{remark2},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAgriAlertRecord" parameterType="AgriAlertRecord">
+        update ld_agri_alert_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="deviceLogId != null">device_log_id = #{deviceLogId},</if>
+            <if test="levelConfigId != null">level_config_id = #{levelConfigId},</if>
+            <if test="actualValue != null">actual_value = #{actualValue},</if>
+            <if test="alertAdvice != null">alert_advice = #{alertAdvice},</if>
+            <if test="handleStatus != null">handle_status = #{handleStatus},</if>
+            <if test="handlerId != null">handler_id = #{handlerId},</if>
+            <if test="handleTime != null">handle_time = #{handleTime},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="remark1 != null">remark1 = #{remark1},</if>
+            <if test="remark2 != null">remark2 = #{remark2},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAgriAlertRecordById" parameterType="Long">
+        delete from ld_agri_alert_record where id = #{id}
+    </delete>
+
+    <delete id="deleteAgriAlertRecordByIds" parameterType="String">
+        delete from ld_agri_alert_record where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

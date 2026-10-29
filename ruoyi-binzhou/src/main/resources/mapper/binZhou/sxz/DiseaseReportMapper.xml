@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.sxz.mapper.DiseaseReportMapper">
+    <sql id="reportFilter">
+        AND d.create_time IS NOT NULL
+        <if test="beginDate != null and beginDate != ''">AND d.create_time &gt;= #{beginDate}</if>
+        <if test="endDate != null and endDate != ''">AND d.create_time &lt; DATE_ADD(#{endDate}, INTERVAL 1 DAY)</if>
+        <if test="categoryName != null and categoryName != ''">AND d.disease_name LIKE CONCAT('%', #{categoryName}, '%')</if>
+        <if test="riskLevel != null and riskLevel != ''">AND d.warning_level LIKE CONCAT('%', #{riskLevel}, '%')</if>
+        <if test="recognitionMode == 'manual'">
+            AND (
+                r.record_mode IN ('手动上传', '手动识别')
+                OR (
+                    r.record_mode = '自动识别'
+                    AND EXISTS (
+                        SELECT 1
+                        FROM xwq_ai_image legacy_image
+                        WHERE legacy_image.image_id = d.image_id
+                          AND legacy_image.image_source = '手动上传'
+                    )
+                )
+            )
+        </if>
+        <if test="recognitionMode == 'auto'">AND r.record_mode = '自动定时'</if>
+        <if test="diseaseIdList != null and diseaseIdList.size() &gt; 0">
+            AND d.disease_id IN
+            <foreach collection="diseaseIdList" item="diseaseId" open="(" separator="," close=")">
+                #{diseaseId}
+            </foreach>
+        </if>
+    </sql>
+
+    <select id="selectSummary" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseReportSummary">
+        SELECT COUNT(*) AS recordCount,
+               COUNT(DISTINCT d.image_id) AS imageCount,
+               COUNT(DISTINCT NULLIF(TRIM(d.disease_name), '')) AS categoryCount,
+               COALESCE(SUM(CASE WHEN d.disease_name LIKE '%健康%'
+                          OR d.disease_name LIKE '%正常%'
+                          OR d.disease_name LIKE '%无病虫害%'
+                        THEN 1 ELSE 0 END), 0) AS healthyCount,
+               COALESCE(SUM(CASE WHEN NOT (d.disease_name LIKE '%健康%'
+                                   OR d.disease_name LIKE '%正常%'
+                                   OR d.disease_name LIKE '%无病虫害%')
+                        THEN 1 ELSE 0 END), 0) AS abnormalCount,
+               COALESCE(ROUND(AVG(COALESCE(d.disease_confidence, 0)) * 100, 2), 0) AS avgConfidence,
+               COALESCE(ROUND(MAX(COALESCE(d.disease_confidence, 0)) * 100, 2), 0) AS maxConfidence,
+               COALESCE(ROUND(MIN(COALESCE(d.disease_confidence, 0)) * 100, 2), 0) AS minConfidence,
+               COALESCE(SUM(CASE WHEN COALESCE(d.disease_confidence, 0) &gt;= 0.9 THEN 1 ELSE 0 END), 0) AS highConfidenceCount,
+               COALESCE(SUM(CASE WHEN COALESCE(d.disease_confidence, 0) &gt;= 0.7
+                          AND COALESCE(d.disease_confidence, 0) &lt; 0.9 THEN 1 ELSE 0 END), 0) AS middleConfidenceCount,
+               COALESCE(SUM(CASE WHEN COALESCE(d.disease_confidence, 0) &lt; 0.7 THEN 1 ELSE 0 END), 0) AS lowConfidenceCount,
+               COALESCE(SUM(CASE WHEN d.warning_level LIKE '%高%' THEN 1 ELSE 0 END), 0) AS highRiskCount,
+               COALESCE(SUM(CASE WHEN d.warning_level LIKE '%中%' THEN 1 ELSE 0 END), 0) AS middleRiskCount,
+               COALESCE(SUM(CASE WHEN d.warning_level LIKE '%低%' THEN 1 ELSE 0 END), 0) AS lowRiskCount,
+               COALESCE(SUM(CASE WHEN d.warning_level IS NULL OR TRIM(d.warning_level) = ''
+                          OR d.warning_level NOT REGEXP '高|中|低' THEN 1 ELSE 0 END), 0) AS unmarkedRiskCount
+        FROM xwq_ai_disease d
+        LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
+        <where>
+            <include refid="reportFilter"/>
+        </where>
+    </select>
+
+    <select id="selectCategories" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseReportSummary$CategoryStat">
+        SELECT COALESCE(NULLIF(TRIM(d.disease_name), ''), '未知结果') AS name,
+               COUNT(*) AS count
+        FROM xwq_ai_disease d
+        LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
+        <where>
+            <include refid="reportFilter"/>
+        </where>
+        GROUP BY COALESCE(NULLIF(TRIM(d.disease_name), ''), '未知结果')
+        ORDER BY count DESC, name
+    </select>
+
+    <select id="selectAdviceList" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseReportSummary$AdviceItem">
+        SELECT d.disease_name AS diseaseName,
+               COALESCE(
+                   MAX(CASE
+                           WHEN TRIM(k.plus_dsi_name) = TRIM(d.disease_name)
+                           THEN NULLIF(TRIM(k.plus_dsi_cmethod), '')
+                       END),
+                   MAX(NULLIF(TRIM(k.plus_dsi_cmethod), '')),
+                   MAX(NULLIF(TRIM(d.disease_advice), '')),
+                   '知识库暂未收录该病虫害的防治建议'
+               ) AS content
+        FROM xwq_ai_disease d
+        LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
+        LEFT JOIN knowledge k
+               ON k.isdeleted = 0
+              AND (
+                  TRIM(k.plus_dsi_name) = TRIM(d.disease_name)
+                  OR FIND_IN_SET(
+                      TRIM(d.disease_name),
+                      REPLACE(
+                          REPLACE(
+                              REPLACE(
+                                  REPLACE(COALESCE(k.plus_dsi_synonyms, ''), '、', ','),
+                                  '，',
+                                  ','
+                              ),
+                              '；',
+                              ','
+                          ),
+                          ';',
+                          ','
+                      )
+                  ) &gt; 0
+              )
+        <where>
+            d.disease_name IS NOT NULL AND TRIM(d.disease_name) != ''
+            AND d.disease_name NOT LIKE '%健康%'
+            AND d.disease_name NOT LIKE '%正常%'
+            AND d.disease_name NOT LIKE '%无病虫害%'
+            <include refid="reportFilter"/>
+        </where>
+        GROUP BY d.disease_name
+        ORDER BY d.disease_name
+    </select>
+
+    <select id="selectFocusRecords" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseReportSummary$FocusRecord">
+        SELECT d.disease_id AS diseaseId,
+               r.record_id AS recordId,
+               d.image_id AS imageId,
+               COALESCE(NULLIF(TRIM(r.record_no), ''), CONCAT('DISEASE-', d.disease_id)) AS recordNo,
+               COALESCE(d.disease_result_img_url, i.image_result_url, i.image_url) AS imageUrl,
+               d.disease_name AS categoryName,
+               ROUND(COALESCE(d.disease_confidence, 0) * 100, 2) AS confidence,
+               COALESCE(NULLIF(TRIM(d.warning_level), ''), '未标记') AS riskLevel,
+               COALESCE(NULLIF(TRIM(d.disease_result), ''), CONCAT('识别结果为', d.disease_name)) AS resultText,
+               COALESCE(NULLIF(TRIM(d.disease_advice), ''), '') AS advice,
+               COALESCE(NULLIF(TRIM(r.model_name), ''), '未记录') AS modelName,
+               DATE_FORMAT(d.create_time, '%Y-%m-%d %H:%i:%s') AS createTime
+        FROM xwq_ai_disease d
+        LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
+        LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
+        <where>
+            d.disease_name IS NOT NULL
+            AND d.disease_name NOT LIKE '%健康%'
+            AND d.disease_name NOT LIKE '%正常%'
+            AND d.disease_name NOT LIKE '%无病虫害%'
+            <include refid="reportFilter"/>
+        </where>
+        ORDER BY COALESCE(d.disease_confidence, 0) DESC, d.disease_id DESC
+        LIMIT 5
+    </select>
+
+    <select id="selectRecords" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseReportSummary$FocusRecord">
+        SELECT d.disease_id AS diseaseId,
+               r.record_id AS recordId,
+               d.image_id AS imageId,
+               COALESCE(NULLIF(TRIM(r.record_no), ''), CONCAT('DISEASE-', d.disease_id)) AS recordNo,
+               COALESCE(d.disease_result_img_url, i.image_result_url, i.image_url) AS imageUrl,
+               COALESCE(NULLIF(TRIM(d.disease_name), ''), '未知结果') AS categoryName,
+               ROUND(COALESCE(d.disease_confidence, 0) * 100, 2) AS confidence,
+               COALESCE(NULLIF(TRIM(d.warning_level), ''), '未标记') AS riskLevel,
+               COALESCE(NULLIF(TRIM(d.disease_result), ''), CONCAT('识别结果为', COALESCE(d.disease_name, '未知结果'))) AS resultText,
+               COALESCE(NULLIF(TRIM(d.disease_advice), ''), '') AS advice,
+               COALESCE(NULLIF(TRIM(r.model_name), ''), '未记录') AS modelName,
+               DATE_FORMAT(d.create_time, '%Y-%m-%d %H:%i:%s') AS createTime
+        FROM xwq_ai_disease d
+        LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
+        LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
+        <where>
+            <include refid="reportFilter"/>
+        </where>
+        ORDER BY d.create_time DESC, d.disease_id DESC
+    </select>
+</mapper>

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.xwq.mapper.AiDiseaseMapper">
+    
+    <resultMap type="AiDisease" id="AiDiseaseResult">
+        <result property="diseaseId"    column="disease_id"    />
+        <result property="recordId"    column="record_id"    />
+        <result property="imageId"    column="image_id"    />
+        <result property="diseaseName"    column="disease_name"    />
+        <result property="diseaseCode"    column="disease_code"    />
+        <result property="diseaseCrop"    column="disease_crop"    />
+        <result property="diseaseConfidence"    column="disease_confidence"    />
+        <result property="diseaseResult"    column="disease_result"    />
+        <result property="diseaseDesc"    column="disease_desc"    />
+        <result property="diseaseAdvice"    column="disease_advice"    />
+        <result property="diseaseResultImgUrl"    column="disease_result_img_url"    />
+        <result property="isWarning"    column="is_warning"    />
+        <result property="warningLevel"    column="warning_level"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="diseaseB"    column="disease_b"    />
+        <result property="diseaseC"    column="disease_c"    />
+        <result property="diseaseD"    column="disease_d"    />
+        <result property="diseaseE"    column="disease_e"    />
+        <result property="diseaseF"    column="disease_f"    />
+        <result property="diseaseG"    column="disease_g"    />
+        <result property="diseaseH"    column="disease_h"    />
+        <result property="diseaseI"    column="disease_i"    />
+        <result property="diseaseJ"    column="disease_j"    />
+        <result property="imageName"    column="image_name"    />
+        <result property="imageUrl"    column="image_url"    />
+        <result property="recordNo"    column="record_no"    />
+        <result property="recordMode"    column="record_mode"    />
+        <result property="recordStatus"    column="record_status"    />
+        <result property="parkId"    column="park_id"    />
+        <result property="areaId"    column="area_id"    />
+    </resultMap>
+
+    <sql id="selectAiDiseaseVo">
+        select disease_id, record_id, image_id, disease_name, disease_code, disease_crop, disease_confidence, disease_result, disease_desc, disease_advice, disease_result_img_url, is_warning, warning_level, create_time, disease_b, disease_c, disease_d, disease_e, disease_f, disease_g, disease_h, disease_i, disease_j from xwq_ai_disease
+    </sql>
+
+    <select id="selectAiDiseaseList" parameterType="AiDisease" resultMap="AiDiseaseResult">
+        select
+        d.disease_id,
+        d.record_id,
+        d.image_id,
+        d.disease_name,
+        d.disease_code,
+        d.disease_crop,
+        d.disease_confidence,
+        d.disease_result,
+        d.disease_desc,
+        d.disease_advice,
+        d.disease_result_img_url,
+        d.is_warning,
+        d.warning_level,
+        d.create_time,
+        d.disease_b,
+        d.disease_c,
+        d.disease_d,
+        d.disease_e,
+        d.disease_f,
+        d.disease_g,
+        d.disease_h,
+        d.disease_i,
+        d.disease_j,
+        
+        img.image_name,
+        img.image_url,
+        
+        r.record_no,
+        r.record_mode,
+        r.record_status,
+        r.park_id,
+        r.plot_id as area_id
+        from xwq_ai_disease d
+        left join xwq_ai_image img on img.image_id = d.image_id
+        left join xwq_ai_record r on r.record_id = d.record_id
+        <where>  
+            <if test="recordId != null "> and d.record_id = #{recordId}</if>
+            <if test="imageId != null "> and d.image_id = #{imageId}</if>
+            <if test="diseaseName != null  and diseaseName != ''"> and d.disease_name like concat('%', #{diseaseName}, '%')</if>
+            <if test="diseaseCode != null  and diseaseCode != ''"> and d.disease_code = #{diseaseCode}</if>
+            <if test="diseaseCrop != null  and diseaseCrop != ''"> and d.disease_crop = #{diseaseCrop}</if>
+            <if test="diseaseConfidence != null "> and d.disease_confidence = #{diseaseConfidence}</if>
+            <if test="diseaseResult != null  and diseaseResult != ''"> and d.disease_result = #{diseaseResult}</if>
+            <if test="diseaseDesc != null  and diseaseDesc != ''"> and d.disease_desc = #{diseaseDesc}</if>
+            <if test="diseaseAdvice != null  and diseaseAdvice != ''"> and d.disease_advice = #{diseaseAdvice}</if>
+            <if test="diseaseResultImgUrl != null  and diseaseResultImgUrl != ''"> and d.disease_result_img_url = #{diseaseResultImgUrl}</if>
+            <if test="isWarning != null "> and d.is_warning = #{isWarning}</if>
+            <if test="warningLevel != null  and warningLevel != ''"> and d.warning_level = #{warningLevel}</if>
+            <if test="createTime != null"> and d.create_time = #{createTime}</if>
+            <if test="diseaseB != null  and diseaseB != ''"> and d.disease_b = #{diseaseB}</if>
+            <if test="diseaseC != null  and diseaseC != ''"> and d.disease_c = #{diseaseC}</if>
+            <if test="diseaseD != null  and diseaseD != ''"> and d.disease_d = #{diseaseD}</if>
+            <if test="diseaseE != null  and diseaseE != ''"> and d.disease_e = #{diseaseE}</if>
+            <if test="diseaseF != null  and diseaseF != ''"> and d.disease_f = #{diseaseF}</if>
+            <if test="diseaseG != null  and diseaseG != ''"> and d.disease_g = #{diseaseG}</if>
+            <if test="diseaseH != null  and diseaseH != ''"> and d.disease_h = #{diseaseH}</if>
+            <if test="diseaseI != null  and diseaseI != ''"> and d.disease_i = #{diseaseI}</if>
+            <if test="diseaseJ != null  and diseaseJ != ''"> and d.disease_j = #{diseaseJ}</if>
+            
+            <if test="parkId != null "> and r.park_id = #{parkId}</if>
+            <if test="areaId != null "> and r.plot_id = #{areaId}</if>
+        </where>
+        order by d.disease_id desc
+    </select>
+    
+    <select id="selectAiDiseaseByDiseaseId" parameterType="Long" resultMap="AiDiseaseResult">
+        <include refid="selectAiDiseaseVo"/>
+        where disease_id = #{diseaseId}
+    </select>
+
+    <insert id="insertAiDisease" parameterType="AiDisease" useGeneratedKeys="true" keyProperty="diseaseId">
+        insert into xwq_ai_disease
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="recordId != null">record_id,</if>
+            <if test="imageId != null">image_id,</if>
+            <if test="diseaseName != null and diseaseName != ''">disease_name,</if>
+            <if test="diseaseCode != null">disease_code,</if>
+            <if test="diseaseCrop != null">disease_crop,</if>
+            <if test="diseaseConfidence != null">disease_confidence,</if>
+            <if test="diseaseResult != null">disease_result,</if>
+            <if test="diseaseDesc != null">disease_desc,</if>
+            <if test="diseaseAdvice != null">disease_advice,</if>
+            <if test="diseaseResultImgUrl != null">disease_result_img_url,</if>
+            <if test="isWarning != null">is_warning,</if>
+            <if test="warningLevel != null">warning_level,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="diseaseB != null">disease_b,</if>
+            <if test="diseaseC != null">disease_c,</if>
+            <if test="diseaseD != null">disease_d,</if>
+            <if test="diseaseE != null">disease_e,</if>
+            <if test="diseaseF != null">disease_f,</if>
+            <if test="diseaseG != null">disease_g,</if>
+            <if test="diseaseH != null">disease_h,</if>
+            <if test="diseaseI != null">disease_i,</if>
+            <if test="diseaseJ != null">disease_j,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="recordId != null">#{recordId},</if>
+            <if test="imageId != null">#{imageId},</if>
+            <if test="diseaseName != null and diseaseName != ''">#{diseaseName},</if>
+            <if test="diseaseCode != null">#{diseaseCode},</if>
+            <if test="diseaseCrop != null">#{diseaseCrop},</if>
+            <if test="diseaseConfidence != null">#{diseaseConfidence},</if>
+            <if test="diseaseResult != null">#{diseaseResult},</if>
+            <if test="diseaseDesc != null">#{diseaseDesc},</if>
+            <if test="diseaseAdvice != null">#{diseaseAdvice},</if>
+            <if test="diseaseResultImgUrl != null">#{diseaseResultImgUrl},</if>
+            <if test="isWarning != null">#{isWarning},</if>
+            <if test="warningLevel != null">#{warningLevel},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="diseaseB != null">#{diseaseB},</if>
+            <if test="diseaseC != null">#{diseaseC},</if>
+            <if test="diseaseD != null">#{diseaseD},</if>
+            <if test="diseaseE != null">#{diseaseE},</if>
+            <if test="diseaseF != null">#{diseaseF},</if>
+            <if test="diseaseG != null">#{diseaseG},</if>
+            <if test="diseaseH != null">#{diseaseH},</if>
+            <if test="diseaseI != null">#{diseaseI},</if>
+            <if test="diseaseJ != null">#{diseaseJ},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAiDisease" parameterType="AiDisease">
+        update xwq_ai_disease
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="recordId != null">record_id = #{recordId},</if>
+            <if test="imageId != null">image_id = #{imageId},</if>
+            <if test="diseaseName != null and diseaseName != ''">disease_name = #{diseaseName},</if>
+            <if test="diseaseCode != null">disease_code = #{diseaseCode},</if>
+            <if test="diseaseCrop != null">disease_crop = #{diseaseCrop},</if>
+            <if test="diseaseConfidence != null">disease_confidence = #{diseaseConfidence},</if>
+            <if test="diseaseResult != null">disease_result = #{diseaseResult},</if>
+            <if test="diseaseDesc != null">disease_desc = #{diseaseDesc},</if>
+            <if test="diseaseAdvice != null">disease_advice = #{diseaseAdvice},</if>
+            <if test="diseaseResultImgUrl != null">disease_result_img_url = #{diseaseResultImgUrl},</if>
+            <if test="isWarning != null">is_warning = #{isWarning},</if>
+            <if test="warningLevel != null">warning_level = #{warningLevel},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="diseaseB != null">disease_b = #{diseaseB},</if>
+            <if test="diseaseC != null">disease_c = #{diseaseC},</if>
+            <if test="diseaseD != null">disease_d = #{diseaseD},</if>
+            <if test="diseaseE != null">disease_e = #{diseaseE},</if>
+            <if test="diseaseF != null">disease_f = #{diseaseF},</if>
+            <if test="diseaseG != null">disease_g = #{diseaseG},</if>
+            <if test="diseaseH != null">disease_h = #{diseaseH},</if>
+            <if test="diseaseI != null">disease_i = #{diseaseI},</if>
+            <if test="diseaseJ != null">disease_j = #{diseaseJ},</if>
+        </trim>
+        where disease_id = #{diseaseId}
+    </update>
+
+    <delete id="deleteAiDiseaseByDiseaseId" parameterType="Long">
+        delete from xwq_ai_disease where disease_id = #{diseaseId}
+    </delete>
+
+    <delete id="deleteAiDiseaseByDiseaseIds" parameterType="String">
+        delete from xwq_ai_disease where disease_id in 
+        <foreach item="diseaseId" collection="array" open="(" separator="," close=")">
+            #{diseaseId}
+        </foreach>
+    </delete>
+</mapper>

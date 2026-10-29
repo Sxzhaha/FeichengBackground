@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.ld.mapper.UnifiedGraphMapper">
+
+    <select id="selectParentIdByNodeName" parameterType="String" resultType="String">
+        SELECT parent_id FROM ld_unified_knowledge_nodes 
+        WHERE node_name = #{nodeName} AND status = 1 
+        LIMIT 1
+    </select>
+
+    <select id="selectParentIdByNodeId" parameterType="String" resultType="String">
+        SELECT parent_id FROM ld_unified_knowledge_nodes 
+        WHERE node_id = #{nodeId} AND status = 1
+    </select>
+
+    <select id="selectUnifiedNodeById" parameterType="String" resultType="map">
+        SELECT node_id as id, node_name as name, node_type as type, category, level, description, parent_id
+        FROM ld_unified_knowledge_nodes 
+        WHERE node_id = #{nodeId} AND status = 1
+    </select>
+
+    <select id="selectUnifiedNodesByParentIdAndLevel" resultType="map">
+        SELECT node_id as id, node_name as name, node_type as type, category, level, description, parent_id
+        FROM ld_unified_knowledge_nodes 
+        WHERE level = #{level} AND parent_id = #{parentId} AND status = 1 
+        ORDER BY node_type
+    </select>
+
+    <select id="selectSpecificL3Node" resultType="map">
+        SELECT node_id as id, node_name as name, node_type as type, category, level, description, parent_id
+        FROM ld_unified_knowledge_nodes 
+        WHERE parent_id = #{parentId} AND node_name = #{nodeName} AND status = 1
+        LIMIT 1
+    </select>
+
+    <select id="selectOtherL3Nodes" resultType="map">
+        SELECT node_id as id, node_name as name, node_type as type, category, level, description, parent_id
+        FROM ld_unified_knowledge_nodes 
+        WHERE parent_id = #{parentId} AND node_name != #{excludeNodeName} AND status = 1 
+        ORDER BY RAND() 
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectDefaultL3Nodes" resultType="map">
+        SELECT node_id as id, node_name as name, node_type as type, category, level, description, parent_id
+        FROM ld_unified_knowledge_nodes 
+        WHERE parent_id = #{parentId} AND status = 1 
+        ORDER BY RAND() 
+        LIMIT #{limit}
+    </select>
+
+    <select id="countChildNodes" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM ld_unified_knowledge_nodes 
+        WHERE parent_id = #{parentId} AND status = 1
+    </select>
+
+    <select id="selectUnifiedChildren" parameterType="String" resultType="map">
+        SELECT node_id as id, node_name as name, node_type as type, category, level, description, parent_id
+        FROM ld_unified_knowledge_nodes 
+        WHERE parent_id = #{parentId} AND status = 1 
+        ORDER BY node_name
+    </select>
+
+    <select id="selectUnifiedChildrenLinks" parameterType="String" resultType="map">
+        SELECT source_node_id as source, target_node_id as target, relation_type as type, relation_label as label
+        FROM ld_unified_knowledge_relations 
+        WHERE source_node_id = #{parentId} AND status = 1
+    </select>
+
+    <select id="selectUnifiedSuggestions" parameterType="String" resultType="map">
+        SELECT node_id as nodeId, node_name as nodeName, node_type as nodeType, category, level, description 
+        FROM ld_unified_knowledge_nodes 
+        WHERE node_name LIKE CONCAT('%', #{keyword}, '%') AND status = 1 
+        ORDER BY level, node_name 
+        LIMIT 10
+    </select>
+
+    <select id="searchUnifiedNodes" parameterType="String" resultType="map">
+        SELECT node_id as centerNode, node_type as searchType 
+        FROM ld_unified_knowledge_nodes 
+        WHERE node_name LIKE CONCAT('%', #{keyword}, '%') AND status = 1 
+        ORDER BY level 
+        LIMIT 1
+    </select>
+
+    <select id="selectUnifiedNodeDetail" parameterType="String" resultType="map">
+        SELECT node_id as nodeId, node_name as nodeName, node_type as nodeType, category, level, description, 
+               variety_info as varietyInfo, resistance_info as resistanceInfo, symptoms, 
+               occurrence_condition as occurrenceCondition, control_methods as controlMethods 
+        FROM ld_unified_knowledge_nodes 
+        WHERE node_id = #{nodeId} AND status = 1
+    </select>
+
+    <select id="selectL1ToL2Links" parameterType="String" resultType="map">
+        SELECT DISTINCT r.source_node_id as source, r.target_node_id as target, r.relation_type as type, r.relation_label as label
+        FROM ld_unified_knowledge_relations r 
+        WHERE r.status = 1 
+          AND r.source_node_id = #{centerNode} 
+          AND r.target_node_id IN (
+            SELECT node_id FROM ld_unified_knowledge_nodes 
+            WHERE level = 2 AND parent_id = #{centerNode} AND status = 1
+          )
+    </select>
+
+    <select id="selectL2ToL3Links" parameterType="String" resultType="map">
+        SELECT DISTINCT r.source_node_id as source, r.target_node_id as target, r.relation_type as type, r.relation_label as label
+        FROM ld_unified_knowledge_relations r 
+        WHERE r.status = 1 
+          AND r.source_node_id IN (
+            SELECT node_id FROM ld_unified_knowledge_nodes 
+            WHERE level = 2 AND parent_id = #{centerNode} AND status = 1
+          ) 
+          AND r.target_node_id IN (
+            SELECT node_id FROM ld_unified_knowledge_nodes 
+            WHERE level = 3 AND parent_id IN (
+              SELECT node_id FROM ld_unified_knowledge_nodes 
+              WHERE level = 2 AND parent_id = #{centerNode} AND status = 1
+            ) AND status = 1
+          )
+    </select>
+
+</mapper>

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.smx.mapper.ExpertQuestionMapper">
+
+    <resultMap type="com.ruoyi.binZhou.smx.domain.ExpertQuestion" id="ExpertQuestionResult">
+        <id property="questionId" column="question_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userAvatar" column="user_avatar"/>
+        <result property="crop" column="crop"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="images" column="images"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="replyCount" column="reply_count"/>
+        <result property="status" column="status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="avatar" column="avatar"/>
+        <result property="expert" column="expert"/>
+        <result property="answer" column="answer"/>
+        <result property="aiResult" column="ai_result"/>
+        <result property="aiStatus" column="ai_status"/>
+        <result property="region" column="region"/>
+    </resultMap>
+
+    <!-- 我的回答列表：问题信息 + 我的回答内容 -->
+    <resultMap type="com.ruoyi.binZhou.smx.domain.ExpertQuestion" id="ExpertMyAnswerResult">
+        <id property="questionId" column="question_id"/>
+        <result property="crop" column="crop"/>
+        <result property="title" column="title"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="replyCount" column="reply_count"/>
+        <result property="date" column="date"/>
+        <result property="answerId" column="answer_id"/>
+        <result property="myAnswer" column="my_answer"/>
+        <result property="myAnswerImages" column="my_answer_images"/>
+        <result property="myAnswerDate" column="my_answer_date"/>
+    </resultMap>
+
+    <sql id="selectQuestionVo">
+        select q.question_id, q.user_id, q.user_name, q.user_avatar, q.crop, q.title, q.content, q.images,
+               q.view_count, q.like_count, q.reply_count, q.status, q.create_time, q.ai_result, q.ai_status,
+               (select u.region from sys_user u where u.user_id = q.user_id) as region,
+               (select a.expert_avatar from smx_expert_answer a
+                 where a.question_id = q.question_id and a.del_flag = '0'
+                 order by a.answer_id limit 1) as avatar,
+               (select concat_ws(' ', a.expert_name, a.expert_title) from smx_expert_answer a
+                 where a.question_id = q.question_id and a.del_flag = '0'
+                 order by a.answer_id limit 1) as expert,
+               (select a.content from smx_expert_answer a
+                 where a.question_id = q.question_id and a.del_flag = '0'
+                 order by a.answer_id limit 1) as answer
+        from smx_expert_question q
+    </sql>
+
+    <select id="selectMyAnsweredQuestions" parameterType="Long" resultMap="ExpertMyAnswerResult">
+        select q.question_id, q.crop, q.title, q.view_count, q.reply_count,
+               date_format(q.create_time, '%m-%d') as date,
+               a.answer_id,
+               a.content as my_answer,
+               a.images as my_answer_images,
+               date_format(a.create_time, '%Y-%m-%d %H:%i') as my_answer_date
+        from smx_expert_question q
+        join smx_expert_answer a on a.question_id = q.question_id and a.del_flag = '0'
+        where a.answer_user_id = #{userId} and q.del_flag = '0'
+        order by a.answer_id desc
+    </select>
+
+    <select id="selectQuestionList" parameterType="com.ruoyi.binZhou.smx.domain.ExpertQuestion" resultMap="ExpertQuestionResult">
+        <include refid="selectQuestionVo"/>
+        where q.del_flag = '0'
+        <if test="category != null and category != ''">
+            and exists (
+                select 1 from smx_expert_crop c
+                where c.crop = q.crop and c.category = #{category}
+            )
+        </if>
+        <if test="crop != null and crop != ''"> and q.crop = #{crop}</if>
+        <!-- 搜索问答：关键词同时匹配问题标题、问题描述与作物名称，可与 crop 标签筛选叠加 -->
+        <if test="keyword != null and keyword != ''">
+            and (q.title like concat('%', #{keyword}, '%')
+                 or q.content like concat('%', #{keyword}, '%')
+                 or q.crop like concat('%', #{keyword}, '%'))
+        </if>
+        <if test="status != null and status != ''"> and q.status = #{status}</if>
+        <if test="userId != null"> and q.user_id = #{userId}</if>
+        <if test="title != null and title != ''"> and q.title like concat('%', #{title}, '%')</if>
+        order by q.create_time desc
+    </select>
+
+    <select id="selectQuestionById" parameterType="Long" resultMap="ExpertQuestionResult">
+        <include refid="selectQuestionVo"/>
+        where q.del_flag = '0' and q.question_id = #{questionId}
+    </select>
+
+    <select id="selectQuestionImagesById" parameterType="Long" resultType="String">
+        select images from smx_expert_question
+        where del_flag = '0' and question_id = #{questionId}
+    </select>
+
+    <select id="existsQuestionById" parameterType="Long" resultType="int">
+        select count(1) from smx_expert_question
+        where del_flag = '0' and question_id = #{questionId}
+    </select>
+
+    <select id="selectQuestionUserIdById" parameterType="Long" resultType="Long">
+        select user_id from smx_expert_question
+        where del_flag = '0' and question_id = #{questionId}
+    </select>
+
+    <insert id="insertQuestion" parameterType="com.ruoyi.binZhou.smx.domain.ExpertQuestion" useGeneratedKeys="true" keyProperty="questionId">
+        insert into smx_expert_question (user_id, user_name, user_avatar, crop, title, content, images, ai_status)
+        values (#{userId}, #{userName}, #{userAvatar}, #{crop}, #{title}, #{content}, #{images}, #{aiStatus})
+    </insert>
+
+    <update id="increaseViewCount" parameterType="Long">
+        update smx_expert_question set view_count = view_count + 1 where question_id = #{questionId}
+    </update>
+
+    <update id="updateLikeCount">
+        update smx_expert_question set like_count = greatest(0, like_count + #{delta}) where question_id = #{questionId}
+    </update>
+
+    <select id="selectQuestionLikeCountById" parameterType="Long" resultType="Long">
+        select like_count from smx_expert_question where question_id = #{questionId}
+    </select>
+
+    <update id="increaseReplyCount" parameterType="Long">
+        update smx_expert_question set reply_count = reply_count + 1, status = '1', update_time = sysdate() where question_id = #{questionId}
+    </update>
+
+    <update id="decreaseReplyCount" parameterType="Long">
+        update smx_expert_question set reply_count = greatest(0, reply_count - 1), update_time = sysdate()
+        where question_id = #{questionId}
+    </update>
+
+    <update id="refreshQuestionAnswerStatus" parameterType="Long">
+        update smx_expert_question
+        set status = if(exists(select 1 from smx_expert_answer where question_id = #{questionId}), '1', '0'),
+            update_time = sysdate()
+        where question_id = #{questionId}
+    </update>
+
+    <delete id="deleteQuestionById" parameterType="Long">
+        delete from smx_expert_question where question_id = #{questionId}
+    </delete>
+
+    <update id="updateAiResult">
+        update smx_expert_question set ai_result = #{aiResult}, ai_status = #{aiStatus} where question_id = #{questionId}
+    </update>
+</mapper>

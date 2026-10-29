@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.xwq.mapper.PestDiagnosisHistoryMapper">
+
+    <sql id="BaseColumns">
+        id, user_id, image_url, file_path, disease_name, confidence,
+        prevention, brief_desc, del_flag,
+        create_by, create_time, update_by, update_time
+    </sql>
+
+    <resultMap id="BaseResultMap" type="com.ruoyi.binZhou.xwq.domain.PestDiagnosisHistory">
+        <id     column="id"           property="id"/>
+        <result column="user_id"      property="userId"/>
+        <result column="image_url"    property="imageUrl"/>
+        <result column="file_path"    property="filePath"/>
+        <result column="disease_name" property="diseaseName"/>
+        <result column="confidence"   property="confidence"/>
+        <result column="prevention"   property="prevention"/>
+        <result column="brief_desc"   property="briefDesc"/>
+        <result column="del_flag"     property="delFlag"/>
+        <result column="create_by"    property="createBy"/>
+        <result column="create_time"  property="createTime"/>
+        <result column="update_by"    property="updateBy"/>
+        <result column="update_time"  property="updateTime"/>
+    </resultMap>
+
+    <!-- 动态条件 -->
+    <sql id="WhereClause">
+        <where>
+            del_flag = '0'
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="filePath != null and filePath != ''">
+                AND file_path LIKE CONCAT('%', #{filePath}, '%')
+            </if>
+            <if test="diseaseName != null and diseaseName != ''">
+                AND disease_name LIKE CONCAT('%', #{diseaseName}, '%')
+            </if>
+            <if test="params != null and params.beginTime != null and params.beginTime != ''">
+                AND DATE_FORMAT(create_time,'%y%m%d') &gt;= DATE_FORMAT(#{params.beginTime},'%y%m%d')
+            </if>
+            <if test="params != null and params.endTime != null and params.endTime != ''">
+                AND DATE_FORMAT(create_time,'%y%m%d') &lt;= DATE_FORMAT(#{params.endTime},'%y%m%d')
+            </if>
+        </where>
+    </sql>
+
+    <!-- 查询列表 -->
+    <select id="selectList" resultMap="BaseResultMap"
+            parameterType="com.ruoyi.binZhou.xwq.domain.PestDiagnosisHistory">
+        SELECT <include refid="BaseColumns"/>
+        FROM pest_diagnosis_history
+        <include refid="WhereClause"/>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap" parameterType="Long">
+        SELECT <include refid="BaseColumns"/>
+        FROM pest_diagnosis_history
+        WHERE id = #{id} AND del_flag = '0'
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.ruoyi.binZhou.xwq.domain.PestDiagnosisHistory"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO pest_diagnosis_history
+        (user_id, image_url, file_path, disease_name, confidence,
+         prevention, brief_desc, del_flag, create_by, create_time)
+        VALUES
+            (#{userId}, #{imageUrl}, #{filePath}, #{diseaseName}, #{confidence},
+             #{prevention}, #{briefDesc}, '0', #{createBy}, NOW())
+    </insert>
+
+    <!-- 批量新增 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO pest_diagnosis_history
+        (user_id, image_url, file_path, disease_name, confidence,
+         prevention, brief_desc, del_flag, create_by, create_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.imageUrl}, #{item.filePath}, #{item.diseaseName}, #{item.confidence},
+             #{item.prevention}, #{item.briefDesc}, '0', #{item.createBy}, NOW())
+        </foreach>
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.ruoyi.binZhou.xwq.domain.PestDiagnosisHistory">
+        UPDATE pest_diagnosis_history
+        <set>
+            <if test="imageUrl != null">image_url = #{imageUrl},</if>
+            <if test="filePath != null">file_path = #{filePath},</if>
+            <if test="diseaseName != null">disease_name = #{diseaseName},</if>
+            <if test="confidence != null">confidence = #{confidence},</if>
+            <if test="prevention != null">prevention = #{prevention},</if>
+            <if test="briefDesc != null">brief_desc = #{briefDesc},</if>
+            update_by = #{updateBy},
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 逻辑删除（单条） -->
+    <update id="deleteById" parameterType="Long">
+        UPDATE pest_diagnosis_history SET del_flag = '2' WHERE id = #{id}
+    </update>
+
+    <!-- 逻辑删除（批量） -->
+    <update id="deleteByIds" parameterType="Long">
+        UPDATE pest_diagnosis_history SET del_flag = '2'
+        WHERE id IN
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 平均置信度 -->
+    <select id="selectAvgConfidence" resultType="java.lang.Double">
+        SELECT IFNULL(AVG(confidence), 0)
+        FROM pest_diagnosis_history
+        WHERE del_flag = '0'
+        <if test="userId != null">
+            AND user_id = #{userId}
+        </if>
+    </select>
+
+</mapper>

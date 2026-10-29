@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.ld.mapper.AgriChatMessageMapper">
+
+	<resultMap type="com.ruoyi.binZhou.ld.domain.AgriChatMessage" id="AgriChatMessageResult">
+		<result property="messageId"        column="message_id"        />
+		<result property="sessionId"        column="session_id"        />
+		<result property="role"             column="role"              />
+		<result property="content"          column="content"           />
+		<result property="reasoningContent" column="reasoning_content" />
+		<result property="images"           column="images"            />
+		<result property="createTime"       column="create_time"       />
+	</resultMap>
+
+	<select id="selectMessagesBySessionId" parameterType="Long" resultMap="AgriChatMessageResult">
+		select message_id, session_id, role, content, reasoning_content, images, create_time
+		from agri_chat_message
+		where session_id = #{sessionId}
+		order by create_time asc
+	</select>
+
+	<insert id="insertMessage" parameterType="com.ruoyi.binZhou.ld.domain.AgriChatMessage" useGeneratedKeys="true" keyProperty="messageId">
+		insert into agri_chat_message
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="sessionId != null">session_id,</if>
+			<if test="role != null">role,</if>
+			<if test="content != null">content,</if>
+			<if test="reasoningContent != null">reasoning_content,</if>
+			<if test="images != null">images,</if>
+			<if test="createTime != null">create_time,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="sessionId != null">#{sessionId},</if>
+			<if test="role != null">#{role},</if>
+			<if test="content != null">#{content},</if>
+			<if test="reasoningContent != null">#{reasoningContent},</if>
+			<if test="images != null">#{images},</if>
+			<if test="createTime != null">#{createTime},</if>
+		</trim>
+	</insert>
+
+	<delete id="deleteMessageBySessionId" parameterType="Long">
+		delete from agri_chat_message where session_id = #{sessionId}
+	</delete>
+
+</mapper>

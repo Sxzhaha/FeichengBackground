@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.binZhou.xwq.mapper.AiPhenologyRecognitionMapper">
+
+    <resultMap
+        id="PhenologyRecognitionListResult"
+        type="com.ruoyi.binZhou.xwq.domain.PhenologyRecognitionListVo">
+        <id property="phenologyId" column="phenology_id"/>
+        <result property="recordId" column="record_id"/>
+
+        <result property="imageId" column="image_id"/>
+        <result property="imageName" column="image_name"/>
+        <result property="imageUrl" column="image_url"/>
+
+        <result property="modelId" column="model_id"/>
+        <result property="modelName" column="model_name"/>
+
+        <result property="phenologyName" column="phenology_name"/>
+        <result property="phenologyCode" column="phenology_code"/>
+        <result property="phenologyCrop" column="phenology_crop"/>
+        <result property="phenologyConfidence" column="phenology_confidence"/>
+        <result property="phenologyResult" column="phenology_result"/>
+        <result property="phenologyDesc" column="phenology_desc"/>
+        <result property="phenologyAdvice" column="phenology_advice"/>
+        <result property="phenologyNextName" column="phenology_next_name"/>
+        <result
+            property="phenologyResultImgUrl"
+            column="phenology_result_img_url"/>
+
+        <result property="recordMode" column="record_mode"/>
+        <result property="recordStatus" column="record_status"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select
+        id="selectRecognitionList"
+        parameterType="com.ruoyi.binZhou.xwq.domain.PhenologyRecognitionQuery"
+        resultMap="PhenologyRecognitionListResult">
+        SELECT
+            p.phenology_id,
+            p.record_id,
+            p.image_id,
+            i.image_name,
+            i.image_url,
+            r.model_id,
+            COALESCE(r.model_name, m.model_name) AS model_name,
+            p.phenology_name,
+            p.phenology_code,
+            p.phenology_crop,
+            p.phenology_confidence,
+            p.phenology_result,
+            p.phenology_desc,
+            p.phenology_advice,
+            p.phenology_next_name,
+            p.phenology_result_img_url,
+            r.record_mode,
+            r.record_status,
+            COALESCE(p.create_time, r.create_time) AS create_time
+        FROM xwq_ai_phenology p
+        LEFT JOIN xwq_ai_record r
+            ON r.record_id = p.record_id
+        LEFT JOIN xwq_ai_image i
+            ON i.image_id = p.image_id
+        LEFT JOIN xwq_ai_model m
+            ON m.model_id = r.model_id
+        <where>
+            <if test="imageId != null">
+                AND p.image_id = #{imageId}
+            </if>
+            <if test="modelId != null">
+                AND r.model_id = #{modelId}
+            </if>
+            <if test="phenologyCrop != null and phenologyCrop != ''">
+                AND p.phenology_crop = #{phenologyCrop}
+            </if>
+            <if test="phenologyName != null and phenologyName != ''">
+                AND p.phenology_name LIKE CONCAT('%', #{phenologyName}, '%')
+            </if>
+            <if test="imageName != null and imageName != ''">
+                AND i.image_name LIKE CONCAT('%', #{imageName}, '%')
+            </if>
+            <if test="modelName != null and modelName != ''">
+                AND COALESCE(r.model_name, m.model_name)
+                    LIKE CONCAT('%', #{modelName}, '%')
+            </if>
+            <if test="recordMode != null and recordMode != ''">
+                AND r.record_mode = #{recordMode}
+            </if>
+            <if test="recordStatus != null">
+                AND r.record_status = #{recordStatus}
+            </if>
+            <if test="params != null
+                    and params.beginTime != null
+                    and params.beginTime != ''">
+                AND COALESCE(p.create_time, r.create_time)
+                    &gt;= #{params.beginTime}
+            </if>
+            <if test="params != null
+                    and params.endTime != null
+                    and params.endTime != ''">
+                AND COALESCE(p.create_time, r.create_time)
+                    &lt;= #{params.endTime}
+            </if>
+        </where>
+        ORDER BY
+            COALESCE(p.create_time, r.create_time) DESC,
+            p.phenology_id DESC
+    </select>
+
+</mapper>

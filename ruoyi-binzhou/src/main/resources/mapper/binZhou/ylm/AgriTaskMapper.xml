@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.binZhou.ylm.mapper.AgriTaskMapper">
+
+    <!-- ================= ResultMap ================= -->
+    <resultMap type="AgriTask" id="AgriTaskResult">
+        <id column="id" property="id"/>
+        <result column="task_no" property="taskNo"/>
+        <result column="work_type_id" property="workTypeId"/>
+        <result column="work_type_name" property="workTypeName"/>
+        <result column="work_method_id" property="workMethodId"/>
+        <result column="work_method_name" property="workMethodName"/>
+        <result column="area_id" property="areaId"/>
+        <result column="location_id" property="locationId"/>
+        <result column="park_id" property="parkId"/>
+        <result column="park_name" property="parkName"/>
+        <result column="area_name" property="areaName"/>
+        <result column="location_name" property="locationName"/>
+        <result column="region_full_name" property="regionFullName"/>
+        <result column="description" property="description"/>
+        <result column="photo_urls" property="photoUrls"/>
+        <result column="create_by_id" property="createById"/>
+        <result column="create_by_name" property="createByName"/>
+        <result column="operator_id" property="operatorId"/>
+        <result column="operator_name" property="operatorName"/>
+        <result column="create_time" property="createTime"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="remark" property="remark"/>
+        <result column="agri_task_a" property="agriTaskA"/>
+        <result column="agri_task_b" property="agriTaskB"/>
+        <result column="agri_task_c" property="agriTaskC"/>
+        <result column="agri_task_d" property="agriTaskD"/>
+    </resultMap>
+
+    <!-- ================= Base SQL ================= -->
+    <sql id="selectAgriTaskVo">
+        select
+            t.id, t.task_no, t.work_type_id, t.work_method_id,
+            coalesce(wt.dict_label, cast(t.work_type_id as char)) as work_type_name,
+            coalesce(wm.dict_label, cast(t.work_method_id as char)) as work_method_name,
+            coalesce(t.area_id, l.area_id) as area_id,
+            t.location_id,
+            a.park_id,
+            p.park_name,
+            a.area_name,
+            l.location_name,
+            concat_ws(' ', p.park_name, a.area_name, l.location_name) as region_full_name,
+            t.description, t.photo_urls,
+            t.create_by_id,
+            coalesce(cu.nick_name, cu.user_name, t.create_by_id) as create_by_name,
+            t.operator_id,
+            coalesce((
+                select group_concat(od.dict_label order by find_in_set(od.dict_value, replace(t.operator_id, ' ', '')) separator ',')
+                from sys_dict_data od
+                where od.dict_type = 'ylm_agri_operator'
+                  and find_in_set(od.dict_value, replace(t.operator_id, ' ', '')) > 0
+            ), t.operator_id) as operator_name,
+            t.create_time, t.start_time, t.end_time, t.remark,
+            t.agri_task_a, t.agri_task_b, t.agri_task_c, t.agri_task_d
+        from ylm_agri_task t
+        left join location l on t.location_id = l.location_id
+        left join area a on coalesce(t.area_id, l.area_id) = a.area_id
+        left join park p on a.park_id = p.park_id
+        left join sys_user cu on t.create_by_id = cast(cu.user_id as char)
+        left join sys_dict_data wt on wt.dict_type = 'ylm_agri_work_type' and wt.dict_value = cast(t.work_type_id as char)
+        left join sys_dict_data wm on wm.dict_type = 'ylm_agri_work_method' and wm.dict_value = cast(t.work_method_id as char)
+    </sql>
+
+    <!-- ================= By ID ================= -->
+    <select id="selectAgriTaskById" resultMap="AgriTaskResult">
+        <include refid="selectAgriTaskVo"/>
+        where t.id = #{id}
+    </select>
+
+    <select id="selectFarmerAgriTaskById" resultMap="AgriTaskResult">
+        <include refid="selectAgriTaskVo"/>
+        where t.id = #{id}
+        and find_in_set(#{operatorId}, replace(t.operator_id, ' ', '')) > 0
+    </select>
+
+    <!-- ================= Admin List ================= -->
+    <select id="selectAgriTaskList" resultMap="AgriTaskResult">
+        <include refid="selectAgriTaskVo"/>
+        <where>
+            <if test="ids != null and ids.length > 0">
+                and t.id in
+                <foreach collection="ids" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+
+            <if test="taskNo != null and taskNo != ''">
+                and t.task_no like concat('%', #{taskNo}, '%')
+            </if>
+
+            <if test="workTypeId != null">
+                and t.work_type_id = #{workTypeId}
+            </if>
+
+            <if test="workMethodId != null">
+                and t.work_method_id = #{workMethodId}
+            </if>
+
+            <if test="locationId != null">
+                and t.location_id = #{locationId}
+            </if>
+
+            <if test="areaId != null">
+                and coalesce(t.area_id, l.area_id) = #{areaId}
+            </if>
+
+            <if test="regionFullName != null and regionFullName != ''">
+                and concat_ws(' ', p.park_name, a.area_name, l.location_name) like concat('%', #{regionFullName}, '%')
+            </if>
+
+            <if test="createById != null and createById != ''">
+                <choose>
+                    <when test="exactCreateById != null and exactCreateById">
+                        and t.create_by_id = #{createById}
+                    </when>
+                    <otherwise>
+                        and (
+                        t.create_by_id = #{createById}
+                        or t.create_by_id in (
+                        select user_id
+                        from sys_user
+                        where user_name like concat('%', #{createById}, '%')
+                        or nick_name like concat('%', #{createById}, '%')
+                        )
+                        )
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="startTime != null">
+                and date_format(t.start_time,'%Y-%m-%d') = #{startTime}
+            </if>
+        </where>
+    </select>
+
+    <!-- ================= Farmer List（关键修复版） ================= -->
+    <select id="selectFarmerAgriTaskList" resultMap="AgriTaskResult">
+        <include refid="selectAgriTaskVo"/>
+        <where>
+
+            <!-- 操作人可多选，operator_id 以逗号分隔保存 -->
+            and find_in_set(#{operatorId}, replace(t.operator_id, ' ', '')) > 0
+
+            <if test="query.taskNo != null and query.taskNo != ''">
+                and t.task_no like concat('%', #{query.taskNo}, '%')
+            </if>
+
+            <if test="query.workTypeId != null">
+                and t.work_type_id = #{query.workTypeId}
+            </if>
+
+            <if test="query.workMethodId != null">
+                and t.work_method_id = #{query.workMethodId}
+            </if>
+
+            <if test="query.locationId != null">
+                and t.location_id = #{query.locationId}
+            </if>
+
+            <if test="query.areaId != null">
+                and coalesce(t.area_id, l.area_id) = #{query.areaId}
+            </if>
+
+            <if test="query.regionFullName != null and query.regionFullName != ''">
+                and concat_ws(' ', p.park_name, a.area_name, l.location_name) like concat('%', #{query.regionFullName}, '%')
+            </if>
+
+            <if test="query.createById != null and query.createById != ''">
+                <choose>
+                    <when test="query.exactCreateById != null and query.exactCreateById">
+                        and t.create_by_id = #{query.createById}
+                    </when>
+                    <otherwise>
+                        and (
+                        t.create_by_id = #{query.createById}
+                        or t.create_by_id in (
+                        select user_id
+                        from sys_user
+                        where user_name like concat('%', #{query.createById}, '%')
+                        or nick_name like concat('%', #{query.createById}, '%')
+                        )
+                        )
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="query.startTime != null">
+                and date_format(t.start_time,'%Y-%m-%d') = #{query.startTime}
+            </if>
+
+        </where>
+
+        order by t.start_time desc
+    </select>
+
+    <!-- ================= Insert ================= -->
+    <insert id="insertAgriTask" useGeneratedKeys="true" keyProperty="id">
+        insert into ylm_agri_task
+        (task_no, work_type_id, work_method_id, area_id, location_id,
+         description, photo_urls,
+         create_by_id, operator_id,
+         create_time, start_time, end_time, remark,
+         agri_task_a, agri_task_b, agri_task_c, agri_task_d)
+        values
+            (#{taskNo}, #{workTypeId}, #{workMethodId}, #{areaId}, #{locationId},
+             #{description}, #{photoUrls},
+             #{createById}, #{operatorId},
+             sysdate(), #{startTime}, #{endTime}, #{remark},
+             #{agriTaskA}, #{agriTaskB}, #{agriTaskC}, #{agriTaskD})
+    </insert>
+
+    <!-- ================= Update ================= -->
+    <update id="updateAgriTask">
+        update ylm_agri_task
+        <set>
+            <if test="taskNo != null">task_no = #{taskNo},</if>
+            <if test="workTypeId != null">work_type_id = #{workTypeId},</if>
+            <if test="workMethodId != null">work_method_id = #{workMethodId},</if>
+            <if test="areaId != null">area_id = #{areaId},</if>
+            <if test="locationId != null">location_id = #{locationId},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="photoUrls != null">photo_urls = #{photoUrls},</if>
+            <if test="operatorId != null">operator_id = #{operatorId},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="agriTaskA != null">agri_task_a = #{agriTaskA},</if>
+            <if test="agriTaskB != null">agri_task_b = #{agriTaskB},</if>
+            <if test="agriTaskC != null">agri_task_c = #{agriTaskC},</if>
+            <if test="agriTaskD != null">agri_task_d = #{agriTaskD}</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="submitAgriTask">
+        update ylm_agri_task
+        <set>
+            <if test="agriTask.taskNo != null">task_no = #{agriTask.taskNo},</if>
+            <if test="agriTask.workTypeId != null">work_type_id = #{agriTask.workTypeId},</if>
+            <if test="agriTask.workMethodId != null">work_method_id = #{agriTask.workMethodId},</if>
+            <if test="agriTask.areaId != null">area_id = #{agriTask.areaId},</if>
+            <if test="agriTask.locationId != null">location_id = #{agriTask.locationId},</if>
+            <if test="agriTask.description != null">description = #{agriTask.description},</if>
+            <if test="agriTask.operatorId != null">operator_id = #{agriTask.operatorId},</if>
+            <if test="agriTask.photoUrls != null">photo_urls = #{agriTask.photoUrls},</if>
+            <if test="agriTask.startTime != null">start_time = #{agriTask.startTime},</if>
+            <if test="agriTask.endTime != null">end_time = #{agriTask.endTime},</if>
+            <if test="agriTask.remark != null">remark = #{agriTask.remark},</if>
+        </set>
+        where id = #{agriTask.id}
+          and create_by_id = #{createById}
+    </update>
+
+    <!-- ================= Delete ================= -->
+    <delete id="deleteAgriTaskByIds">
+        delete from ylm_agri_task
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectAreaIdByLocationId" resultType="java.lang.Long">
+        select area_id
+        from location
+        where location_id = #{locationId}
+    </select>
+
+    <select id="selectRegionTree" resultType="java.util.HashMap">
+        select
+            p.park_id as parkId,
+            p.park_name as parkName,
+            a.area_id as areaId,
+            a.area_name as areaName,
+            l.location_id as locationId,
+            l.location_name as locationName
+        from park p
+        left join area a on p.park_id = a.park_id
+        left join location l on a.area_id = l.area_id
+        order by p.park_id, a.area_id, l.location_id
+    </select>
+
+    <select id="selectTaskNosByPrefix" resultType="java.lang.String">
+        select task_no
+        from ylm_agri_task
+        where task_no like concat(#{prefix}, '%')
+        order by task_no desc
+    </select>
+
+    <select id="selectDictDataByType" resultType="java.util.HashMap">
+        select
+            dict_label as dictLabel,
+            dict_value as dictValue
+        from sys_dict_data
+        where dict_type = #{dictType}
+          and status = '0'
+        order by dict_sort
+    </select>
+
+    <select id="selectTaskCountByTaskNo" resultType="java.lang.Long">
+        select count(1)
+        from ylm_agri_task
+        where task_no = #{taskNo}
+        <if test="excludeId != null">
+            and id != #{excludeId}
+        </if>
+    </select>
+
+</mapper>
