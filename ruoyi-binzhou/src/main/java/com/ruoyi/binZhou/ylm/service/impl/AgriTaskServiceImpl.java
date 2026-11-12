@@ -551,7 +551,7 @@ public class AgriTaskServiceImpl extends ServiceImpl<AgriTaskMapper, AgriTask> i
                 {"农事类型", "必填", "从系统字典 ylm_agri_work_type 的可选项中填写标签或值", firstLabel(workTypeOptions)},
                 {"作业方式", "必填", "从系统字典 ylm_agri_work_method 的可选项中填写标签或值", firstLabel(workMethodOptions)},
                 {"区域", "必填", "填写完整区域名称，系统会解析为 area_id 和 location_id", firstRegionName(regionOptions)},
-                {"任务描述", "可空", "长度不超过" + DESCRIPTION_MAX_LENGTH + "个字符", "李四去滨州园区南地块东角落人工除草。"},
+                {"任务描述", "可空", "长度不超过" + DESCRIPTION_MAX_LENGTH + "个字符", "李四去肥城桃示范园区南地块东角落人工除草。"},
                 {"开始时间", "必填", "格式为 " + DATE_TIME_PATTERN + "，也兼容 Excel 日期单元格", "2026-07-13 08:30:00"},
                 {"结束时间", "必填", "格式同开始时间，必须晚于开始时间", "2026-07-13 18:00:00"},
                 {"备注", "可空", "长度不超过" + REMARK_MAX_LENGTH + "个字符", "暂无"},

@@ -21,6 +21,9 @@ public class DiseaseReportSummary
     private Long highRiskCount;
     private Long middleRiskCount;
     private Long lowRiskCount;
+    private Long reviewRequiredCount;
+    private Long auxiliaryDiagnosisCount;
+    private Long noRiskCount;
     private Long unmarkedRiskCount;
     private String riskLevel;
     private String riskText;
@@ -60,6 +63,12 @@ public class DiseaseReportSummary
     public void setMiddleRiskCount(Long middleRiskCount) { this.middleRiskCount = middleRiskCount; }
     public Long getLowRiskCount() { return lowRiskCount; }
     public void setLowRiskCount(Long lowRiskCount) { this.lowRiskCount = lowRiskCount; }
+    public Long getReviewRequiredCount() { return reviewRequiredCount; }
+    public void setReviewRequiredCount(Long reviewRequiredCount) { this.reviewRequiredCount = reviewRequiredCount; }
+    public Long getAuxiliaryDiagnosisCount() { return auxiliaryDiagnosisCount; }
+    public void setAuxiliaryDiagnosisCount(Long auxiliaryDiagnosisCount) { this.auxiliaryDiagnosisCount = auxiliaryDiagnosisCount; }
+    public Long getNoRiskCount() { return noRiskCount; }
+    public void setNoRiskCount(Long noRiskCount) { this.noRiskCount = noRiskCount; }
     public Long getUnmarkedRiskCount() { return unmarkedRiskCount; }
     public void setUnmarkedRiskCount(Long unmarkedRiskCount) { this.unmarkedRiskCount = unmarkedRiskCount; }
     public String getRiskLevel() { return riskLevel; }
@@ -152,6 +161,8 @@ public class DiseaseReportSummary
         private String recognitionMode;
         private String diseaseIds;
         private List<Long> diseaseIdList;
+        private Long scopeUserId;
+        private String scopeUsername;
 
         public String getBeginDate() { return beginDate; }
         public void setBeginDate(String beginDate) { this.beginDate = beginDate; }
@@ -167,5 +178,9 @@ public class DiseaseReportSummary
         public void setDiseaseIds(String diseaseIds) { this.diseaseIds = diseaseIds; }
         public List<Long> getDiseaseIdList() { return diseaseIdList; }
         public void setDiseaseIdList(List<Long> diseaseIdList) { this.diseaseIdList = diseaseIdList; }
+        public Long getScopeUserId() { return scopeUserId; }
+        public void setScopeUserId(Long scopeUserId) { this.scopeUserId = scopeUserId; }
+        public String getScopeUsername() { return scopeUsername; }
+        public void setScopeUsername(String scopeUsername) { this.scopeUsername = scopeUsername; }
     }
 }

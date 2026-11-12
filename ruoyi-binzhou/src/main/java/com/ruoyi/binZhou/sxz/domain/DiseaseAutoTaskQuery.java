@@ -7,6 +7,7 @@ public class DiseaseAutoTaskQuery
     private Long deviceId;
     private String taskStatus;
     private String runState;
+    private Long scopeUserId;
 
     public String getTaskName() { return taskName; }
     public void setTaskName(String taskName) { this.taskName = taskName; }
@@ -18,4 +19,6 @@ public class DiseaseAutoTaskQuery
     public void setTaskStatus(String taskStatus) { this.taskStatus = taskStatus; }
     public String getRunState() { return runState; }
     public void setRunState(String runState) { this.runState = runState; }
+    public Long getScopeUserId() { return scopeUserId; }
+    public void setScopeUserId(Long scopeUserId) { this.scopeUserId = scopeUserId; }
 }

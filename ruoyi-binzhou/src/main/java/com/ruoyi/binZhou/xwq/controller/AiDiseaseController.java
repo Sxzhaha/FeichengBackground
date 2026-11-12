@@ -21,6 +21,7 @@ import com.ruoyi.binZhou.xwq.domain.AiDisease;
 import com.ruoyi.binZhou.xwq.service.IAiDiseaseService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.binZhou.common.FeichengBusinessConstants;
 
 /**
  * 病虫害识别结果Controller
@@ -107,6 +108,7 @@ public class AiDiseaseController extends BaseController
      * 根据图片ID识别病虫害
      */
     @PostMapping("/predictByImage")
+    @PreAuthorize("@ss.hasPermi('xwq:disease:add')")
     public AjaxResult predictByImage(@RequestBody Map<String, Object> params)
     {
         if (params.get("imageId") == null)
@@ -122,7 +124,8 @@ public class AiDiseaseController extends BaseController
         Long imageId = Long.valueOf(params.get("imageId").toString());
         Long modelId = Long.valueOf(params.get("modelId").toString());
 
-        String cropType = params.get("cropType") == null ? "小麦" : params.get("cropType").toString();
+        String cropType = params.get("cropType") == null
+                ? FeichengBusinessConstants.CROP_NAME : params.get("cropType").toString();
         String recordMode = params.get("recordMode") == null ? "手动上传" : params.get("recordMode").toString();
 
         return AjaxResult.success(

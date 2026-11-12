@@ -5,10 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.ruoyi.binZhou.common.FeichengDataScopeUtils;
 import com.ruoyi.binZhou.sxz.domain.DiseaseKnowledgeAdvice;
 import com.ruoyi.binZhou.sxz.mapper.DiseaseKnowledgeRecognitionMapper;
 import com.ruoyi.binZhou.sxz.service.IDiseaseKnowledgeRecognitionService;
 import com.ruoyi.binZhou.xwq.service.IAiDiseaseService;
+import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.SecurityUtils;
 
 @Service
 public class DiseaseKnowledgeRecognitionServiceImpl implements IDiseaseKnowledgeRecognitionService
@@ -23,6 +26,20 @@ public class DiseaseKnowledgeRecognitionServiceImpl implements IDiseaseKnowledge
     {
         this.aiDiseaseService = aiDiseaseService;
         this.mapper = mapper;
+    }
+
+    @Override
+    public void checkImageAccess(Long imageId)
+    {
+        Long scopeUserId = FeichengDataScopeUtils.currentParkOwnerUserId();
+        if (scopeUserId == null)
+        {
+            return;
+        }
+        if (imageId == null || mapper.countAccessibleImage(imageId, scopeUserId, SecurityUtils.getUsername()) == 0)
+        {
+            throw new ServiceException("无权识别该图片或图片未关联当前桃园");
+        }
     }
 
     @Override

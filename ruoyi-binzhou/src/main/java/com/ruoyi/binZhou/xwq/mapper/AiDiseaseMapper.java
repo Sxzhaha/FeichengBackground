@@ -1,6 +1,9 @@
 package com.ruoyi.binZhou.xwq.mapper;
 
 import java.util.List;
+import java.util.Date;
+import java.math.BigDecimal;
+import org.apache.ibatis.annotations.Param;
 import com.ruoyi.binZhou.xwq.domain.AiDisease;
 
 /**
@@ -58,4 +61,20 @@ public interface AiDiseaseMapper
      * @return 结果
      */
     public int deleteAiDiseaseByDiseaseIds(Long[] diseaseIds);
+
+    public int countRecentReliableAutomaticDetections(@Param("parkId") Long parkId,
+            @Param("diseaseName") String diseaseName,
+            @Param("reliableConfidence") BigDecimal reliableConfidence,
+            @Param("since") Date since);
+
+    public int countRecentReliableAutomaticDevices(@Param("parkId") Long parkId,
+            @Param("diseaseName") String diseaseName,
+            @Param("reliableConfidence") BigDecimal reliableConfidence,
+            @Param("since") Date since);
+
+    public int countRecentReliableAutomaticDetectionsForDevice(@Param("parkId") Long parkId,
+            @Param("deviceId") Long deviceId,
+            @Param("diseaseName") String diseaseName,
+            @Param("reliableConfidence") BigDecimal reliableConfidence,
+            @Param("since") Date since);
 }

@@ -476,11 +476,11 @@ public class WeatherTask {
 
             JSONObject systemMessage = new JSONObject();
             systemMessage.put("role", "system");
-            systemMessage.put("content", "你是一位精通物联网数据监控与枣树农业防灾减灾的AI专家。根据提供的实时天气数据，只通过 JSON 格式输出分析研判结果。");
+            systemMessage.put("content", "你是一位精通物联网数据监控与肥城桃种植防灾减灾的AI专家。根据提供的实时天气数据，只通过 JSON 格式输出分析研判结果。");
             messages.add(systemMessage);
 
             String userContent = String.format(
-                "请根据以下物联网园区实时气象环境数据，研判当前气象是否存在灾害风险（例如：极端高温、寒潮大降温、暴雨、大风沙尘暴等会对大枣/枣树造成负面影响的异常天气）。\n" +
+                "请根据以下物联网园区实时气象环境数据，研判当前气象是否存在灾害风险（例如：极端高温、倒春寒、寒潮大降温、冰雹、暴雨、大风等会对肥城桃树体、花期或果实造成负面影响的异常天气）。\n" +
                 "如果判定存在灾害风险，需要生成农业预警，并提供具体的农事防灾应急建议。\n\n" +
                 "【当前园区实时气象数据】\n" +
                 "- 园区名称: %s\n" +
@@ -585,7 +585,7 @@ public class WeatherTask {
 
             JSONObject systemMessage = new JSONObject();
             systemMessage.put("role", "system");
-            systemMessage.put("content", "你是一位精通物联网数据监控与枣树农业防灾减灾的AI专家。根据提供的天气预报数据，只通过 JSON 格式输出分析研判结果。");
+            systemMessage.put("content", "你是一位精通物联网数据监控与肥城桃种植防灾减灾的AI专家。根据提供的天气预报数据，只通过 JSON 格式输出分析研判结果。");
             messages.add(systemMessage);
 
             java.text.SimpleDateFormat methodSdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
@@ -615,7 +615,7 @@ public class WeatherTask {
             }
 
             String userContent = String.format(
-                "请根据以下物联网园区未来7天的天气预报数据，研判未来是否将面临气象灾害风险（例如：连续阴雨、倒春寒、冰雹、强降雨、寒潮大降温、大风、台风等可能对大枣/枣树造成严重负面影响的极端或持续性天气状况）。\n" +
+                "请根据以下物联网园区未来7天的天气预报数据，研判未来是否将面临气象灾害风险（例如：连续阴雨、倒春寒、冰雹、强降雨、寒潮大降温、大风等可能对肥城桃树体、花期或果实造成严重负面影响的极端或持续性天气状况）。\n" +
                 "如果判定存在灾害风险，需要生成农业预警，并提供具体的防灾备耕或防御应急农事建议。\n\n" +
                 "【未来7天预报气象数据】\n" +
                 "- 园区名称: %s\n\n" +

@@ -7,9 +7,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.springframework.stereotype.Service;
+import com.ruoyi.binZhou.common.FeichengDataScopeUtils;
 import com.ruoyi.binZhou.sxz.domain.DiseaseReportSummary;
 import com.ruoyi.binZhou.sxz.mapper.DiseaseReportMapper;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.SecurityUtils;
 
 @Service
 public class DiseaseReportService
@@ -27,6 +29,9 @@ public class DiseaseReportService
         {
             query = new DiseaseReportSummary.Query();
         }
+        Long scopeUserId = FeichengDataScopeUtils.currentParkOwnerUserId();
+        query.setScopeUserId(scopeUserId);
+        if (scopeUserId != null) query.setScopeUsername(SecurityUtils.getUsername());
         query.setDiseaseIdList(parseDiseaseIds(query.getDiseaseIds()));
         DiseaseReportSummary summary = mapper.selectSummary(query);
         if (summary == null)
@@ -109,11 +114,11 @@ public class DiseaseReportService
     private String buildRiskLevel(DiseaseReportSummary summary)
     {
         if (value(summary.getRecordCount()) == 0) return "暂无数据";
-        double rate = summary.getAbnormalRate() == null
-                ? 0D : summary.getAbnormalRate().doubleValue();
-        if (rate >= 70D) return "高风险";
-        if (rate >= 40D) return "中风险";
-        return "低风险";
+        if (value(summary.getHighRiskCount()) > 0) return "高风险";
+        if (value(summary.getMiddleRiskCount()) > 0) return "中风险";
+        if (value(summary.getLowRiskCount()) > 0) return "低风险";
+        if (value(summary.getReviewRequiredCount()) > 0) return "待人工复核";
+        return "无风险";
     }
 
     private String buildRiskText(DiseaseReportSummary summary)
@@ -122,25 +127,32 @@ public class DiseaseReportService
         {
             return "当前统计范围内暂无病虫害识别记录，建议调整查询时间范围或先完成病虫害识别。";
         }
-        String dominant = summary.getCategories().isEmpty()
+        String dominant = summary.getCategories() == null || summary.getCategories().isEmpty()
                 ? "暂无明显优势种类" : summary.getCategories().get(0).getName();
-        BigDecimal dominantPercent = summary.getCategories().isEmpty()
+        BigDecimal dominantPercent = summary.getCategories() == null || summary.getCategories().isEmpty()
                 ? BigDecimal.ZERO : summary.getCategories().get(0).getPercent();
         if ("高风险".equals(summary.getRiskLevel()))
         {
-            return String.format("本期共识别 %d 条记录，其中病虫害异常记录 %d 条，异常识别占比为 %s%%，处于 70%%—100%% 区间，综合风险等级判定为高风险。主要识别结果为 %s，占全部记录的 %s%%。建议立即开展田间复核，确认病虫害发生范围和危害程度，并及时实施针对性防治。",
-                    value(summary.getRecordCount()), value(summary.getAbnormalCount()),
-                    summary.getAbnormalRate(), dominant, dominantPercent);
+            return String.format("本期自动监测存在 %d 条高风险记录。主要识别结果为 %s，占全部记录的 %s%%。高风险仅来源于已确认或后续专家规则，不由单张图片自动生成；建议立即开展田间复核。",
+                    value(summary.getHighRiskCount()), dominant, dominantPercent);
         }
         if ("中风险".equals(summary.getRiskLevel()))
         {
-            return String.format("本期共识别 %d 条记录，其中病虫害异常记录 %d 条，异常识别占比为 %s%%，处于 40%%—70%% 区间，综合风险等级判定为中风险。主要识别结果为 %s。建议提高重点区域图像采集和巡查频次，持续关注病虫害数量及置信度变化。",
-                    value(summary.getRecordCount()), value(summary.getAbnormalCount()),
-                    summary.getAbnormalRate(), dominant);
+            return String.format("本期自动监测存在 %d 条中风险记录，表示同园区、同类病虫害在统计窗口内被多次可靠识别且涉及多台设备。主要识别结果为 %s，建议提高巡查频次并开展田间核验。",
+                    value(summary.getMiddleRiskCount()), dominant);
         }
-        return String.format("本期共识别 %d 条记录，其中病虫害异常记录 %d 条，异常识别占比为 %s%%，处于 0%%—40%% 区间，综合风险等级判定为低风险。建议保持常态化监测，重点关注 %s 等主要识别结果的后续变化。",
-                value(summary.getRecordCount()), value(summary.getAbnormalCount()),
-                summary.getAbnormalRate(), dominant);
+        if ("低风险".equals(summary.getRiskLevel()))
+        {
+            return String.format("本期自动监测存在 %d 条低风险记录，属于首次、零散或尚未达到升级条件的发现。建议保持常态化监测，重点关注 %s 的后续变化。异常识别占比仅表示样本构成，不等同于果园发病率。",
+                    value(summary.getLowRiskCount()), dominant);
+        }
+        if ("待人工复核".equals(summary.getRiskLevel()))
+        {
+            return String.format("本期有 %d 条结果因类别未知、置信度不足或缺少园区关联而待人工复核，复核前不纳入园区风险，也不能直接作为施药依据。",
+                    value(summary.getReviewRequiredCount()));
+        }
+        return String.format("本期未产生自动监测风险记录；其中手动辅助诊断 %d 条、无风险 %d 条。请保持常态化监测。异常识别占比仅表示样本构成，不等同于果园发病率。",
+                value(summary.getAuxiliaryDiagnosisCount()), value(summary.getNoRiskCount()));
     }
 
     private long value(Long number)

@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import com.ruoyi.binZhou.common.FeichengDataScopeUtils;
+import com.ruoyi.binZhou.common.FeichengBusinessConstants;
 import com.ruoyi.binZhou.sxz.domain.DiseaseAutoResultQuery;
 import com.ruoyi.binZhou.sxz.domain.DiseaseAutoTask;
 import com.ruoyi.binZhou.sxz.domain.DiseaseAutoTaskItem;
@@ -47,19 +49,24 @@ public class DiseaseAutoTaskServiceImpl implements IDiseaseAutoTaskService
     @Override
     public List<DiseaseAutoTask> selectTaskList(DiseaseAutoTaskQuery query)
     {
-        return mapper.selectTaskList(query == null ? new DiseaseAutoTaskQuery() : query);
+        if (query == null) query = new DiseaseAutoTaskQuery();
+        query.setScopeUserId(FeichengDataScopeUtils.currentParkOwnerUserId());
+        return mapper.selectTaskList(query);
     }
 
     @Override
     public DiseaseAutoTask selectTaskById(Long taskId)
     {
-        return mapper.selectTaskById(taskId);
+        DiseaseAutoTask task = requireTask(taskId);
+        assertParkAccess(task.getParkId());
+        return task;
     }
 
     @Override
     public int insertTask(DiseaseAutoTask task)
     {
         normalizeAndValidate(task, null);
+        assertParkAccess(task.getParkId());
         return mapper.insertTask(task);
     }
 
@@ -70,7 +77,9 @@ public class DiseaseAutoTaskServiceImpl implements IDiseaseAutoTaskService
         {
             throw new ServiceException("任务ID不能为空");
         }
+        assertParkAccess(requireTask(task.getTaskId()).getParkId());
         normalizeAndValidate(task, task.getTaskId());
+        assertParkAccess(task.getParkId());
         return mapper.updateTask(task);
     }
 
@@ -80,6 +89,10 @@ public class DiseaseAutoTaskServiceImpl implements IDiseaseAutoTaskService
         if (taskIds == null || taskIds.length == 0)
         {
             throw new ServiceException("请选择需要删除的任务");
+        }
+        for (Long taskId : taskIds)
+        {
+            assertParkAccess(requireTask(taskId).getParkId());
         }
         return mapper.deleteTaskByIds(taskIds);
     }
@@ -92,6 +105,7 @@ public class DiseaseAutoTaskServiceImpl implements IDiseaseAutoTaskService
             throw new ServiceException("任务状态只能为启用或停用");
         }
         DiseaseAutoTask task = requireTask(taskId);
+        assertParkAccess(task.getParkId());
         if (ENABLED.equals(taskStatus))
         {
             task.setTaskStatus(taskStatus);
@@ -172,6 +186,7 @@ public class DiseaseAutoTaskServiceImpl implements IDiseaseAutoTaskService
     public DiseaseAutoTaskRun executeImmediately(Long taskId)
     {
         DiseaseAutoTask task = requireTask(taskId);
+        assertParkAccess(task.getParkId());
         validateImmediateExecution(task);
 
         String token = UUID.randomUUID().toString().replace("-", "");
@@ -229,35 +244,50 @@ public class DiseaseAutoTaskServiceImpl implements IDiseaseAutoTaskService
     }
 
     @Override
-    public List<DiseaseAutoTaskRun> selectRunList(Long taskId) { return mapper.selectRunList(taskId); }
+    public List<DiseaseAutoTaskRun> selectRunList(Long taskId)
+    {
+        assertParkAccess(requireTask(taskId).getParkId());
+        return mapper.selectRunList(taskId);
+    }
 
     @Override
-    public List<DiseaseAutoTaskItem> selectRunItems(Long runId) { return mapper.selectRunItems(runId); }
+    public List<DiseaseAutoTaskItem> selectRunItems(Long runId)
+    {
+        assertParkAccess(mapper.selectRunParkId(runId));
+        return mapper.selectRunItems(runId);
+    }
 
     @Override
-    public DiseaseAutoTaskSummary selectSummary() { return mapper.selectSummary(); }
+    public DiseaseAutoTaskSummary selectSummary()
+    {
+        return mapper.selectSummary(FeichengDataScopeUtils.currentParkOwnerUserId());
+    }
 
     @Override
     public List<DiseaseAutoTaskResult> selectResultList(DiseaseAutoResultQuery query)
     {
         if (query == null) query = new DiseaseAutoResultQuery();
         if (query.getDays() == null && isBlank(query.getBeginTime())) query.setDays(1);
+        query.setScopeUserId(FeichengDataScopeUtils.currentParkOwnerUserId());
         return mapper.selectResultList(query);
     }
 
     @Override
     public DiseaseAutoTaskResult selectResultByItemId(Long itemId)
     {
+        assertParkAccess(mapper.selectItemParkId(itemId));
         return mapper.selectResultByItemId(itemId);
     }
 
     @Override
     public Map<String, Object> selectOptions(Long parkId)
     {
+        Long scopeUserId = FeichengDataScopeUtils.currentParkOwnerUserId();
+        if (parkId != null) assertParkAccess(parkId);
         Map<String, Object> result = new HashMap<>();
-        result.put("parks", mapper.selectParkOptions());
-        result.put("devices", mapper.selectDeviceOptions(parkId));
-        result.put("cameraTasks", mapper.selectCaptureTaskOptions());
+        result.put("parks", mapper.selectParkOptions(scopeUserId));
+        result.put("devices", mapper.selectDeviceOptions(parkId, scopeUserId));
+        result.put("cameraTasks", mapper.selectCaptureTaskOptions(scopeUserId));
         result.put("models", mapper.selectModelOptions());
         return result;
     }
@@ -365,7 +395,7 @@ public class DiseaseAutoTaskServiceImpl implements IDiseaseAutoTaskService
         if (task == null || isBlank(task.getTaskName())) throw new ServiceException("任务名称不能为空");
         if (task.getCameraTaskId() == null) throw new ServiceException("请选择摄像头抓拍任务");
         if (task.getModelId() == null) throw new ServiceException("请选择病虫害识别模型");
-        if (isBlank(task.getCropType())) task.setCropType("枣树");
+        if (isBlank(task.getCropType())) task.setCropType(FeichengBusinessConstants.CROP_NAME);
         if (isBlank(task.getTaskStatus())) task.setTaskStatus(ENABLED);
         task.setConsumeMode(CAPTURE_TASK_MODE);
         if (task.getMaxRetryCount() == null) task.setMaxRetryCount(2);
@@ -409,7 +439,7 @@ public class DiseaseAutoTaskServiceImpl implements IDiseaseAutoTaskService
     {
         if (task.getCameraTaskId() == null) throw new ServiceException("任务未关联摄像头抓拍任务");
         if (task.getModelId() == null) throw new ServiceException("任务未关联病虫害识别模型");
-        if (isBlank(task.getCropType())) task.setCropType("枣树");
+        if (isBlank(task.getCropType())) task.setCropType(FeichengBusinessConstants.CROP_NAME);
 
         DiseaseAutoTaskOption captureTask = mapper.selectCaptureTaskOptionById(task.getCameraTaskId());
         if (mapper.countAvailableModel(task.getModelId()) == 0)
@@ -431,6 +461,15 @@ public class DiseaseAutoTaskServiceImpl implements IDiseaseAutoTaskService
         DiseaseAutoTask task = taskId == null ? null : mapper.selectTaskById(taskId);
         if (task == null) throw new ServiceException("自动识别任务不存在");
         return task;
+    }
+
+    private void assertParkAccess(Long parkId)
+    {
+        Long scopeUserId = FeichengDataScopeUtils.currentParkOwnerUserId();
+        if (scopeUserId != null && (parkId == null || mapper.countParkAccess(parkId, scopeUserId) == 0))
+        {
+            throw new ServiceException("无权访问该桃园数据");
+        }
     }
 
     private Long asLong(Object value) { return value == null ? null : Long.valueOf(value.toString()); }

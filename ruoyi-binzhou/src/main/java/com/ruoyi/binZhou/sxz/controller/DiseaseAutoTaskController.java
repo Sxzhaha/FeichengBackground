@@ -2,6 +2,7 @@ package com.ruoyi.binZhou.sxz.controller;
 
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,7 @@ public class DiseaseAutoTaskController extends BaseController
     }
 
     @GetMapping("/list")
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:list')")
     public TableDataInfo list(DiseaseAutoTaskQuery query)
     {
         startPage();
@@ -41,30 +43,35 @@ public class DiseaseAutoTaskController extends BaseController
     }
 
     @GetMapping("/{taskId}")
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:query')")
     public AjaxResult getInfo(@PathVariable Long taskId)
     {
         return AjaxResult.success(service.selectTaskById(taskId));
     }
 
     @PostMapping
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:add')")
     public AjaxResult add(@RequestBody DiseaseAutoTask task)
     {
         return toAjax(service.insertTask(task));
     }
 
     @PutMapping
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:edit')")
     public AjaxResult edit(@RequestBody DiseaseAutoTask task)
     {
         return toAjax(service.updateTask(task));
     }
 
     @DeleteMapping("/{taskIds}")
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:remove')")
     public AjaxResult remove(@PathVariable Long[] taskIds)
     {
         return toAjax(service.deleteTaskByIds(taskIds));
     }
 
     @PutMapping("/{taskId}/status")
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:edit')")
     public AjaxResult changeStatus(@PathVariable Long taskId, @RequestBody Map<String, Object> body)
     {
         Object status = body == null ? null : body.get("taskStatus");
@@ -72,12 +79,14 @@ public class DiseaseAutoTaskController extends BaseController
     }
 
     @PostMapping("/{taskId}/run")
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:execute')")
     public AjaxResult run(@PathVariable Long taskId)
     {
         return AjaxResult.success(service.executeImmediately(taskId));
     }
 
     @GetMapping("/{taskId}/runs")
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:query')")
     public TableDataInfo runs(@PathVariable Long taskId)
     {
         startPage();
@@ -86,6 +95,7 @@ public class DiseaseAutoTaskController extends BaseController
     }
 
     @GetMapping("/runs/{runId}/items")
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:query')")
     public TableDataInfo runItems(@PathVariable Long runId)
     {
         startPage();
@@ -94,12 +104,14 @@ public class DiseaseAutoTaskController extends BaseController
     }
 
     @GetMapping("/summary")
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:list')")
     public AjaxResult summary()
     {
         return AjaxResult.success(service.selectSummary());
     }
 
     @GetMapping("/results")
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:list')")
     public TableDataInfo results(DiseaseAutoResultQuery query)
     {
         startPage();
@@ -108,12 +120,14 @@ public class DiseaseAutoTaskController extends BaseController
     }
 
     @GetMapping("/results/{itemId}")
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:query')")
     public AjaxResult resultDetail(@PathVariable Long itemId)
     {
         return AjaxResult.success(service.selectResultByItemId(itemId));
     }
 
     @GetMapping("/options")
+    @PreAuthorize("@ss.hasPermi('sxz:autoTask:list')")
     public AjaxResult options(Long parkId)
     {
         return AjaxResult.success(service.selectOptions(parkId));

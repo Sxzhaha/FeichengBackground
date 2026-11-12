@@ -59,7 +59,7 @@ public interface IExpertQaService
     Map<String, Object> toggleLike(String targetType, Long targetId);
 
     /**
-     * 作物圈子列表（含问答总数，冬枣置顶）
+     * 作物圈子列表（含问答总数，肥城桃置顶）
      */
     List<ExpertCrop> selectCropList();
 

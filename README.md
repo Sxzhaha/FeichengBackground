@@ -21,6 +21,21 @@
 * 高效率开发，使用代码生成器可以一键生成前后端代码。
 * 阿里云折扣场：[点我进入](http://aly.ruoyi.vip)，腾讯云秒杀场：[点我进入](http://txy.ruoyi.vip)&nbsp;&nbsp;
 
+## 本地配置
+
+数据库和第三方服务凭据通过环境变量注入，不提交真实密钥。启动前按需设置：
+
+| 环境变量 | 用途 |
+| --- | --- |
+| `MYSQL_URL`、`MYSQL_USERNAME`、`MYSQL_PASSWORD` | MySQL 数据源 |
+| `JWT_SECRET` | 登录令牌签名密钥 |
+| `AI_MODEL_API_KEY`、`DASHSCOPE_API_KEY`、`DASHSCOPE_WORKSPACE_ID` | 大模型服务 |
+| `YS7_APP_KEY`、`YS7_APP_SECRET` | 萤石云视频 |
+| `QWEATHER_API_KEY` | 和风天气 |
+| `DRUID_USERNAME`、`DRUID_PASSWORD` | Druid 控制台 |
+
+生产环境必须为 `JWT_SECRET` 配置独立的高强度随机值。
+
 # 版本分支
 
 RuoYi-Vue 后端项目提供 Spring Boot 2.x / 3.x / 4.x 多版本分支的并行维护。

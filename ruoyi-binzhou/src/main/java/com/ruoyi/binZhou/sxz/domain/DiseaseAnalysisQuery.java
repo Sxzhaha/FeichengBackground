@@ -6,6 +6,7 @@ public class DiseaseAnalysisQuery
     private Long deviceId;
     private String environmentDiseaseName;
     private Integer days = 30;
+    private Long scopeUserId;
 
     public Long getParkId()
     {
@@ -45,5 +46,15 @@ public class DiseaseAnalysisQuery
     public void setDays(Integer days)
     {
         this.days = days;
+    }
+
+    public Long getScopeUserId()
+    {
+        return scopeUserId;
+    }
+
+    public void setScopeUserId(Long scopeUserId)
+    {
+        this.scopeUserId = scopeUserId;
     }
 }

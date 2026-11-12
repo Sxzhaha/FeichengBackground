@@ -98,7 +98,7 @@ public class AgriAdviceService {
 
     private String buildContext(AgriReportDTO report, Long parkId, String begin, String end) {
         JSONObject context = new JSONObject();
-        context.put("crop", "冬枣");
+        context.put("crop", "肥城桃");
         context.put("parkId", parkId);
         context.put("statisticsScope", begin == null ? "全部历史，不是当前实时风险" : "指定历史统计期");
         context.put("beginTime", begin);

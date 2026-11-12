@@ -723,7 +723,7 @@ public class IotDeviceLogServiceImpl implements IIotDeviceLogService
 
             JSONObject systemMessage = new JSONObject();
             systemMessage.put("role", "system");
-            systemMessage.put("content", "你是一位精通物联网数据监控与枣树农业防灾减灾的AI专家。根据物联网设备上传的数据指标异常情况及预警规则，生成一份详细的、可操作的防治/应急处置建议。");
+            systemMessage.put("content", "你是一位精通物联网数据监控与肥城桃种植防灾减灾的AI专家。根据物联网设备上传的数据指标异常情况及预警规则，生成一份详细的、可操作的防治/应急处置建议。");
             messages.add(systemMessage);
 
             String userContent = String.format(

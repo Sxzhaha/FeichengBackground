@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.binZhou.sxz.mapper.DiseaseKnowledgeRecognitionMapper">
+    <select id="countAccessibleImage" resultType="int">
+        SELECT COUNT(*)
+        FROM xwq_ai_image i
+        LEFT JOIN park p ON p.park_id = i.park_id
+        WHERE i.image_id = #{imageId}
+          AND (
+              p.user_id = #{scopeUserId}
+              OR (i.park_id IS NULL AND i.create_by = #{username})
+          )
+    </select>
+
     <select id="selectKnowledgeAdvice"
             resultType="com.ruoyi.binZhou.sxz.domain.DiseaseKnowledgeAdvice">
         SELECT id AS knowledgeId,

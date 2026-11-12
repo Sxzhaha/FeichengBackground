@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import com.ruoyi.binZhou.common.FeichengDataScopeUtils;
 import com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisDashboard;
 import com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisQuery;
 import com.ruoyi.binZhou.sxz.domain.EnvironmentCorrelationAnalysis;
@@ -30,6 +31,11 @@ public class DiseaseAnalysisServiceImpl implements IDiseaseAnalysisService
     @Override
     public DiseaseAnalysisDashboard getDashboard(DiseaseAnalysisQuery query)
     {
+        if (query == null)
+        {
+            query = new DiseaseAnalysisQuery();
+        }
+        query.setScopeUserId(FeichengDataScopeUtils.currentParkOwnerUserId());
         normalizeQuery(query);
         DiseaseAnalysisDashboard dashboard = new DiseaseAnalysisDashboard();
         List<DiseaseAnalysisDashboard.CategoryStat> categories = mapper.selectCategoryStats(query);
@@ -46,7 +52,7 @@ public class DiseaseAnalysisServiceImpl implements IDiseaseAnalysisService
         dashboard.setTrends(mapper.selectTrendStats(query));
         dashboard.setParks(mapper.selectParkStats(query));
         dashboard.setRecords(mapper.selectRecentRecords(query));
-        dashboard.setParkOptions(mapper.selectParkOptions());
+        dashboard.setParkOptions(mapper.selectParkOptions(query));
         dashboard.setDeviceOptions(mapper.selectDeviceOptions(query));
         dashboard.setEnvironment(mapper.selectEnvironmentStats(query));
         Map<String, EnvironmentCorrelationAnalysis> correlationByDisease = buildCorrelationByDisease(query);

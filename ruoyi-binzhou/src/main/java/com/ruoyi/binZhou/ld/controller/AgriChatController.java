@@ -53,9 +53,9 @@ public class AgriChatController extends BaseController {
 			com.fasterxml.jackson.databind.JsonNode historyMessages = reqJson.path("historyMessages");
 			com.fasterxml.jackson.databind.JsonNode images = reqJson.path("images");
 
-			// 2. 获取枣树病虫害字典数据
+			// 2. 获取桃树病虫害字典数据
 			Knowledge query = new Knowledge();
-			query.setPlusDsiCategorythird("枣树");
+			query.setPlusDsiCategorythird("桃树");
 			List<Knowledge> dbPestList = knowledgeService.selectKnowledgeList(query);
 
 			// 进行名称去重，避免重复
@@ -72,7 +72,7 @@ public class AgriChatController extends BaseController {
 			StringBuilder dictNamesBuilder = new StringBuilder();
 			StringBuilder dbReferencePromptBuilder = new StringBuilder();
 			if (!uniquePestList.isEmpty()) {
-				dbReferencePromptBuilder.append("\n【枣树病虫害数据库参考资料（你的回答必须严格符合以下数据描述）】：\n");
+				dbReferencePromptBuilder.append("\n【桃树病虫害数据库参考资料（你的回答必须严格符合以下数据描述）】：\n");
 				for (int i = 0; i < uniquePestList.size(); i++) {
 					Knowledge item = uniquePestList.get(i);
 					if (i > 0) {
@@ -113,7 +113,7 @@ public class AgriChatController extends BaseController {
 			}
 
 			// 组装系统提示词
-			String systemPrompt = "你是一位精通枣树种植与植保技术的农业专家“滨州枣树农业助手”。\n" +
+			String systemPrompt = "你是一位熟悉山东肥城桃产业、桃树栽培与植保技术的农业专家“肥城桃产业农业助手”。\n" +
 				"强制要求：\n" +
 				"1. 回答要果断，思考时间不要超过10秒，最终回答文本必须是正常的自然语言，绝对禁止使用Markdown特殊字符（如星号、井号等）。\n" +
 				"2. 如果属于病虫害诊断，必须从以下已知字典中匹配最接近的病害名称：[" + dictNames + "]。如果不属于字典中的任何一种，请在第一点诚实作答。\n" +
@@ -122,7 +122,7 @@ public class AgriChatController extends BaseController {
 				"\n" +
 				"如果是病虫害则诊断问答必须严格遵循以下结构输出：\n" +
 				"一、病害名称\n" +
-				"（直接写出匹配到的名称，例如：枣尺蠖）\n" +
+				"（直接写出匹配到的名称，例如：桃褐腐病）\n" +
 				"二、症状特征\n" +
 				"（参考数据库中的症状特征进行详细回答，回答要跟数据库字段内容吻合）\n" +
 				"三、发生原因\n" +
@@ -180,7 +180,7 @@ public class AgriChatController extends BaseController {
 
 			JSONObject textObj = new JSONObject();
 			textObj.put("type", "text");
-			textObj.put("text", (text != null && !text.trim().isEmpty()) ? text : "请诊断这些枣树病虫害情况并提供建议。");
+			textObj.put("text", (text != null && !text.trim().isEmpty()) ? text : "请诊断这些桃树病虫害情况并提供建议。");
 			contentArray.add(textObj);
 
 			userMessage.put("content", contentArray);

@@ -18,7 +18,9 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.binZhou.dxx.domain.GeojsonArchive;
+import com.ruoyi.binZhou.dxx.domain.MapDataset;
 import com.ruoyi.binZhou.dxx.service.IGeojsonArchiveService;
+import com.ruoyi.binZhou.dxx.service.IMapDatasetService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 
@@ -34,6 +36,51 @@ public class GeojsonArchiveController extends BaseController
 {
     @Autowired
     private IGeojsonArchiveService geojsonArchiveService;
+
+    @Autowired
+    private IMapDatasetService mapDatasetService;
+
+    /**
+     * 获取智慧大脑使用的启用中默认 GeoJSON 存档。
+     *
+     * 该接口只返回已有存档元数据，实际文件仍由 /profile/** 静态资源规则提供。
+     * 不要求影像底图管理权限，以便仅拥有智慧大脑访问权限的业务账号正常加载。
+     */
+    @GetMapping("/visual/default")
+    public AjaxResult getVisualDefaultArchive(
+            @RequestParam(value = "datasetName", defaultValue = "肥城遥感图") String datasetName)
+    {
+        MapDataset datasetQuery = new MapDataset();
+        datasetQuery.setDatasetName(datasetName);
+        datasetQuery.setStatus("0");
+
+        List<MapDataset> datasets = mapDatasetService.selectMapDatasetList(datasetQuery);
+        MapDataset matchedDataset = datasets.stream()
+                .filter(dataset -> datasetName.equals(dataset.getDatasetName()))
+                .filter(dataset -> !"2".equals(dataset.getDelFlag()))
+                .findFirst()
+                .orElse(null);
+        if (matchedDataset == null)
+        {
+            return error("未找到启用的影像底图：" + datasetName);
+        }
+
+        GeojsonArchive archiveQuery = new GeojsonArchive();
+        archiveQuery.setDatasetId(matchedDataset.getDatasetId());
+        archiveQuery.setIsDefault("1");
+        archiveQuery.setStatus("0");
+
+        GeojsonArchive defaultArchive = geojsonArchiveService.selectGeojsonArchiveList(archiveQuery).stream()
+                .filter(archive -> !"2".equals(archive.getDelFlag()))
+                .findFirst()
+                .orElse(null);
+        if (defaultArchive == null)
+        {
+            return error("影像底图“" + datasetName + "”尚未设置启用的默认存档");
+        }
+
+        return success(defaultArchive);
+    }
 
     /**
      * 查询GeoJSON存档列表

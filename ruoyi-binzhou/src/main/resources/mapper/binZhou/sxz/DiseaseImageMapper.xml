@@ -48,6 +48,15 @@
             <if test="parkId != null">
                 AND COALESCE(r.park_id, i.park_id) = #{parkId}
             </if>
+            <if test="scopeUserId != null">
+                AND (
+                    p.user_id = #{scopeUserId}
+                    OR (
+                        COALESCE(r.park_id, i.park_id) IS NULL
+                        AND (r.create_by = #{scopeUsername} OR i.create_by = #{scopeUsername})
+                    )
+                )
+            </if>
             <if test="taskName != null and taskName != ''">
                 AND task.task_name LIKE CONCAT('%', #{taskName}, '%')
             </if>

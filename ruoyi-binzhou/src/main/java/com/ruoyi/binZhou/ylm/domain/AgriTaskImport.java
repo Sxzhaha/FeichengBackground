@@ -22,7 +22,7 @@ public class AgriTaskImport
     private String workMethodName;
 
     /** 区域完整名称 */
-    @Excel(name = "区域*", prompt = "填写完整区域名称，例如：滨州园区南地块东角落")
+    @Excel(name = "区域*", prompt = "填写完整区域名称，例如：肥城桃示范园区南地块东角落")
     private String regionFullName;
 
     /** 任务描述 */

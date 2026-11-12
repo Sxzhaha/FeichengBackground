@@ -162,6 +162,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="deviceId != null">and t.device_id = #{deviceId}</if>
             <if test="taskStatus != null and taskStatus != ''">and t.task_status = #{taskStatus}</if>
             <if test="runState != null and runState != ''">and t.run_state = #{runState}</if>
+            <if test="scopeUserId != null">and p.user_id = #{scopeUserId}</if>
         </where>
         order by t.create_time desc, t.task_id desc
     </select>
@@ -266,30 +267,43 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectSummary" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAutoTaskSummary">
         select
-          (select count(*) from sxz_disease_auto_task where del_flag = '0') taskCount,
-          (select count(*) from sxz_disease_auto_task where del_flag = '0' and task_status = '0') enabledTaskCount,
-          (select count(*) from sxz_disease_auto_task where del_flag = '0' and task_status = '1') disabledTaskCount,
-          (select count(*) from sxz_disease_auto_task where del_flag = '0' and last_run_status in ('FAILED','PARTIAL')) abnormalTaskCount,
-          (select count(*) from sxz_disease_auto_task_run where start_time &gt;= curdate()) todayRunCount,
+          (select count(*) from sxz_disease_auto_task where del_flag = '0'
+             <if test="scopeUserId != null">and park_id in (select park_id from park where user_id = #{scopeUserId})</if>) taskCount,
+          (select count(*) from sxz_disease_auto_task where del_flag = '0' and task_status = '0'
+             <if test="scopeUserId != null">and park_id in (select park_id from park where user_id = #{scopeUserId})</if>) enabledTaskCount,
+          (select count(*) from sxz_disease_auto_task where del_flag = '0' and task_status = '1'
+             <if test="scopeUserId != null">and park_id in (select park_id from park where user_id = #{scopeUserId})</if>) disabledTaskCount,
+          (select count(*) from sxz_disease_auto_task where del_flag = '0' and last_run_status in ('FAILED','PARTIAL')
+             <if test="scopeUserId != null">and park_id in (select park_id from park where user_id = #{scopeUserId})</if>) abnormalTaskCount,
+          (select count(*) from sxz_disease_auto_task_run where start_time &gt;= curdate()
+             <if test="scopeUserId != null">and park_id in (select park_id from park where user_id = #{scopeUserId})</if>) todayRunCount,
           (select count(distinct r.record_id) from xwq_ai_record r
-             where r.record_type = '病虫害' and r.record_mode = '自动定时' and r.create_time &gt;= curdate()) todayImageCount,
+             where r.record_type = '病虫害' and r.record_mode = '自动定时' and r.create_time &gt;= curdate()
+             <if test="scopeUserId != null">and r.park_id in (select park_id from park where user_id = #{scopeUserId})</if>) todayImageCount,
           (select count(*) from xwq_ai_record r join xwq_ai_disease d on d.record_id = r.record_id
              where r.record_type = '病虫害' and r.record_mode = '自动定时' and r.create_time &gt;= curdate()
+               <if test="scopeUserId != null">and r.park_id in (select park_id from park where user_id = #{scopeUserId})</if>
                and trim(d.disease_name) in ('健康','健康叶片')) todayHealthyCount,
           (select count(*) from xwq_ai_record r join xwq_ai_disease d on d.record_id = r.record_id
              where r.record_type = '病虫害' and r.record_mode = '自动定时' and r.create_time &gt;= curdate()
+               <if test="scopeUserId != null">and r.park_id in (select park_id from park where user_id = #{scopeUserId})</if>
                and trim(d.disease_name) not in ('健康','健康叶片')) todayDiseaseCount,
           coalesce((select round(sum(case when trim(d.disease_name) not in ('健康','健康叶片') then 1 else 0 end) * 100.0 / nullif(count(*), 0), 2)
              from xwq_ai_record r join xwq_ai_disease d on d.record_id = r.record_id
-             where r.record_type = '病虫害' and r.record_mode = '自动定时' and r.create_time &gt;= curdate()), 0) todayDetectionRate,
+             where r.record_type = '病虫害' and r.record_mode = '自动定时' and r.create_time &gt;= curdate()
+             <if test="scopeUserId != null">and r.park_id in (select park_id from park where user_id = #{scopeUserId})</if>), 0) todayDetectionRate,
           coalesce((select round(sum(success_count) * 100.0 / nullif(sum(success_count + fail_count), 0), 2)
-             from sxz_disease_auto_task_run where start_time &gt;= curdate()), 0) todaySuccessRate,
+             from sxz_disease_auto_task_run where start_time &gt;= curdate()
+             <if test="scopeUserId != null">and park_id in (select park_id from park where user_id = #{scopeUserId})</if>), 0) todaySuccessRate,
           (select max(r.create_time) from xwq_ai_record r
-             where r.record_type = '病虫害' and r.record_mode = '自动定时') latestRecognizeTime
+             where r.record_type = '病虫害' and r.record_mode = '自动定时'
+             <if test="scopeUserId != null">and r.park_id in (select park_id from park where user_id = #{scopeUserId})</if>) latestRecognizeTime
     </select>
 
     <select id="selectParkOptions" resultMap="OptionResult">
-        select park_id value, park_name label from park order by park_id
+        select park_id value, park_name label from park
+        <where><if test="scopeUserId != null">user_id = #{scopeUserId}</if></where>
+        order by park_id
     </select>
 
     <select id="selectDeviceOptions" resultMap="OptionResult">
@@ -297,7 +311,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         from iot_device d
         left join location l on l.location_id = d.location_id
         left join area a on a.area_id = l.area_id
-        <where><if test="parkId != null">a.park_id = #{parkId}</if></where>
+        left join park p on p.park_id = a.park_id
+        <where>
+            <if test="parkId != null">a.park_id = #{parkId}</if>
+            <if test="scopeUserId != null">and p.user_id = #{scopeUserId}</if>
+        </where>
         order by d.device_id
     </select>
 
@@ -324,6 +342,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectCaptureTaskOptions" resultMap="OptionResult">
         <include refid="captureTaskOptionColumns"/>
+        <where><if test="scopeUserId != null">p.user_id = #{scopeUserId}</if></where>
         order by case when ct.status = '0' then 0 else 1 end, ct.create_time desc, ct.task_id desc
     </select>
 
@@ -478,6 +497,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="diseaseName != null and diseaseName != ''">and d.disease_name like concat('%', #{diseaseName}, '%')</if>
             <if test="resultType == 'HEALTHY'">and trim(d.disease_name) in ('健康','健康叶片')</if>
             <if test="resultType == 'DISEASE'">and trim(d.disease_name) not in ('健康','健康叶片')</if>
+            <if test="scopeUserId != null">and p.user_id = #{scopeUserId}</if>
         </where>
         order by r.create_time desc, i.item_id desc
     </select>
@@ -494,5 +514,21 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         left join xwq_ai_image img on img.image_id = i.ai_image_id
         where i.run_id = #{runId}
         order by i.item_id
+    </select>
+
+    <select id="countParkAccess" resultType="int">
+        select count(*) from park where park_id = #{parkId} and user_id = #{scopeUserId}
+    </select>
+
+    <select id="selectRunParkId" resultType="java.lang.Long">
+        select park_id from sxz_disease_auto_task_run where run_id = #{runId} limit 1
+    </select>
+
+    <select id="selectItemParkId" resultType="java.lang.Long">
+        select r.park_id
+        from sxz_disease_auto_task_item i
+        left join sxz_disease_auto_task_run r on r.run_id = i.run_id
+        where i.item_id = #{itemId}
+        limit 1
     </select>
 </mapper>

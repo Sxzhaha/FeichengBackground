@@ -3,8 +3,17 @@
 <mapper namespace="com.ruoyi.binZhou.sxz.mapper.DiseaseAnalysisMapper">
 
     <sql id="diseaseFilter">
-        <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, dev.location_id) = #{parkId}</if>
+        <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, device_area.park_id) = #{parkId}</if>
         <if test="deviceId != null">AND COALESCE(r.device_id, i.device_id) = #{deviceId}</if>
+        <if test="scopeUserId != null">
+            AND EXISTS (
+                SELECT 1 FROM park scope_park
+                WHERE scope_park.park_id = COALESCE(r.park_id, i.park_id, device_area.park_id)
+                  AND scope_park.user_id = #{scopeUserId}
+            )
+        </if>
+        AND r.record_type = '病虫害'
+        AND r.record_mode = '自动定时'
         AND d.create_time IS NOT NULL
         <choose>
             <when test="days == 7">
@@ -66,7 +75,9 @@
         LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
         LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
         LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
-        LEFT JOIN park p ON p.park_id = COALESCE(r.park_id, i.park_id, dev.location_id)
+        LEFT JOIN location device_location ON device_location.location_id = dev.location_id
+        LEFT JOIN area device_area ON device_area.area_id = device_location.area_id
+        LEFT JOIN park p ON p.park_id = COALESCE(r.park_id, i.park_id, device_area.park_id)
         WHERE 1 = 1
         <include refid="diseaseFilter"/>
         GROUP BY d.disease_name
@@ -90,6 +101,8 @@
             LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
             LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
             LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+            LEFT JOIN location device_location ON device_location.location_id = dev.location_id
+            LEFT JOIN area device_area ON device_area.area_id = device_location.area_id
             WHERE 1 = 1
             <include refid="diseaseFilter"/>
             GROUP BY DATE_FORMAT(d.create_time, '%Y-%m-%d'), d.disease_name
@@ -107,6 +120,8 @@
             LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
             LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
             LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+            LEFT JOIN location device_location ON device_location.location_id = dev.location_id
+            LEFT JOIN area device_area ON device_area.area_id = device_location.area_id
             WHERE 1 = 1
             <include refid="diseaseFilter"/>
             GROUP BY DATE_FORMAT(d.create_time, '%Y-%m-%d')
@@ -115,7 +130,7 @@
     </select>
 
     <select id="selectParkStats" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisDashboard$ParkStat">
-        SELECT COALESCE(r.park_id, i.park_id, dev.location_id) AS parkId,
+        SELECT COALESCE(r.park_id, i.park_id, device_area.park_id) AS parkId,
                COALESCE(p.park_name, '未关联园区') AS parkName,
                COUNT(*) AS count,
                SUM(CASE WHEN d.is_warning = 1 THEN 1 ELSE 0 END) AS warningCount,
@@ -124,10 +139,12 @@
         LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
         LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
         LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
-        LEFT JOIN park p ON p.park_id = COALESCE(r.park_id, i.park_id, dev.location_id)
+        LEFT JOIN location device_location ON device_location.location_id = dev.location_id
+        LEFT JOIN area device_area ON device_area.area_id = device_location.area_id
+        LEFT JOIN park p ON p.park_id = COALESCE(r.park_id, i.park_id, device_area.park_id)
         WHERE 1 = 1
         <include refid="diseaseFilter"/>
-        GROUP BY COALESCE(r.park_id, i.park_id, dev.location_id), p.park_name
+        GROUP BY COALESCE(r.park_id, i.park_id, device_area.park_id), p.park_name
         ORDER BY count DESC
     </select>
 
@@ -145,7 +162,9 @@
         LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
         LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
         LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
-        LEFT JOIN park p ON p.park_id = COALESCE(r.park_id, i.park_id, dev.location_id)
+        LEFT JOIN location device_location ON device_location.location_id = dev.location_id
+        LEFT JOIN area device_area ON device_area.area_id = device_location.area_id
+        LEFT JOIN park p ON p.park_id = COALESCE(r.park_id, i.park_id, device_area.park_id)
         WHERE 1 = 1
         <include refid="diseaseFilter"/>
         ORDER BY d.create_time DESC, d.disease_id DESC
@@ -153,17 +172,31 @@
     </select>
 
     <select id="selectParkOptions" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisDashboard$ParkOption">
-        SELECT park_id AS parkId, park_name AS parkName FROM park ORDER BY park_id
+        SELECT park_id AS parkId, park_name AS parkName
+        FROM park
+        <where>
+            <if test="scopeUserId != null">user_id = #{scopeUserId}</if>
+        </where>
+        ORDER BY park_id
     </select>
 
     <select id="selectDeviceOptions" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisDashboard$DeviceOption">
-        SELECT device_id AS deviceId,
-               COALESCE(NULLIF(device_name, ''), device_sn, CONCAT('设备', device_id)) AS deviceName,
-               location_id AS parkId
-        FROM iot_device
+        SELECT dev.device_id AS deviceId,
+               COALESCE(NULLIF(dev.device_name, ''), dev.device_sn, CONCAT('设备', dev.device_id)) AS deviceName,
+               device_area.park_id AS parkId
+        FROM iot_device dev
+        LEFT JOIN location device_location ON device_location.location_id = dev.location_id
+        LEFT JOIN area device_area ON device_area.area_id = device_location.area_id
         WHERE 1 = 1
-        <if test="parkId != null">AND location_id = #{parkId}</if>
-        ORDER BY location_id, device_id
+        <if test="parkId != null">AND device_area.park_id = #{parkId}</if>
+        <if test="scopeUserId != null">
+            AND EXISTS (
+                SELECT 1 FROM park scope_park
+                WHERE scope_park.park_id = device_area.park_id
+                  AND scope_park.user_id = #{scopeUserId}
+            )
+        </if>
+        ORDER BY device_area.park_id, dev.device_id
     </select>
 
     <select id="selectEnvironmentStats" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseAnalysisDashboard$EnvironmentStat">
@@ -181,19 +214,21 @@
             FROM ld_agri_weather_live
             WHERE <include refid="weatherTimeFilter"/>
             <if test="parkId != null">AND CAST(park_id AS UNSIGNED) = #{parkId}</if>
-            <if test="deviceId != null">AND CAST(park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+            <if test="deviceId != null">AND CAST(park_id AS UNSIGNED) = (SELECT da.park_id FROM iot_device dd LEFT JOIN location dl ON dl.location_id = dd.location_id LEFT JOIN area da ON da.area_id = dl.area_id WHERE dd.device_id = #{deviceId})</if>
+            <if test="scopeUserId != null">AND EXISTS (SELECT 1 FROM park scope_park WHERE scope_park.park_id = CAST(park_id AS UNSIGNED) AND scope_park.user_id = #{scopeUserId})</if>
             UNION
             SELECT DATE_FORMAT(f.forecast_date, '%Y-%m-%d 00:00:00') AS stat_time
             FROM ld_agri_weather_forecast f
             WHERE <include refid="forecastDateFilter"/>
             <if test="parkId != null">AND CAST(f.park_id AS UNSIGNED) = #{parkId}</if>
-            <if test="deviceId != null">AND CAST(f.park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+            <if test="deviceId != null">AND CAST(f.park_id AS UNSIGNED) = (SELECT da.park_id FROM iot_device dd LEFT JOIN location dl ON dl.location_id = dd.location_id LEFT JOIN area da ON da.area_id = dl.area_id WHERE dd.device_id = #{deviceId})</if>
+            <if test="scopeUserId != null">AND EXISTS (SELECT 1 FROM park scope_park WHERE scope_park.park_id = CAST(f.park_id AS UNSIGNED) AND scope_park.user_id = #{scopeUserId})</if>
               AND NOT EXISTS (
                   SELECT 1
                   FROM ld_agri_weather_live live
                   WHERE DATE(live.report_time) = f.forecast_date
                   <if test="parkId != null">AND CAST(live.park_id AS UNSIGNED) = #{parkId}</if>
-                  <if test="deviceId != null">AND CAST(live.park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+                  <if test="deviceId != null">AND CAST(live.park_id AS UNSIGNED) = (SELECT da.park_id FROM iot_device dd LEFT JOIN location dl ON dl.location_id = dd.location_id LEFT JOIN area da ON da.area_id = dl.area_id WHERE dd.device_id = #{deviceId})</if>
               )
             GROUP BY f.forecast_date
             UNION
@@ -202,11 +237,13 @@
             LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
             LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
             LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+            LEFT JOIN location device_location ON device_location.location_id = dev.location_id
+            LEFT JOIN area device_area ON device_area.area_id = device_location.area_id
             WHERE d.create_time IS NOT NULL
               AND r.record_type = '病虫害'
               AND r.record_mode = '自动定时'
             <include refid="diseaseFilter"/>
-            <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, dev.location_id) = #{parkId}</if>
+            <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, device_area.park_id) = #{parkId}</if>
             <if test="deviceId != null">AND COALESCE(r.device_id, i.device_id) = #{deviceId}</if>
         ) base
         LEFT JOIN (
@@ -217,7 +254,8 @@
             FROM ld_agri_weather_live
             WHERE <include refid="weatherTimeFilter"/>
             <if test="parkId != null">AND CAST(park_id AS UNSIGNED) = #{parkId}</if>
-            <if test="deviceId != null">AND CAST(park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+            <if test="deviceId != null">AND CAST(park_id AS UNSIGNED) = (SELECT da.park_id FROM iot_device dd LEFT JOIN location dl ON dl.location_id = dd.location_id LEFT JOIN area da ON da.area_id = dl.area_id WHERE dd.device_id = #{deviceId})</if>
+            <if test="scopeUserId != null">AND EXISTS (SELECT 1 FROM park scope_park WHERE scope_park.park_id = CAST(park_id AS UNSIGNED) AND scope_park.user_id = #{scopeUserId})</if>
             GROUP BY DATE_FORMAT(report_time, '%Y-%m-%d %H:00:00')
             UNION ALL
             SELECT DATE_FORMAT(f.forecast_date, '%Y-%m-%d 00:00:00') AS stat_time,
@@ -230,7 +268,8 @@
                 FROM ld_agri_weather_forecast
                 WHERE <include refid="forecastDateFilter"/>
                 <if test="parkId != null">AND CAST(park_id AS UNSIGNED) = #{parkId}</if>
-                <if test="deviceId != null">AND CAST(park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+                <if test="deviceId != null">AND CAST(park_id AS UNSIGNED) = (SELECT da.park_id FROM iot_device dd LEFT JOIN location dl ON dl.location_id = dd.location_id LEFT JOIN area da ON da.area_id = dl.area_id WHERE dd.device_id = #{deviceId})</if>
+                <if test="scopeUserId != null">AND EXISTS (SELECT 1 FROM park scope_park WHERE scope_park.park_id = CAST(park_id AS UNSIGNED) AND scope_park.user_id = #{scopeUserId})</if>
                 GROUP BY forecast_date, park_id
             ) latest ON latest.forecast_date = f.forecast_date
                     AND latest.park_id = f.park_id
@@ -240,7 +279,7 @@
                 FROM ld_agri_weather_live live
                 WHERE DATE(live.report_time) = f.forecast_date
                 <if test="parkId != null">AND CAST(live.park_id AS UNSIGNED) = #{parkId}</if>
-                <if test="deviceId != null">AND CAST(live.park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+                <if test="deviceId != null">AND CAST(live.park_id AS UNSIGNED) = (SELECT da.park_id FROM iot_device dd LEFT JOIN location dl ON dl.location_id = dd.location_id LEFT JOIN area da ON da.area_id = dl.area_id WHERE dd.device_id = #{deviceId})</if>
             )
             GROUP BY f.forecast_date
         ) weather ON weather.stat_time = base.stat_time
@@ -264,11 +303,13 @@
             LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
             LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
             LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+            LEFT JOIN location device_location ON device_location.location_id = dev.location_id
+            LEFT JOIN area device_area ON device_area.area_id = device_location.area_id
             WHERE d.create_time IS NOT NULL
               AND r.record_type = '病虫害'
               AND r.record_mode = '自动定时'
             <include refid="diseaseFilter"/>
-            <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, dev.location_id) = #{parkId}</if>
+            <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, device_area.park_id) = #{parkId}</if>
             <if test="deviceId != null">AND COALESCE(r.device_id, i.device_id) = #{deviceId}</if>
             GROUP BY DATE_FORMAT(d.create_time, '%Y-%m-%d %H:00:00')
         ) recognition ON recognition.stat_time = base.stat_time
@@ -296,6 +337,8 @@
 	                INNER JOIN xwq_ai_record r ON r.record_id = d.record_id
 	                LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
 	                LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+	                LEFT JOIN location device_location ON device_location.location_id = dev.location_id
+	                LEFT JOIN area device_area ON device_area.area_id = device_location.area_id
 	                WHERE d.create_time IS NOT NULL
 	                  AND d.create_time &gt;= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
 	                  AND r.record_type = '病虫害'
@@ -303,8 +346,9 @@
 	                  AND (r.record_mode LIKE '%自动%' OR r.record_mode LIKE '%定时%')
 	                  AND d.disease_name IS NOT NULL
 	                  AND TRIM(d.disease_name) &lt;&gt; ''
-	                <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, dev.location_id) = #{parkId}</if>
+	                <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, device_area.park_id) = #{parkId}</if>
 	                <if test="deviceId != null">AND COALESCE(r.device_id, i.device_id) = #{deviceId}</if>
+	                <if test="scopeUserId != null">AND EXISTS (SELECT 1 FROM park scope_park WHERE scope_park.park_id = COALESCE(r.park_id, i.park_id, device_area.park_id) AND scope_park.user_id = #{scopeUserId})</if>
 	                GROUP BY DATE_FORMAT(d.create_time, '%Y-%m-%d'), d.disease_name
 	            ) disease_daily
 	            INNER JOIN (
@@ -314,13 +358,16 @@
 	                INNER JOIN xwq_ai_record r ON r.record_id = d.record_id
 	                LEFT JOIN xwq_ai_image i ON i.image_id = d.image_id
 	                LEFT JOIN iot_device dev ON dev.device_id = COALESCE(r.device_id, i.device_id)
+	                LEFT JOIN location device_location ON device_location.location_id = dev.location_id
+	                LEFT JOIN area device_area ON device_area.area_id = device_location.area_id
 	                WHERE d.create_time IS NOT NULL
 	                  AND d.create_time &gt;= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
 	                  AND r.record_type = '病虫害'
 	                  AND r.record_mode IS NOT NULL
 	                  AND (r.record_mode LIKE '%自动%' OR r.record_mode LIKE '%定时%')
-	                <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, dev.location_id) = #{parkId}</if>
+	                <if test="parkId != null">AND COALESCE(r.park_id, i.park_id, device_area.park_id) = #{parkId}</if>
 	                <if test="deviceId != null">AND COALESCE(r.device_id, i.device_id) = #{deviceId}</if>
+	                <if test="scopeUserId != null">AND EXISTS (SELECT 1 FROM park scope_park WHERE scope_park.park_id = COALESCE(r.park_id, i.park_id, device_area.park_id) AND scope_park.user_id = #{scopeUserId})</if>
 	                GROUP BY DATE_FORMAT(d.create_time, '%Y-%m-%d')
 	            ) total_daily ON total_daily.stat_date = disease_daily.stat_date
 	        ) recognition
@@ -338,7 +385,8 @@
                 FROM ld_agri_weather_live
                 WHERE report_time &gt;= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
                 <if test="parkId != null">AND CAST(park_id AS UNSIGNED) = #{parkId}</if>
-                <if test="deviceId != null">AND CAST(park_id AS UNSIGNED) = (SELECT location_id FROM iot_device WHERE device_id = #{deviceId})</if>
+                <if test="deviceId != null">AND CAST(park_id AS UNSIGNED) = (SELECT da.park_id FROM iot_device dd LEFT JOIN location dl ON dl.location_id = dd.location_id LEFT JOIN area da ON da.area_id = dl.area_id WHERE dd.device_id = #{deviceId})</if>
+                <if test="scopeUserId != null">AND EXISTS (SELECT 1 FROM park scope_park WHERE scope_park.park_id = CAST(park_id AS UNSIGNED) AND scope_park.user_id = #{scopeUserId})</if>
                 GROUP BY DATE_FORMAT(report_time, '%Y-%m-%d'), park_id
             ) station
             GROUP BY station.stat_date

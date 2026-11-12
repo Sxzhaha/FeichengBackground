@@ -387,7 +387,7 @@ public class AgriReportServiceImpl implements AgriReportService {
         dto.setDominantRate(dominantRate.toString());
 
         dto.setAvgConfidence(DF2.format(confidenceSum.multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(total), 4, RoundingMode.HALF_UP)));
-        dto.setGrowthJudgement("当前园区冬枣主导物候期为“" + dominant + "”，建议围绕该阶段开展水肥调控、病虫害防控和田间巡查。");
+        dto.setGrowthJudgement("当前园区肥城桃主导物候期为“" + dominant + "”，建议围绕该阶段开展水肥调控、病虫害防控和田间巡查。");
         return dto;
     }
 

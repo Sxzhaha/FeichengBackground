@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 滨州冬枣园区综合农情监测报告
+ * 肥城桃园区综合农情监测报告
  */
 @RestController
 @RequestMapping("/binZhou/wr/report")

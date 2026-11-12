@@ -11,7 +11,7 @@ public interface DiseaseAnalysisMapper
     List<DiseaseAnalysisDashboard.TrendStat> selectTrendStats(DiseaseAnalysisQuery query);
     List<DiseaseAnalysisDashboard.ParkStat> selectParkStats(DiseaseAnalysisQuery query);
     List<DiseaseAnalysisDashboard.RecentRecord> selectRecentRecords(DiseaseAnalysisQuery query);
-    List<DiseaseAnalysisDashboard.ParkOption> selectParkOptions();
+    List<DiseaseAnalysisDashboard.ParkOption> selectParkOptions(DiseaseAnalysisQuery query);
     List<DiseaseAnalysisDashboard.DeviceOption> selectDeviceOptions(DiseaseAnalysisQuery query);
     List<DiseaseAnalysisDashboard.EnvironmentStat> selectEnvironmentStats(DiseaseAnalysisQuery query);
     List<EnvironmentCorrelationAnalysis.DailyRecord> selectCorrelationDailyRecords(DiseaseAnalysisQuery query);

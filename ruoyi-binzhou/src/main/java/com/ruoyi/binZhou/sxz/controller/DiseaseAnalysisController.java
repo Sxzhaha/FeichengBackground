@@ -1,5 +1,6 @@
 package com.ruoyi.binZhou.sxz.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +20,7 @@ public class DiseaseAnalysisController
     }
 
     @GetMapping("/dashboard")
+    @PreAuthorize("@ss.hasPermi('sxz:diseaseAnalysis:list')")
     public AjaxResult dashboard(DiseaseAnalysisQuery query)
     {
         return AjaxResult.success(service.getDashboard(query));

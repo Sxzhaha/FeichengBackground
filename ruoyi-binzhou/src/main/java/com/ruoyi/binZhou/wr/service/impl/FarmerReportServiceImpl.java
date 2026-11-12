@@ -21,7 +21,7 @@ public class FarmerReportServiceImpl implements IFarmerReportService {
         if ("farmer".equals(role)) {
             report.setTitle("智能大棚 - 个人农事精细化周报");
             report.setTargetUser("王大能 (精细化种植农户)");
-            report.setSummary("【当前处于：枣树幼果膨大期】本周您的地块触发环境预警 3 次。AI 建议：下午2点密切注意棚内高温，及时开启灌溉。");
+            report.setSummary("【当前处于：肥城桃幼果膨大期】本周您的地块触发环境预警 3 次。AI 建议：下午2点密切注意园区高温，及时检查灌溉设施。");
 
             // 农户看具体明细 (真实开发时用：iotMapper.selectByUserId(userId))
             report.setIotAlerts(getMockFarmerIotData());
@@ -33,7 +33,7 @@ public class FarmerReportServiceImpl implements IFarmerReportService {
             report.setAiSuggestions(ai);
 
         } else if ("county".equals(role)) {
-            report.setTitle("沾化区 - 枣树区域农情调度简报");
+            report.setTitle("肥城桃产区 - 区域农情调度简报");
             report.setTargetUser("张局长 (县级管理员)");
             report.setSummary("【全县物候统筹】本周全县共统计物联网预警142次，虫情设备捕获标本同比上升12%。下辖[下洼镇]缺水风险最高，需防范局部干旱。");
 
@@ -47,16 +47,16 @@ public class FarmerReportServiceImpl implements IFarmerReportService {
             report.setAiSuggestions(ai);
 
         } else if ("city".equals(role)) {
-            report.setTitle("滨州市 - 枣产业宏观物联网监测年/月报");
+            report.setTitle("肥城市 - 桃产业宏观物联网监测年/月报");
             report.setTargetUser("刘市长 (市级指挥官)");
-            report.setSummary("【全市宏观大盘】本统计周期内，全市枣树主产区运行宏观平稳。全市高温预警、虫情趋势线均处于历年安全包络线内，预期总产量稳定。");
+            report.setSummary("【全市宏观大盘】本统计周期内，全市肥城桃主产区运行宏观平稳。高温预警、虫情趋势线均处于历年安全包络线内，预期总产量稳定。");
 
             // 市级看全市大盘对比数据
             report.setIotAlerts(getMockCityIotData());
             report.setPestAlerts(getMockCityPestData());
 
             List<String> ai = new ArrayList<>();
-            ai.add("【产业决策参考】沾化区信息化覆盖率及设备在线率达98%，建议作为数字化种植示范区进行推广。");
+            ai.add("【产业决策参考】肥城桃示范园区信息化覆盖率及设备在线率达98%，建议作为数字化种植示范区进行推广。");
             ai.add("【气象灾害预警】气象局预测中旬有局部冰雹，请督导各县区做好防雹网布设检查工作。");
             report.setAiSuggestions(ai);
         }
@@ -98,13 +98,13 @@ public class FarmerReportServiceImpl implements IFarmerReportService {
     }
     private List<Map<String, Object>> getMockCityIotData() {
         List<Map<String, Object>> list = new ArrayList<>();
-        Map<String, Object> d = new HashMap<>(); d.put("time", "沾化区总计"); d.put("type", "环境高温预警"); d.put("value", "高发频次: 45次"); d.put("level", "良好"); list.add(d);
-        Map<String, Object> d2 = new HashMap<>(); d2.put("time", "无棣县总计"); d2.put("type", "环境高温预警"); d2.put("value", "高发频次: 12次"); d2.put("level", "安全"); list.add(d2);
+        Map<String, Object> d = new HashMap<>(); d.put("time", "肥城桃示范园区总计"); d.put("type", "环境高温预警"); d.put("value", "高发频次: 45次"); d.put("level", "良好"); list.add(d);
+        Map<String, Object> d2 = new HashMap<>(); d2.put("time", "东部园区总计"); d2.put("type", "环境高温预警"); d2.put("value", "高发频次: 12次"); d2.put("level", "安全"); list.add(d2);
         return list;
     }
     private List<Map<String, Object>> getMockCityPestData() {
         List<Map<String, Object>> list = new ArrayList<>();
-        Map<String, Object> d = new HashMap<>(); d.put("time", "全市横向对比"); d.put("name", "绿盲蝽主要重灾区"); d.put("count", "沾化区(占比78%)"); d.put("trend", "严峻"); list.add(d);
+        Map<String, Object> d = new HashMap<>(); d.put("time", "全市横向对比"); d.put("name", "桃蚜主要发生区域"); d.put("count", "肥城桃示范园区(占比78%)"); d.put("trend", "严峻"); list.add(d);
         return list;
     }
 }

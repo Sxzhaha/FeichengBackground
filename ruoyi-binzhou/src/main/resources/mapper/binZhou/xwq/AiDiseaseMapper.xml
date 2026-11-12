@@ -204,4 +204,45 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{diseaseId}
         </foreach>
     </delete>
+
+    <select id="countRecentReliableAutomaticDetections" resultType="int">
+        SELECT COUNT(*)
+        FROM xwq_ai_disease d
+        INNER JOIN xwq_ai_record r ON r.record_id = d.record_id
+        WHERE r.record_type = '病虫害'
+          AND r.record_mode = '自动定时'
+          AND r.park_id = #{parkId}
+          AND d.disease_name = #{diseaseName}
+          AND d.disease_confidence &gt;= #{reliableConfidence}
+          AND d.is_warning = 1
+          AND d.create_time &gt;= #{since}
+    </select>
+
+    <select id="countRecentReliableAutomaticDevices" resultType="int">
+        SELECT COUNT(DISTINCT r.device_id)
+        FROM xwq_ai_disease d
+        INNER JOIN xwq_ai_record r ON r.record_id = d.record_id
+        WHERE r.record_type = '病虫害'
+          AND r.record_mode = '自动定时'
+          AND r.park_id = #{parkId}
+          AND r.device_id IS NOT NULL
+          AND d.disease_name = #{diseaseName}
+          AND d.disease_confidence &gt;= #{reliableConfidence}
+          AND d.is_warning = 1
+          AND d.create_time &gt;= #{since}
+    </select>
+
+    <select id="countRecentReliableAutomaticDetectionsForDevice" resultType="int">
+        SELECT COUNT(*)
+        FROM xwq_ai_disease d
+        INNER JOIN xwq_ai_record r ON r.record_id = d.record_id
+        WHERE r.record_type = '病虫害'
+          AND r.record_mode = '自动定时'
+          AND r.park_id = #{parkId}
+          AND r.device_id = #{deviceId}
+          AND d.disease_name = #{diseaseName}
+          AND d.disease_confidence &gt;= #{reliableConfidence}
+          AND d.is_warning = 1
+          AND d.create_time &gt;= #{since}
+    </select>
 </mapper>

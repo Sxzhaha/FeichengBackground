@@ -159,7 +159,7 @@ public class AiPhenologyRecognitionServiceImpl
     }
 
     /**
-     * 使用视觉大模型判断是否为冬枣，并从固定物候期集合中选择阶段。
+     * 使用视觉大模型判断是否为肥城桃，并从固定物候期集合中选择阶段。
      * 阶段说明、下一阶段和农事建议由后端固定生成，避免模型自由发挥导致
      * 同一阶段的数据库内容不一致。
      */
@@ -173,13 +173,13 @@ public class AiPhenologyRecognitionServiceImpl
         }
 
         String imageSource = buildVisionImageSource(image.getImageUrl());
-        String prompt = "你是冬枣物候期识别专家。请只分析图片本身，不要根据文件名猜测。"
-                + "先判断图片主体是否为冬枣树、冬枣果实或冬枣枝叶。"
-                + "如果不是冬枣，isJujube 必须为 false，phase 必须为空。"
-                + "如果是冬枣，只能从以下固定物候期中选择一个 phase："
+        String prompt = "你是肥城桃物候期识别专家。请只分析图片本身，不要根据文件名猜测。"
+                + "先判断图片主体是否为桃树、桃果实、桃花或桃树枝叶。"
+                + "如果不是桃树，isPeach 必须为 false，phase 必须为空。"
+                + "如果是桃树，只能从以下固定物候期中选择一个 phase："
                 + String.join("、", PHENOLOGY_STAGES) + "。"
                 + "只返回 JSON，不要 Markdown，不要额外文字，格式为："
-                + "{\"isJujube\":true,\"phase\":\"坐果期\",\"confidence\":0.94}。"
+                + "{\"isPeach\":true,\"phase\":\"坐果期\",\"confidence\":0.94}。"
                 + "当前作物类型仅用于约束识别：" + cropType;
 
         HttpHeaders headers = new HttpHeaders();
@@ -224,15 +224,15 @@ public class AiPhenologyRecognitionServiceImpl
                     .getJSONObject("message")
                     .getString("content");
             JSONObject result = parseJsonContent(contentText);
-            if (Boolean.FALSE.equals(result.getBoolean("isJujube")))
+            if (Boolean.FALSE.equals(result.getBoolean("isPeach")))
             {
-                throw new ServiceException("当前图片不是冬枣图片，无法进行冬枣物候期识别");
+                throw new ServiceException("当前图片不是桃树相关图片，无法进行肥城桃物候期识别");
             }
 
             String stage = normalizeStage(result.getString("phase"));
             if (!hasText(stage))
             {
-                throw new ServiceException("视觉大模型未识别出有效的冬枣物候期");
+                throw new ServiceException("视觉大模型未识别出有效的肥城桃物候期");
             }
             return buildFixedPhenologyResult(stage, result.getBigDecimal("confidence"));
         }
@@ -273,9 +273,9 @@ public class AiPhenologyRecognitionServiceImpl
 
         PhenologyModelResult result = new PhenologyModelResult();
         result.setPhenologyName(stage);
-        result.setPhenologyCode("DZ-" + String.format("%02d", stageIndex + 1));
+        result.setPhenologyCode("FC-PEACH-" + String.format("%02d", stageIndex + 1));
         result.setPhenologyConfidence(normalizeConfidence(confidence));
-        result.setPhenologyResult("识别为冬枣" + stage + "，图像中的枝叶、花果或果实发育特征与该阶段相符。");
+        result.setPhenologyResult("识别为肥城桃" + stage + "，图像中的枝叶、花果或果实发育特征与该阶段相符。");
         result.setPhenologyDesc(profile.get("desc"));
         result.setPhenologyAdvice(profile.get("advice"));
         result.setPhenologyNextName(nextStage);
@@ -589,12 +589,12 @@ public class AiPhenologyRecognitionServiceImpl
         {
             return "rice";
         }
-        if ("冬枣".equalsIgnoreCase(text)
-                || "枣树".equalsIgnoreCase(text)
-                || "枣".equalsIgnoreCase(text)
-                || "jujube".equalsIgnoreCase(text))
+        if ("肥城桃".equalsIgnoreCase(text)
+                || "桃树".equalsIgnoreCase(text)
+                || "桃".equalsIgnoreCase(text)
+                || "peach".equalsIgnoreCase(text))
         {
-            return "jujube";
+            return "peach";
         }
         return text.toLowerCase();
     }

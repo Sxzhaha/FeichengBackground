@@ -39,15 +39,16 @@ public interface DiseaseAutoTaskMapper
 
     List<DiseaseAutoTaskRun> selectRunList(@Param("taskId") Long taskId);
 
-    DiseaseAutoTaskSummary selectSummary();
+    DiseaseAutoTaskSummary selectSummary(@Param("scopeUserId") Long scopeUserId);
 
-    List<DiseaseAutoTaskOption> selectParkOptions();
+    List<DiseaseAutoTaskOption> selectParkOptions(@Param("scopeUserId") Long scopeUserId);
 
-    List<DiseaseAutoTaskOption> selectDeviceOptions(@Param("parkId") Long parkId);
+    List<DiseaseAutoTaskOption> selectDeviceOptions(@Param("parkId") Long parkId,
+            @Param("scopeUserId") Long scopeUserId);
 
     List<DiseaseAutoTaskOption> selectModelOptions();
 
-    List<DiseaseAutoTaskOption> selectCaptureTaskOptions();
+    List<DiseaseAutoTaskOption> selectCaptureTaskOptions(@Param("scopeUserId") Long scopeUserId);
 
     DiseaseAutoTaskOption selectCaptureTaskOptionById(@Param("cameraTaskId") Long cameraTaskId);
 
@@ -81,4 +82,10 @@ public interface DiseaseAutoTaskMapper
     DiseaseAutoTaskResult selectResultByItemId(@Param("itemId") Long itemId);
 
     List<DiseaseAutoTaskItem> selectRunItems(@Param("runId") Long runId);
+
+    int countParkAccess(@Param("parkId") Long parkId, @Param("scopeUserId") Long scopeUserId);
+
+    Long selectRunParkId(@Param("runId") Long runId);
+
+    Long selectItemParkId(@Param("itemId") Long itemId);
 }

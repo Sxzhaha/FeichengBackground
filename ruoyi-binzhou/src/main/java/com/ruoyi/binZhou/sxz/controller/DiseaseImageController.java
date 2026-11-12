@@ -1,6 +1,7 @@
 package com.ruoyi.binZhou.sxz.controller;
 
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +23,7 @@ public class DiseaseImageController extends BaseController
     }
 
     @GetMapping("/list")
+    @PreAuthorize("@ss.hasPermi('sxz:diseaseImage:list')")
     public TableDataInfo list(DiseaseImageQuery query)
     {
         startPage();

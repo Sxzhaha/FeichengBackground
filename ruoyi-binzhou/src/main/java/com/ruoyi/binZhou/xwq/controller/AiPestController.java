@@ -22,6 +22,7 @@ import com.ruoyi.binZhou.xwq.domain.AiPest;
 import com.ruoyi.binZhou.xwq.service.IAiPestService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.binZhou.common.FeichengBusinessConstants;
 
 /**
  * 虫情识别结果Controller
@@ -108,6 +109,7 @@ public class AiPestController extends BaseController
      * 根据真实虫情记录生成大模型报告文本。
      */
     @PostMapping("/generateReportText")
+    @PreAuthorize("@ss.hasPermi('xwq:pest:query')")
     public AjaxResult generateReportText(
             @RequestBody Map<String, Object> params)
     {
@@ -124,6 +126,7 @@ public class AiPestController extends BaseController
      * 虫情趋势预测
      */
     @GetMapping("/predict")
+    @PreAuthorize("@ss.hasPermi('xwq:pest:query')")
     public AjaxResult predict(@RequestParam(required = false) Long parkId,
                               @RequestParam(required = false) Long areaId,
                               @RequestParam(required = false) String locationId,
@@ -147,6 +150,7 @@ public class AiPestController extends BaseController
      * 根据数据库中已经存在的图片ID进行虫情识别。
      */
     @PostMapping("/predictByImage")
+    @PreAuthorize("@ss.hasPermi('xwq:pest:add')")
     public AjaxResult predictByImage(@RequestBody Map<String, Object> params)
     {
         if (params.get("imageId") == null)
@@ -163,7 +167,7 @@ public class AiPestController extends BaseController
         Long modelId = Long.valueOf(params.get("modelId").toString());
 
         String cropType = params.get("cropType") == null
-                ? "冬枣"
+                ? FeichengBusinessConstants.CROP_NAME
                 : params.get("cropType").toString();
 
         String recordMode = params.get("recordMode") == null
@@ -190,6 +194,7 @@ public class AiPestController extends BaseController
      * 3. xwq_ai_pest
      */
     @PostMapping("/predictUploadedImage")
+    @PreAuthorize("@ss.hasPermi('xwq:pest:add')")
     public AjaxResult predictUploadedImage(
             @RequestBody Map<String, Object> params)
     {

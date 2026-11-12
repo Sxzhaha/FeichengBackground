@@ -28,6 +28,38 @@
                 #{diseaseId}
             </foreach>
         </if>
+        <if test="scopeUserId != null">
+            AND (
+                EXISTS (
+                    SELECT 1
+                    FROM park scope_park
+                    WHERE scope_park.user_id = #{scopeUserId}
+                      AND scope_park.park_id = COALESCE(
+                          r.park_id,
+                          (SELECT scope_image.park_id
+                           FROM xwq_ai_image scope_image
+                           WHERE scope_image.image_id = d.image_id
+                           LIMIT 1)
+                      )
+                )
+                OR (
+                    r.park_id IS NULL
+                    AND NOT EXISTS (
+                        SELECT 1 FROM xwq_ai_image scope_image
+                        WHERE scope_image.image_id = d.image_id
+                          AND scope_image.park_id IS NOT NULL
+                    )
+                    AND (
+                        r.create_by = #{scopeUsername}
+                        OR EXISTS (
+                            SELECT 1 FROM xwq_ai_image scope_image
+                            WHERE scope_image.image_id = d.image_id
+                              AND scope_image.create_by = #{scopeUsername}
+                        )
+                    )
+                )
+            )
+        </if>
     </sql>
 
     <select id="selectSummary" resultType="com.ruoyi.binZhou.sxz.domain.DiseaseReportSummary">
@@ -52,8 +84,11 @@
                COALESCE(SUM(CASE WHEN d.warning_level LIKE '%高%' THEN 1 ELSE 0 END), 0) AS highRiskCount,
                COALESCE(SUM(CASE WHEN d.warning_level LIKE '%中%' THEN 1 ELSE 0 END), 0) AS middleRiskCount,
                COALESCE(SUM(CASE WHEN d.warning_level LIKE '%低%' THEN 1 ELSE 0 END), 0) AS lowRiskCount,
+               COALESCE(SUM(CASE WHEN d.warning_level LIKE '%待人工复核%' THEN 1 ELSE 0 END), 0) AS reviewRequiredCount,
+               COALESCE(SUM(CASE WHEN d.warning_level LIKE '%辅助诊断%' THEN 1 ELSE 0 END), 0) AS auxiliaryDiagnosisCount,
+               COALESCE(SUM(CASE WHEN d.warning_level IN ('无风险', '无预警', '正常', '无') THEN 1 ELSE 0 END), 0) AS noRiskCount,
                COALESCE(SUM(CASE WHEN d.warning_level IS NULL OR TRIM(d.warning_level) = ''
-                          OR d.warning_level NOT REGEXP '高|中|低' THEN 1 ELSE 0 END), 0) AS unmarkedRiskCount
+                          OR d.warning_level = '未标记' THEN 1 ELSE 0 END), 0) AS unmarkedRiskCount
         FROM xwq_ai_disease d
         LEFT JOIN xwq_ai_record r ON r.record_id = d.record_id
         <where>
@@ -141,7 +176,16 @@
             AND d.disease_name NOT LIKE '%无病虫害%'
             <include refid="reportFilter"/>
         </where>
-        ORDER BY COALESCE(d.disease_confidence, 0) DESC, d.disease_id DESC
+        ORDER BY CASE
+                    WHEN d.warning_level LIKE '%高%' THEN 5
+                    WHEN d.warning_level LIKE '%中%' THEN 4
+                    WHEN d.warning_level LIKE '%待人工复核%' THEN 3
+                    WHEN d.warning_level LIKE '%低%' THEN 2
+                    WHEN d.warning_level LIKE '%辅助诊断%' THEN 1
+                    ELSE 0
+                 END DESC,
+                 COALESCE(d.disease_confidence, 0) DESC,
+                 d.disease_id DESC
         LIMIT 5
     </select>
 

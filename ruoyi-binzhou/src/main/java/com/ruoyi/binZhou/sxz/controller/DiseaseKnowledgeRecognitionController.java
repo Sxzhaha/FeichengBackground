@@ -1,9 +1,11 @@
 package com.ruoyi.binZhou.sxz.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.binZhou.common.FeichengBusinessConstants;
 import com.ruoyi.binZhou.sxz.domain.DiseaseRecognitionRequest;
 import com.ruoyi.binZhou.sxz.service.IDiseaseKnowledgeRecognitionService;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -20,6 +22,7 @@ public class DiseaseKnowledgeRecognitionController
     }
 
     @PostMapping("/predictByImage")
+    @PreAuthorize("@ss.hasPermi('sxz:diseaseRecognition:execute')")
     public AjaxResult predictByImage(@RequestBody DiseaseRecognitionRequest request)
     {
         if (request == null || request.getImageId() == null)
@@ -31,7 +34,10 @@ public class DiseaseKnowledgeRecognitionController
             return AjaxResult.error("modelId不能为空，请先选择病虫害识别模型");
         }
 
-        String cropType = isBlank(request.getCropType()) ? "枣树" : request.getCropType().trim();
+        service.checkImageAccess(request.getImageId());
+
+        String cropType = isBlank(request.getCropType())
+                ? FeichengBusinessConstants.CROP_NAME : request.getCropType().trim();
         String recordMode = isBlank(request.getRecordMode()) ? "手动上传" : request.getRecordMode().trim();
         return AjaxResult.success(
                 "识别成功",

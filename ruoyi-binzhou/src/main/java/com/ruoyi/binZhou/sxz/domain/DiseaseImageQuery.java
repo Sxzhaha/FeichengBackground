@@ -10,6 +10,8 @@ public class DiseaseImageQuery
     private String deviceName;
     private String beginTime;
     private String endTime;
+    private Long scopeUserId;
+    private String scopeUsername;
 
     public String getImageName() { return imageName; }
     public void setImageName(String imageName) { this.imageName = imageName; }
@@ -27,4 +29,8 @@ public class DiseaseImageQuery
     public void setBeginTime(String beginTime) { this.beginTime = beginTime; }
     public String getEndTime() { return endTime; }
     public void setEndTime(String endTime) { this.endTime = endTime; }
+    public Long getScopeUserId() { return scopeUserId; }
+    public void setScopeUserId(Long scopeUserId) { this.scopeUserId = scopeUserId; }
+    public String getScopeUsername() { return scopeUsername; }
+    public void setScopeUsername(String scopeUsername) { this.scopeUsername = scopeUsername; }
 }

@@ -17,6 +17,8 @@ import com.ruoyi.binZhou.sxz.service.client.DiseaseModelCallException;
 import com.ruoyi.binZhou.sxz.service.client.DiseaseModelCallResult;
 import com.ruoyi.binZhou.sxz.service.client.DiseaseModelClient;
 import com.ruoyi.binZhou.sxz.service.support.DiseaseRecognitionPersistenceService;
+import com.ruoyi.binZhou.sxz.service.support.DiseaseWarningAssessment;
+import com.ruoyi.binZhou.sxz.service.support.DiseaseWarningRuleService;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.utils.SecurityUtils;
@@ -59,6 +61,9 @@ public class AiDiseaseServiceImpl implements IAiDiseaseService
 
     @Autowired
     private DiseaseRecognitionPersistenceService recognitionPersistenceService;
+
+    @Autowired
+    private DiseaseWarningRuleService diseaseWarningRuleService;
 
     @Autowired
     private ParkMapper parkMapper;
@@ -283,6 +288,10 @@ public class AiDiseaseServiceImpl implements IAiDiseaseService
                 diseaseResultImgUrl = image.getImageUrl();
             }
 
+            DiseaseWarningAssessment warningAssessment = diseaseWarningRuleService.assess(
+                    diseaseName, confidence, recordMode, image.getParkId(), image.getDeviceId(), recognitionTime);
+            diseaseAdvice = diseaseWarningRuleService.prependSafetyAdvice(diseaseAdvice, warningAssessment);
+
             // 6. 保存病虫害识别结果 AiDisease
             AiDisease disease = new AiDisease();
             disease.setRecordId(record.getRecordId());
@@ -294,8 +303,10 @@ public class AiDiseaseServiceImpl implements IAiDiseaseService
             disease.setDiseaseDesc(diseaseDesc);
             disease.setDiseaseAdvice(diseaseAdvice);
             disease.setDiseaseResultImgUrl(diseaseResultImgUrl);
-            disease.setIsWarning(0L);
-            disease.setWarningLevel("无");
+            disease.setIsWarning(warningAssessment.getIsWarning());
+            disease.setWarningLevel(warningAssessment.getWarningLevel());
+            // 复用现有备用字段保存规则判定原因，不要求变更数据库结构。
+            disease.setDiseaseJ(warningAssessment.getReason());
             disease.setCreateTime(recognitionTime);
 
             // 7. 使用短事务保存结果并更新识别记录、图片状态。
@@ -314,14 +325,20 @@ public class AiDiseaseServiceImpl implements IAiDiseaseService
             vo.put("diseaseDesc", diseaseDesc);
             vo.put("diseaseAdvice", diseaseAdvice);
             vo.put("diseaseResultImgUrl", diseaseResultImgUrl);
-            vo.put("warningLevel", "无");
+            vo.put("isWarning", warningAssessment.getIsWarning());
+            vo.put("warningLevel", warningAssessment.getWarningLevel());
+            vo.put("reviewRequired", warningAssessment.isReviewRequired());
+            vo.put("warningReason", warningAssessment.getReason());
             vo.put("modelAttemptCount", modelAttemptCount);
 
             return vo;
         }
         catch (Exception e)
         {
-            String msg = e.getMessage();
+            String detail = e.getMessage() == null || e.getMessage().trim().isEmpty()
+                    ? e.getClass().getSimpleName() : e.getMessage().trim();
+            // 模型失败只保存失败记录，不生成病害结果，更不能生成园区风险。
+            String msg = "模型调用或结果解析失败，未生成风险结论：" + detail;
             try
             {
                 recognitionPersistenceService.failRecognition(record, image.getImageId(), msg);
@@ -339,9 +356,9 @@ public class AiDiseaseServiceImpl implements IAiDiseaseService
                     throw (DiseaseModelCallException) e;
                 }
                 throw new DiseaseModelCallException(
-                        "病虫害识别失败：" + e.getMessage(), Math.max(modelAttemptCount, 1), false, e);
+                        msg, Math.max(modelAttemptCount, 1), false, e);
             }
-            throw new ServiceException("病虫害识别失败：" + e.getMessage());
+            throw new ServiceException(msg);
         }
     }
 

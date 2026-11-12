@@ -81,7 +81,7 @@ public class AiPhenologyServiceImpl implements IAiPhenologyService
      */
     private static final Long RECORD_STATUS_SUCCESS = 2L;
 
-    private static final String DEFAULT_CROP_TYPE = "冬枣";
+    private static final String DEFAULT_CROP_TYPE = "肥城桃";
     private static final String IMAGE_AI_TYPE = "phenology";
     private static final String RECORD_TYPE = "物候期";
     private static final String IMAGE_SOURCE = "手动上传";
@@ -1039,15 +1039,15 @@ public class AiPhenologyServiceImpl implements IAiPhenologyService
 
     private String buildReportSystemPrompt()
     {
-        return "你是滨州智慧农业系统中的冬枣物候期监测报告生成助手。\n\n"
-                + "报告事实只能来自输入中的当前监测统计；农事措施可以使用通用的冬枣栽培专业知识，但不得把常识写成已经发生的现场事实。\n\n"
+        return "你是肥城桃产业智慧种植平台中的物候期监测报告生成助手。\n\n"
+                + "报告事实只能来自输入中的当前监测统计；农事措施可以使用肥城桃栽培专业知识，但不得把常识写成已经发生的现场事实。\n\n"
                 + "要求：\n\n"
                 + "1. 不得修改或重新计算记录数量、比例、置信度和日期。\n"
                 + "2. 不得虚构气象、土壤、病虫害和田间调查数据。\n"
                 + "3. 数据不足时明确说明“现有监测数据不足以判断”。\n"
                 + "4. 趋势分析必须基于输入的时间序列。\n"
                 + "5. 不依赖、复述或推定历史农事结论，必须从本次当前数据独立形成建议。\n"
-                + "6. 农事建议必须与冬枣、主导物候期、物候分布、下一物候期和数据质量相匹配。\n"
+                + "6. 农事建议必须与肥城桃、主导物候期、物候分布、下一物候期和数据质量相匹配。\n"
                 + "7. 每条建议应包含当前数据依据、拟采取的动作和后续核验指标；缺少天气、土壤墒情、树势或田间调查等必要前提时使用条件式表达，不得直接给出确定性投入量。\n"
                 + "8. 物候阶段并不一致或存在低置信度记录时，应提出分区复核和差异化管理，不能用主导阶段替代全部植株。\n"
                 + "9. 建议生成3至5条。\n"
@@ -1368,7 +1368,7 @@ public class AiPhenologyServiceImpl implements IAiPhenologyService
         List<String> advice = new ArrayList<String>();
         String dominantStage =
                 String.valueOf(statistics.get("dominantStage"));
-        advice.add("当前主导物候期为冬枣" + dominantStage + "（"
+        advice.add("当前主导物候期为肥城桃" + dominantStage + "（"
                 + statistics.get("dominantCount") + "条，占" + statistics.get("dominantRatio")
                 + "），应先在对应监测范围抽样核对实际长势，并以复核后的物候阶段安排当期农事操作。");
         Map<?, ?> stageCounts = (Map<?, ?>) statistics.get("stageCounts");

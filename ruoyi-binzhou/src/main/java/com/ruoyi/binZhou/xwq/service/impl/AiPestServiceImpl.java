@@ -58,6 +58,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import org.springframework.util.StreamUtils;
+import com.ruoyi.binZhou.common.FeichengBusinessConstants;
 /**
  * 虫情识别结果Service业务层处理
  *
@@ -659,15 +660,18 @@ public class AiPestServiceImpl implements IAiPestService
 
     private String buildPestReportSystemPrompt()
     {
-        return "你是滨州智慧农业系统中的冬枣虫情监测报告生成助手。\n\n"
-                + "报告事实只能来自输入中的当前监测统计；防治措施可以使用通用的冬枣绿色防控专业知识，但不得把常识写成已经发生的现场事实。\n\n"
+        return "你是" + FeichengBusinessConstants.REGION_NAME + "智慧农业系统中的"
+                + FeichengBusinessConstants.CROP_NAME + "虫情监测报告生成助手。\n\n"
+                + "报告事实只能来自输入中的当前监测统计；防治措施可以使用通用的"
+                + FeichengBusinessConstants.CROP_NAME + "绿色防控专业知识，但不得把常识写成已经发生的现场事实。\n\n"
                 + "要求：\n"
                 + "1. 不得修改或重新计算记录数量、虫体数量、比例、置信度、预警数量和日期。\n"
                 + "2. 不得虚构气象、土壤、病虫害调查和防治效果数据。\n"
                 + "3. 数据不足时明确说明“现有监测数据不足以判断”。\n"
                 + "4. 风险研判必须基于输入的虫体数量、预警统计和时间序列；没有统一采样强度或田间虫口密度时，不得仅凭累计虫量断言种群密度或防治阈值已被突破。\n"
                 + "5. 不依赖、复述或推定历史防治结论，必须从本次当前数据独立形成建议。\n"
-                + "6. 防治建议必须与冬枣、主要虫害、当前风险等级和数据质量相匹配，优先采用监测复核、诱捕、物理或生物防控。\n"
+                + "6. 防治建议必须与" + FeichengBusinessConstants.CROP_NAME
+                + "、主要虫害、当前风险等级和数据质量相匹配，优先采用监测复核、诱捕、物理或生物防控。\n"
                 + "7. 每条建议应包含当前数据依据、拟采取的动作和后续核验指标；缺少必要前提时使用条件式表达。\n"
                 + "8. 未提供物候期、防治阈值、药剂登记或现场复核结果时，不得给出具体药剂名称、剂量、施药次数或安全间隔期；确需化学防治时提示按当地登记标签和植保人员意见执行。\n"
                 + "9. 建议生成3至5条。\n"
@@ -920,7 +924,7 @@ public class AiPestServiceImpl implements IAiPestService
         String cropType = getStringParam(
                 params,
                 "cropType",
-                "冬枣"
+                FeichengBusinessConstants.CROP_NAME
         );
         String recordMode = getStringParam(
                 params,
@@ -1856,7 +1860,7 @@ public class AiPestServiceImpl implements IAiPestService
         }
 
         return "你是一名智慧农业虫情预测专家。\n\n" +
-                "请根据冬枣园区历史虫情数量和未来天气预测未来虫害数量。\n\n" +
+                "请根据" + FeichengBusinessConstants.CROP_NAME + "园区历史虫情数量和未来天气预测未来虫害数量。\n\n" +
                 "虫害名称：\n\n" + pestName + "\n\n" +
                 "历史虫情：\n\n" + history + "\n\n" +
                 "未来天气：\n\n" + weather + "\n" +
@@ -1871,13 +1875,7 @@ public class AiPestServiceImpl implements IAiPestService
                 "8、数组长度必须等于未来预测天数。\n\n" +
                 "9、每个元素必须为整数。\n\n" +
                 "10、预测数量必须与历史最后一天保持平滑变化。\n\n" +
-                "虫害规律：\n\n" +
-                "【枣瘿蚊】\n" +
-                "连续阴雨、高湿（>85%）快速增长。\n\n" +
-                "【枣尺蠖】\n" +
-                "高温增加，大雨下降。\n\n" +
-                "【龟蜡蚧】\n" +
-                "变化缓慢。\n\n" +
+                "11、没有给出经过验证的虫种气象阈值时，不得自行套用其他作物的虫害规律。\n\n" +
                 "未来预测天数：" + days + "\n\n" +
                 "示例：\n\n" +
                 "[\n30,\n42,\n58,\n73,\n91,\n115,\n138\n]";
@@ -1966,30 +1964,7 @@ public class AiPestServiceImpl implements IAiPestService
 
         for (int i = 0; i < days; i++)
         {
-            AgriWeatherForecast weather = weatherList != null && i < weatherList.size() ? weatherList.get(i) : null;
             int adjust = trend;
-            if (weather != null)
-            {
-                Double humidity = weather.getHumidityAvg();
-                Double rain = weather.getPrecipTotal();
-                Double tempMax = weather.getTempMax();
-                if ("枣瘿蚊".equals(pestName) && humidity != null && humidity > 85)
-                {
-                    adjust += 8;
-                }
-                if ("枣尺蠖".equals(pestName) && tempMax != null && tempMax > 32)
-                {
-                    adjust += 5;
-                }
-                if (rain != null && rain > 20)
-                {
-                    adjust -= "枣瘿蚊".equals(pestName) ? 0 : 6;
-                }
-                if ("龟蜡蚧".equals(pestName))
-                {
-                    adjust = Math.max(-3, Math.min(3, adjust));
-                }
-            }
             last = Math.max(0, last + adjust);
             result.add(last);
         }

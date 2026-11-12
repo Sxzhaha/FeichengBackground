@@ -11,6 +11,7 @@ public class DiseaseAutoResultQuery
     private Long taskId;
     private String resultType;
     private String diseaseName;
+    private Long scopeUserId;
 
     public Integer getDays() { return days; }
     public void setDays(Integer days) { this.days = days; }
@@ -30,4 +31,6 @@ public class DiseaseAutoResultQuery
     public void setResultType(String resultType) { this.resultType = resultType; }
     public String getDiseaseName() { return diseaseName; }
     public void setDiseaseName(String diseaseName) { this.diseaseName = diseaseName; }
+    public Long getScopeUserId() { return scopeUserId; }
+    public void setScopeUserId(Long scopeUserId) { this.scopeUserId = scopeUserId; }
 }
