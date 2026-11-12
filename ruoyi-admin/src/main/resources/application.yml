@@ -116,7 +116,7 @@ token:
   # 令牌自定义标识
   header: Authorization
   # 令牌密钥
-  secret: '${JWT_SECRET:change-me-before-production}'
+  secret: abcdefghijklmnopqrstuvwxyz
   # 令牌有效期（默认30分钟）
   expireTime: 30
 
@@ -161,28 +161,28 @@ xss:
 # 阿里百炼大模型配置
 ai-model:
   # 虫情和病虫害识别使用的 OpenAI 兼容接口鉴权令牌
-  api-key: '${AI_MODEL_API_KEY:}'
+  api-key: sk-MN4oiqM0zsRgVqyA6sbkbIVI6NUznmrBjOBVjaA3w4dnoxeK
 
 dashscope:
-  apiKey: '${DASHSCOPE_API_KEY:}'
+  apiKey: sk-6427c54049524fc0b526a9b3b2a961f9
   model: qwen3.7-plus
   # 百炼控制台生成的、绑定业务空间的实时 WebSocket 地址
   realtimeWsUrl: wss://ws-fqxac1dhsduuhlwh.cn-beijing.maas.aliyuncs.com/api-ws/v1/realtime?model=qwen3.8-livetranslate-flash-realtime
-  workspaceId: '${DASHSCOPE_WORKSPACE_ID:}'
+  workspaceId: ws-fqxac1dhsduuhlwh
   # qwen3.8-livetranslate-flash-realtime 的源/目标语种；中文语音输入时保留中文文本
   sourceLanguage: zh
   translationLanguage: zh
   # 图片识别使用轻量视觉模型，不开启深度思考
   vision-model: qwen3.8-flash
 ys7:
-  app-key: '${YS7_APP_KEY:}'
-  app-secret: '${YS7_APP_SECRET:}'
+  app-key: 1e1a8eacfdbe4f6597c7d516085f0f7b
+  app-secret: e2a6b0c19c8cdcb671cb532e71a665c9
   url: https://open.ys7.com/api/lapp
 
 # 和风天气配置
 qweather:
   apiHost: pc3fbxx8vu.re.qweatherapi.com
-  apiKey: '${QWEATHER_API_KEY:}'
+  apiKey: a2eb8973f58e46558b1e8b553c4d8689
   # 实时天气默认每2小时同步一次，未来七天天气默认每6小时同步一次
   live-cron: '${QWEATHER_LIVE_CRON:0 0 0/2 * * ?}'
   forecast-cron: '${QWEATHER_FORECAST_CRON:0 5 0/6 * * ?}'
